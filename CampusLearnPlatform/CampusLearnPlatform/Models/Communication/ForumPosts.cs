@@ -1,14 +1,36 @@
-﻿using CampusLearnPlatform.Models.Users;
+﻿using CampusLearnPlatform.Models.Learning;
+using CampusLearnPlatform.Models.Users;
 using System;
 using System.Collections.Generic;
-using CampusLearnPlatform.Models.Users;
-using CampusLearnPlatform.Models.Learning;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Communication
 {
+    [Table("forum_post")]
     public class ForumPosts
     {
-        public int Id { get; set; }
+        [Key]
+        [Column("post_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Column("topic_id")]
+        public Guid TopicId { get; set; }
+
+        [Column("author_id")]
+        public Guid AuthorId { get; set; }
+
+        [Column("author_type")]
+        public string AuthorType { get; set; }
+
+        [Required]
+        [Column("post_content")]
+        public string PostContent { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
+
         public string Title { get; set; }
         public string Content { get; set; }
         public DateTime PostedAt { get; set; }

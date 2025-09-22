@@ -1,19 +1,30 @@
 ﻿using CampusLearnPlatform.Models.Users;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Learning
 {
+    [Table("subscription")]
     public class Subscriptions
     {
-        public int Id { get; set; }
+        [Key]
+        [Column("subscription_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Column("student_id")]
+        public Guid StudentId { get; set; }
+
+        [Column("topic_id")]
+        public Guid TopicId { get; set; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; }
+        
         public DateTime SubscribedAt { get; set; }
         public bool IsActive { get; set; }
         public bool ReceiveNotifications { get; set; }
 
-   
-        public int StudentId { get; set; }
-        public int TopicId { get; set; }
-
-  
         public virtual Student Student { get; set; }
         public virtual Topic Topic { get; set; }
 
@@ -25,7 +36,7 @@ namespace CampusLearnPlatform.Models.Learning
             ReceiveNotifications = true;
         }
 
-        public Subscriptions(int studentId, int topicId) : this()
+        public Subscriptions(Guid studentId, Guid topicId) : this()
         {
             StudentId = studentId;
             TopicId = topicId;

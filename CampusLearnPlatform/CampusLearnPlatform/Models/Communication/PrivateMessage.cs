@@ -1,12 +1,38 @@
 ﻿using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.Users;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Communication
 {
+    [Table("message")]
     public class PrivateMessage
     {
-        public int Id { get; set; }
+        [Key]
+        [Column("message_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Required]
+        [Column("message_content")]
+        public string MessageContent { get; set; }
+
+        [Column("sender_type")]
+        public string SenderType { get; set; }
+
+        [Column("sender_id")]
+        public Guid SenderId { get; set; }
+
+        [Column("receiver_type")]
+        public string ReceiverType { get; set; }
+
+        [Column("receiver_id")]
+        public Guid ReceiverId { get; set; }
+
+        [Column("timestamp")]
+        public DateTime Timestamp { get; set; }
+    
         public string Content { get; set; }
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }
@@ -14,8 +40,8 @@ namespace CampusLearnPlatform.Models.Communication
         public DateTime? ReadAt { get; set; }
         public bool IsDeleted { get; set; }
 
-        public int SenderId { get; set; }
-        public int ReceiverId { get; set; }
+
+      
         public int? TopicId { get; set; }
         public int? ParentMessageId { get; set; }
 
@@ -33,7 +59,7 @@ namespace CampusLearnPlatform.Models.Communication
             IsDeleted = false;
         }
 
-        public PrivateMessage(int senderId, int receiverId, string content) : this()
+        public PrivateMessage(Guid senderId, Guid receiverId, string content) : this()
         {
             SenderId = senderId;
             ReceiverId = receiverId;
@@ -52,7 +78,7 @@ namespace CampusLearnPlatform.Models.Communication
         {
             IsDeleted = true;
         }
-        public bool CanUserAccess(int userId)
+        public bool CanUserAccess(Guid userId)
         {
             return SenderId == userId || ReceiverId == userId;
         }

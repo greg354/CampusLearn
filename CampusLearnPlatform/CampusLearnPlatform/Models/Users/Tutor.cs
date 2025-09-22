@@ -1,17 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using CampusLearnPlatform.Enums;
-using CampusLearnPlatform.Models.Learning;
+﻿using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Communication;
+using CampusLearnPlatform.Models.Learning;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace CampusLearnPlatform.Models.Users
 {
-    public class Tutor : User
+    [Table("tutor")]
+    public class Tutor
     {
-        public string Expertise { get; set; }
+        [Key]
+        [Column("tutor_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; } 
+
+        [Column("name")]
+        public string Name { get; set; }
+
+        [Column("email")]
+        public string Email { get; set; }
+
+        [Column("password")]
+        public string PasswordHash { get; set; }
+
+        [Column("experience")]
+        public string Experience { get; set; }
         public int YearsExperience { get; set; }
-        public double AverageRating { get; set; }
         public int TotalRatings { get; set; }
         public bool IsVerified { get; set; }
 
@@ -23,23 +40,20 @@ namespace CampusLearnPlatform.Models.Users
         
         public Tutor() : base()
         {
-            Role = UserRoles.Tutor;
+            
             Modules = new List<Module>();
             ReceivedMessages = new List<PrivateMessage>();
             CreatedMaterials = new List<LearningMaterial>();
             IsVerified = false;
         }
 
-        public Tutor(string email, string expertise) : base(email, UserRoles.Tutor)
+        public Tutor(string email, string expertise)
         {
-            Expertise = expertise;
+            Experience = expertise;
         }
 
       
-        public override void UpdateProfile(UserProfile profile)
-        {
-            Profile = profile;
-        }
+       
 
         public void RespondToQuery(int messageId, string response) { }
         public void UploadMaterial(string title, string filePath, int topicId) { }
@@ -51,11 +65,8 @@ namespace CampusLearnPlatform.Models.Users
         }
         public void UpdateExpertise(string newExpertise)
         {
-            Expertise = newExpertise;
+            Experience = newExpertise;
         }
-        public double CalculateAverageRating()
-        {
-            return AverageRating;
-        }
+        
     }
 }

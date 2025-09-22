@@ -1,14 +1,35 @@
 ﻿using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Users;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Communication
 {
+    [Table("notification")]
     public class Notification
     {
-        public int Id { get; set; }
-        public string Title { get; set; }
+        [Key]
+        [Column("notification_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Required]
+        [Column("message")]
         public string Message { get; set; }
+
+        [Column("status")]
+        public string Status { get; set; }
+
+        [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
+        [Column("recipient_id")]
+        public Guid RecipientId { get; set; }
+
+        [Column("recipient_type")]
+        public string RecipientType { get; set; }
+        public string Title { get; set; }
+
         public bool IsRead { get; set; }
         public NotificationTypes NotificationType { get; set; }
         public DateTime? ReadAt { get; set; }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CampusLearnPlatform")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e72a26a629f059ec50f28c64ad95bf61ad215a55")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14b9e2b1be3ebc8674e66edc38db7c973d879da0")]
 [assembly: System.Reflection.AssemblyProductAttribute("CampusLearnPlatform")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CampusLearnPlatform")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

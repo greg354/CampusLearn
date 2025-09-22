@@ -1,13 +1,24 @@
 ﻿using CampusLearnPlatform.Models.Users;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Learning
 {
+    [Table("module")]
     public class Module
     {
-        public int Id { get; set; }
-        public string ModuleCode { get; set; }
+        [Key]
+        [Column("module_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+        [Required]
+        [Column("module_name")]
         public string ModuleName { get; set; }
+
+        [Column("description")]
         public string Description { get; set; }
+
+        public string ModuleCode { get; set; }
         public int Credits { get; set; }
         public int AcademicYear { get; set; }
         public string Semester { get; set; }

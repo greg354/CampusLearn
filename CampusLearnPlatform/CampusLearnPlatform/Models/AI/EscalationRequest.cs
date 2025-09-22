@@ -1,7 +1,6 @@
 ﻿using CampusLearnPlatform.Models.Users;
 using System;
 using CampusLearnPlatform.Enums;
-using CampusLearnPlatform.Models.Users;
 using CampusLearnPlatform.Models.Learning;
 namespace CampusLearnPlatform.Models.AI
 {

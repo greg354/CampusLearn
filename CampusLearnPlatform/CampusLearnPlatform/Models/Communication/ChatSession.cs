@@ -19,7 +19,7 @@ namespace CampusLearnPlatform.Models.Communication
         public int ChatbotId { get; set; }
 
         public virtual Student Student { get; set; }
-        public virtual Chatbot Chatbot { get; set; }
+        public virtual ChatBot Chatbot { get; set; }
 
         public ChatSession()
         {

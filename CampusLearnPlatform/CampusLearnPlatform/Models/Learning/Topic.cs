@@ -1,47 +1,62 @@
 ﻿using CampusLearnPlatform.Enums;
+using CampusLearnPlatform.Models.Communication;
 using CampusLearnPlatform.Models.Users;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
 namespace CampusLearnPlatform.Models.Learning
 {
+    [Table("topic")]
     public class Topic
     {
-        public int Id { get; set; }
+        [Key]
+        [Column("topic_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Required]
+        [Column("title")]
         public string Title { get; set; }
+
+        [Column("description")]
         public string Description { get; set; }
+
+        [Column("module_id")]
+        public Guid ModuleId { get; set; }
+
+        [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+      
         public DateTime UpdatedAt { get; set; }
         public TopicStatuses Status { get; set; }
         public int ViewCount { get; set; }
         public Priorities Priority { get; set; }
         public bool IsArchived { get; set; }
 
-        // Foreign Keys
         public int StudentId { get; set; }
-        public int ModuleId { get; set; }
+       
 
-        // Navigation Properties
         public virtual Student CreatedBy { get; set; }
         public virtual Module Module { get; set; }
-        public virtual ICollection<Subscription> Subscriptions { get; set; }
+        public virtual ICollection<Subscriptions> Subscriptions { get; set; }
         public virtual ICollection<LearningMaterial> Materials { get; set; }
         public virtual ICollection<PrivateMessage> Messages { get; set; }
 
-       
         public Topic()
         {
             CreatedAt = DateTime.Now;
             UpdatedAt = DateTime.Now;
-            Status = TopicStatus.Open;
+            Status = TopicStatuses.Open;
             ViewCount = 0;
-            Priority = Priority.Medium;
+            Priority = Priorities.Medium;
             IsArchived = false;
-            Subscriptions = new List<Subscription>();
+            Subscriptions = new List<Subscriptions>();
             Materials = new List<LearningMaterial>();
             Messages = new List<PrivateMessage>();
         }
 
-        public Topic(string title, string description, int studentId, int moduleId) : this()
+        public Topic(string title, string description, int studentId, Guid moduleId) : this()
         {
             Title = title;
             Description = description;
@@ -60,9 +75,9 @@ namespace CampusLearnPlatform.Models.Learning
         {
             ViewCount++;
         }
-        public List<Subscription> GetSubscribers()
+        public List<Subscriptions> GetSubscribers()
         {
-            return new List<Subscription>();
+            return new List<Subscriptions>();
         }
         public void NotifySubscribers(string message) { }
         public bool IsActiveForTutor(int tutorId)

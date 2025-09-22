@@ -3,32 +3,84 @@
   "WorkspaceRootPath": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\module.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\module.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\learningmaterial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\learningmaterial.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\administrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\administrator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\tutor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\tutor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\data\\campuslearndbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\data\\campuslearndbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\controllers\\dbtestcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\controllers\\dbtestcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\userprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\studenttest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\studenttest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\ai\\escalationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\ai\\escalationrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\communication\\forumposts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\communication\\forumposts.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\errorviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\communication\\chatsession.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\communication\\chatsession.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\tutortopic.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\tutortopic.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\tutorsubscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\tutorsubscription.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\subscriptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\subscriptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\tutormodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\tutormodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\learning\\studentmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\learning\\studentmodule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\communication\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\communication\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\school\\third year\\sen381\\project\\projectsystem\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\communication\\privatemessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\communication\\privatemessage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,102 +90,252 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 6,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Module.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\Module.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\Module.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\Module.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\Module.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:42:30.169Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "LearningMaterial.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\LearningMaterial.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\LearningMaterial.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\LearningMaterial.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\LearningMaterial.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:42:21.486Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "UserProfile.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:39:05.734Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Tutor.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Tutor.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Tutor.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Tutor.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Tutor.cs",
-              "ViewState": "AgIAAB4AAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:38:42.479Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "Student.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Student.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Student.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Student.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Student.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:38:35.06Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\User.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\User.cs",
-              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\User.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\User.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "Tutor.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Tutor.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Tutor.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Tutor.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Tutor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:38:21.563Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T15:21:44.681Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "StudentTest.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T15:03:15.519Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "UserProfile.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\UserProfile.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T15:02:39.704Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CampusLearnDbContext.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Data\\CampusLearnDbContext.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Data\\CampusLearnDbContext.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Data\\CampusLearnDbContext.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Data\\CampusLearnDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T12:59:34.837Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "DBTestController.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Controllers\\DBTestController.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Controllers\\DBTestController.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Controllers\\DBTestController.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Controllers\\DBTestController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFcAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:26:05.315Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "Administrator.cs",
               "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Administrator.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Administrator.cs",
               "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Administrator.cs",
               "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Administrator.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAAACYAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:34:13.126Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\appsettings.json",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\appsettings.json",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\appsettings.json",
+              "RelativeToolTip": "CampusLearnPlatform\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-09-22T14:22:58.59Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Student.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Student.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Student.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Student.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Student.cs",
+              "ViewState": "AgIAACMAAAAAAAAAAAA0wDQAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:29:33.812Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "EscalationRequest.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\AI\\EscalationRequest.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\AI\\EscalationRequest.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\AI\\EscalationRequest.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\AI\\EscalationRequest.cs",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAAAAIAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:35:17.695Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\User.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\User.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\User.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:35:45.318Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "ErrorViewModel.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ErrorViewModel.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ErrorViewModel.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ErrorViewModel.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\ErrorViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:33:47.562Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ChatSession.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\ChatSession.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Communication\\ChatSession.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\ChatSession.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Communication\\ChatSession.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:32:45.648Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ForumPosts.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\ForumPosts.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Communication\\ForumPosts.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\ForumPosts.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Communication\\ForumPosts.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:12:21.663Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Subscriptions.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\Subscriptions.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\Subscriptions.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\Subscriptions.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\Subscriptions.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:16:06.748Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "TutorModule.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorModule.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\TutorModule.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorModule.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\TutorModule.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-14T11:38:20.159Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T13:30:29.851Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "TutorSubscription.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorSubscription.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\TutorSubscription.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorSubscription.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\TutorSubscription.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T13:30:31.774Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "TutorTopic.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorTopic.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\TutorTopic.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\TutorTopic.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\TutorTopic.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T13:30:32.926Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "StudentModule.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\StudentModule.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Learning\\StudentModule.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Learning\\StudentModule.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Learning\\StudentModule.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:15:53.158Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Notification.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\Notification.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Communication\\Notification.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\Notification.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Communication\\Notification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T14:14:48.67Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "PrivateMessage.cs",
+              "DocumentMoniker": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\PrivateMessage.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Communication\\PrivateMessage.cs",
+              "ToolTip": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Communication\\PrivateMessage.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\Communication\\PrivateMessage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T12:54:19.369Z"
             }
           ]
         }

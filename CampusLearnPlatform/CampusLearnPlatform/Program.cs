@@ -1,3 +1,6 @@
+using CampusLearnPlatform.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace CampusLearnPlatform
 {
     public class Program
@@ -5,6 +8,9 @@ namespace CampusLearnPlatform
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDbContext<CampusLearnDbContext>(options =>
+                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

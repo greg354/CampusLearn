@@ -1,16 +1,15 @@
 ﻿using CampusLearnPlatform.Enums;
 using System;
 using System.Collections.Generic;
-using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Communication;
 
 namespace CampusLearnPlatform.Models.Users
 {
     public abstract class User
     {
-        public int Id { get; set; }
-        public string Email { get; set; }
-        public string PasswordHash { get; set; }
+        public virtual Guid Id { get; set; }
+        public virtual string Email { get; set; }
+        public virtual string PasswordHash { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastLogin { get; set; }
         public UserRoles Role { get; set; }

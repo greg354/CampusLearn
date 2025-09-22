@@ -1,9 +1,28 @@
 ﻿using CampusLearnPlatform.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CampusLearnPlatform.Models.Users
 {
-    public class Administrator : User
+    [Table("admin")]
+    public class Administrator
     {
+        [Key]
+        [Column("admin_id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        [Required]
+        [Column("name")]
+        public string Name { get; set; }
+
+        [Required]
+        [Column("email")]
+        public string Email { get; set; }
+
+        [Required]
+        [Column("password")]
+        public string Password { get; set; }
         public string AdminLevel { get; set; }
         public string Department { get; set; }
         public DateTime LastSystemCheck { get; set; }
@@ -12,20 +31,17 @@ namespace CampusLearnPlatform.Models.Users
 
         public Administrator() : base()
         {
-            Role = UserRoles.Administrator;
+           
             ManagedUsers = new List<User>();
             LastSystemCheck = DateTime.Now;
         }
 
-        public Administrator(string email, string adminLevel) : base(email, UserRoles.Administrator)
+        public Administrator(string email, string adminLevel)
         {
             AdminLevel = adminLevel;
         }
 
-        public override void UpdateProfile(UserProfile profile)
-        {
-            Profile = profile;
-        }
+      
 
         public void ManageUser(int userId, string action) { }
         public void ModerateContent(int contentId, bool approve) { }
