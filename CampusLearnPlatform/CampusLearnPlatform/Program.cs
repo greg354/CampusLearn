@@ -12,7 +12,6 @@ namespace CampusLearnPlatform
             builder.Services.AddDbContext<CampusLearnDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
             // Add services to the container.
             builder.Services.AddControllersWithViews(options =>
             {
