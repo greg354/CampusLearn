@@ -14,7 +14,7 @@ namespace CampusLearnPlatform.Models.ViewModels
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address")]
-        [RegularExpression(@"^[^@\s]+@student\.belgiumcampus\.ac\.za$",
+        [RegularExpression(@"[0-9]{6}@student\.belgiumcampus\.ac\.za$",
         ErrorMessage = "Email must end with @student.belgiumcampus.ac.za")]
         public string Email { get; set; } = string.Empty;
 

@@ -140,13 +140,6 @@
                 return;
             }
 
-            // Belgium Campus email validation
-            if (!email.endsWith('@@student.belgiumcampus.ac.za')) {
-                e.preventDefault();
-                alert('Please use your Belgium Campus email address');
-                return;
-            }
-
             // Password match validation
             if (password !== confirmPassword) {
                 e.preventDefault();
