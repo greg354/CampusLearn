@@ -23,19 +23,20 @@ namespace CampusLearnPlatform.Controllers
 
         public IActionResult Register()
         {
-            return View();
+            return View("StudentRegister");
         }
 
         [HttpPost]
-        public IActionResult Register(RegisterViewModel model)
+        public IActionResult Register(StudentRegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
                 TempData["SuccessMessage"] = "Registration successful! Please log in.";
                 return RedirectToAction("Login");
             }
-            return View(model);
+            return View("StudentRegister", model);
         }
+
 
         public IActionResult ForgotPassword()
         {

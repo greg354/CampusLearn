@@ -1,4 +1,4 @@
-﻿@model CampusLearnPlatform.Models.ViewModels.RegisterViewModel
+﻿@model CampusLearnPlatform.Models.ViewModels.StudentRegisterViewModel
 @{
     ViewData["Title"] = "Register";
 }
@@ -36,14 +36,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="StudentId" class="form-label">
-                        <i class="fas fa-id-card me-2"></i>Student ID
-                    </label>
-                    <input asp-for="StudentId" class="form-control" placeholder="Enter your student ID (8-10 digits)" />
-                    <span asp-validation-for="StudentId" class="invalid-feedback"></span>
-                </div>
-
-                <div class="form-group">
                     <label asp-for="Email" class="form-label">
                         <i class="fas fa-envelope me-2"></i>Belgium Campus Email
                     </label>
@@ -57,19 +49,28 @@
                     </label>
                     <select asp-for="Course" class="form-select">
                         <option value="">Select your course</option>
-                        <option value="BCom Information Management">BCom Information Management</option>
-                        <option value="BCom Financial Accounting">BCom Financial Accounting</option>
-                        <option value="BCom Management Accounting">BCom Management Accounting</option>
-                        <option value="BCom Marketing Management">BCom Marketing Management</option>
-                        <option value="BCom Human Resources Management">BCom Human Resources Management</option>
-                        <option value="BIT Software Development">BIT Software Development</option>
-                        <option value="BIT Business Analysis">BIT Business Analysis</option>
-                        <option value="BIT Networks and Security">BIT Networks and Security</option>
-                        <option value="BIT Database Development">BIT Database Development</option>
+                        <option value="Bachelor of Computing">Bachelor of Computing</option>
+                        <option value="Bachelor of Information Technology">Bachelor of Information Technology</option>
                         <option value="Diploma in Information Technology">Diploma in Information Technology</option>
+                        <option value="Diploma for Deaf Students">Diploma for Deaf Students</option>
+                        <option value="Part-Time Bachelor of Information Technology">Part-Time Bachelor of Information Technology</option>
                         <option value="Other">Other</option>
                     </select>
                     <span asp-validation-for="Course" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Year" class="form-label">
+                        <i class="fas fa-graduation-cap me-2"></i>Year
+                    </label>
+                    <select asp-for="Year" class="form-select">
+                        <option value="">Select the year you are in</option>
+                        <option value="First Year'">First Year</option>
+                        <option value="Second Year'">Second Year</option>
+                        <option value="Third Year'">Third Year</option>
+                        <option value="Fourth Year'">Fourth Year</option>
+                    </select>
+                    <span asp-validation-for="Year" class="invalid-feedback"></span>
                 </div>
 
                 <!-- Password Section -->
@@ -125,22 +126,22 @@
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             const firstName = document.querySelector('[name="FirstName"]').value;
             const lastName = document.querySelector('[name="LastName"]').value;
-            const studentId = document.querySelector('[name="StudentId"]').value;
             const email = document.querySelector('[name="Email"]').value;
             const course = document.querySelector('[name="Course"]').value;
+            const year = document.querySelector('[name="Year"]').value;
             const password = document.querySelector('[name="Password"]').value;
             const confirmPassword = document.querySelector('[name="ConfirmPassword"]').value;
             const acceptTerms = document.querySelector('[name="AcceptTerms"]').checked;
 
             // Basic validation
-            if (!firstName || !lastName || !studentId || !email || !course || !password || !confirmPassword) {
+            if (!firstName || !lastName || !email || !course || !year || !password || !confirmPassword) {
                 e.preventDefault();
                 alert('Please fill in all fields');
                 return;
             }
 
             // Belgium Campus email validation
-            if (!email.endsWith('belgiumcampus.ac.za')) {
+            if (!email.endsWith('@@student.belgiumcampus.ac.za')) {
                 e.preventDefault();
                 alert('Please use your Belgium Campus email address');
                 return;
@@ -161,9 +162,6 @@
             }
         });
 
-        // Student ID formatting (numbers only)
-        document.querySelector('[name="StudentId"]').addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').slice(0, 10);
-        });
+        
     </script>
 }
