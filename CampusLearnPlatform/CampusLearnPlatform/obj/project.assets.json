@@ -2921,23 +2921,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\marku\\.nuget\\packages\\": {},
+    "C:\\Users\\debee\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\CampusLearnPlatform.csproj",
+      "projectUniqueName": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\CampusLearnPlatform.csproj",
       "projectName": "CampusLearnPlatform",
-      "projectPath": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\CampusLearnPlatform.csproj",
-      "packagesPath": "C:\\Users\\marku\\.nuget\\packages\\",
-      "outputPath": "C:\\School\\Third year\\SEN381\\Project\\ProjectSystem\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\obj\\",
+      "projectPath": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\CampusLearnPlatform.csproj",
+      "packagesPath": "C:\\Users\\debee\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\marku\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\debee\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

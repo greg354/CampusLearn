@@ -9,11 +9,41 @@ namespace CampusLearnPlatform
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<CampusLearnDbContext>(options =>
-                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                // Add custom model binding and validation
+                options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+                    _ => "This field is required.");
+            });
+
+            // Add session support (for temporary data)
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+            // Add memory cache
+            builder.Services.AddMemoryCache();
+
+            // Add HTTP client for external APIs
+            builder.Services.AddHttpClient();
+
+            // Add logging
+            builder.Services.AddLogging(logging =>
+            {
+                logging.AddConsole();
+                logging.AddDebug();
+            });
+
+            // Configure application settings
+            builder.Services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
 
             var app = builder.Build();
 
@@ -21,8 +51,11 @@ namespace CampusLearnPlatform
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+            else
+            {
+                app.UseDeveloperExceptionPage();
             }
 
             app.UseHttpsRedirection();
@@ -30,11 +63,12 @@ namespace CampusLearnPlatform
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseSession();
 
+            // FIXED: Change default route to Account/Login instead of Home/Index
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Login}/{id?}");
 
             app.Run();
         }

@@ -1,0 +1,169 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-container">
+    <div class="auth-card fade-in-up" style="max-width: 550px;">
+        <div class="auth-header">
+            <i class="fas fa-user-plus fa-3x mb-3"></i>
+            <h2>Join CampusLearn™</h2>
+            <p>Create your account and start your peer learning journey</p>
+        </div>
+
+        <div class="auth-body">
+            <form asp-action="Register" asp-controller="Account" method="post" id="registerForm">
+                <!-- Personal Information -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="form-label">
+                                <i class="fas fa-user me-2"></i>First Name
+                            </label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Enter your first name" />
+                            <span asp-validation-for="FirstName" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="LastName" class="form-label">
+                                <i class="fas fa-user me-2"></i>Last Name
+                            </label>
+                            <input asp-for="LastName" class="form-control" placeholder="Enter your last name" />
+                            <span asp-validation-for="LastName" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="StudentId" class="form-label">
+                        <i class="fas fa-id-card me-2"></i>Student ID
+                    </label>
+                    <input asp-for="StudentId" class="form-control" placeholder="Enter your student ID (8-10 digits)" />
+                    <span asp-validation-for="StudentId" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">
+                        <i class="fas fa-envelope me-2"></i>Belgium Campus Email
+                    </label>
+                    <input asp-for="Email" class="form-control" placeholder="your.name@belgiumcampus.ac.za" />
+                    <span asp-validation-for="Email" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Course" class="form-label">
+                        <i class="fas fa-graduation-cap me-2"></i>Course/Program
+                    </label>
+                    <select asp-for="Course" class="form-select">
+                        <option value="">Select your course</option>
+                        <option value="BCom Information Management">BCom Information Management</option>
+                        <option value="BCom Financial Accounting">BCom Financial Accounting</option>
+                        <option value="BCom Management Accounting">BCom Management Accounting</option>
+                        <option value="BCom Marketing Management">BCom Marketing Management</option>
+                        <option value="BCom Human Resources Management">BCom Human Resources Management</option>
+                        <option value="BIT Software Development">BIT Software Development</option>
+                        <option value="BIT Business Analysis">BIT Business Analysis</option>
+                        <option value="BIT Networks and Security">BIT Networks and Security</option>
+                        <option value="BIT Database Development">BIT Database Development</option>
+                        <option value="Diploma in Information Technology">Diploma in Information Technology</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <span asp-validation-for="Course" class="invalid-feedback"></span>
+                </div>
+
+                <!-- Password Section -->
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Password
+                    </label>
+                    <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Create a strong password" />
+                    <span asp-validation-for="Password" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ConfirmPassword" class="form-label">
+                        <i class="fas fa-lock me-2"></i>Confirm Password
+                    </label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" />
+                    <span asp-validation-for="ConfirmPassword" class="invalid-feedback"></span>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="form-group">
+                    <div class="form-check">
+                        <input asp-for="AcceptTerms" class="form-check-input" type="checkbox" />
+                        <label asp-for="AcceptTerms" class="form-check-label">
+                            I agree to the Terms and Conditions and Privacy Policy
+                        </label>
+                        <span asp-validation-for="AcceptTerms" class="invalid-feedback d-block"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary w-100" id="registerBtn">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Create Account
+                    </button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted mb-2">Already have an account?</p>
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Sign In
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const firstName = document.querySelector('[name="FirstName"]').value;
+            const lastName = document.querySelector('[name="LastName"]').value;
+            const studentId = document.querySelector('[name="StudentId"]').value;
+            const email = document.querySelector('[name="Email"]').value;
+            const course = document.querySelector('[name="Course"]').value;
+            const password = document.querySelector('[name="Password"]').value;
+            const confirmPassword = document.querySelector('[name="ConfirmPassword"]').value;
+            const acceptTerms = document.querySelector('[name="AcceptTerms"]').checked;
+
+            // Basic validation
+            if (!firstName || !lastName || !studentId || !email || !course || !password || !confirmPassword) {
+                e.preventDefault();
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Belgium Campus email validation
+            if (!email.endsWith('belgiumcampus.ac.za')) {
+                e.preventDefault();
+                alert('Please use your Belgium Campus email address');
+                return;
+            }
+
+            // Password match validation
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match');
+                return;
+            }
+
+            // Terms acceptance
+            if (!acceptTerms) {
+                e.preventDefault();
+                alert('Please accept the terms and conditions');
+                return;
+            }
+        });
+
+        // Student ID formatting (numbers only)
+        document.querySelector('[name="StudentId"]').addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        });
+    </script>
+}

@@ -1,25 +1,289 @@
-﻿@model ErrorViewModel
+﻿@model CampusLearnPlatform.Models.ErrorViewModel
 @{
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="error-container min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="error-card text-center">
+                    <div class="error-icon mb-4">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 6rem;"></i>
+                    </div>
 
-@if (Model.ShowRequestId)
+                    <h1 class="error-title display-4 fw-bold text-primary mb-3">
+                        Oops! Something went wrong
+                    </h1>
+
+                    <p class="error-message lead text-muted mb-4">
+                        We're sorry, but something unexpected happened. Our team has been notified and is working to fix the issue.
+                    </p>
+
+                    @if (Model.ShowRequestId)
+                    {
+                        <div class="alert alert-light border mb-4">
+                            <small class="text-muted">
+                                <strong>Request ID:</strong> <code>@Model.RequestId</code><br>
+                                <em>Please include this ID when contacting support.</em>
+                            </small>
+                        </div>
+                    }
+
+                    <div class="error-actions">
+                        <div class="row g-3 justify-content-center">
+                            <div class="col-auto">
+                                <button onclick="history.back()" class="btn btn-outline-primary">
+                                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button onclick="location.reload()" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-2"></i>Retry
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                                    <i class="fas fa-home me-2"></i>Home
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="error-help mt-5">
+                        <h5 class="text-primary mb-3">Need Help?</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="help-item p-3 bg-light rounded">
+                                    <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                    <h6>Email Support</h6>
+                                    <small class="text-muted">support@campuslearn.ac.za</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="help-item p-3 bg-light rounded">
+                                    <i class="fas fa-phone fa-2x text-success mb-2"></i>
+                                    <h6>Phone Support</h6>
+                                    <small class="text-muted">+27 (0)11 234 5678</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="help-item p-3 bg-light rounded">
+                                    <i class="fas fa-question-circle fa-2x text-info mb-2"></i>
+                                    <h6>Help Center</h6>
+                                    <small class="text-muted">
+                                        <a href="#" onclick="showComingSoon('Help Center')" class="text-decoration-none">
+                                            Visit Help Center
+                                        </a>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="error-footer mt-5">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <i class="fas fa-shield-alt text-muted me-2"></i>
+                            <small class="text-muted">
+                                Your data is safe and secure. This error has been logged for our development team.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Error Information (Development Mode) -->
+@if (ViewContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>()?.IsDevelopment() == true)
 {
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
+    <div class="development-info">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-code me-2"></i>Development Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Note:</strong> This information is only visible in development mode and will not be shown to end users.
+                            </div>
+
+                            <h6>Common Solutions:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Check application logs for detailed error information
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Verify database connectivity and migrations
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Ensure all required services are properly configured
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    Check for missing environment variables or configuration
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+@section Scripts {
+    <style>
+        .error-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .error-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .error-icon i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .help-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+            .help-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            }
+
+        .error-actions .btn {
+            transition: all 0.3s ease;
+        }
+
+            .error-actions .btn:hover {
+                transform: translateY(-2px);
+            }
+
+        .development-info {
+            background: rgba(220, 53, 69, 0.05);
+            border-top: 3px solid #dc3545;
+        }
+
+        @@media (max-width: 768px) {
+            .error-icon i {
+                font-size: 4rem !important;
+            }
+
+            .error-title {
+                font-size: 2rem;
+            }
+
+            .help-item {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+
+    <script>
+        // Add some interactivity to the error page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click effects to help items
+            document.querySelectorAll('.help-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-5px)';
+                    }, 150);
+                });
+            });
+
+            // Auto-hide development info after 30 seconds
+            const devInfo = document.querySelector('.development-info');
+            if (devInfo) {
+                setTimeout(() => {
+                    devInfo.style.transition = 'opacity 1s ease';
+                    devInfo.style.opacity = '0.7';
+                }, 30000);
+            }
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Press 'H' to go home
+                if (e.key === 'h' || e.key === 'H') {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                }
+                // Press 'B' to go back
+                if (e.key === 'b' || e.key === 'B') {
+                    history.back();
+                }
+                // Press 'R' to reload
+                if (e.key === 'r' || e.key === 'R') {
+                    location.reload();
+                }
+            });
+
+            // Show keyboard shortcuts hint
+            setTimeout(() => {
+                const hint = document.createElement('div');
+                hint.className = 'alert alert-info position-fixed bottom-0 end-0 m-3';
+                hint.style.cssText = 'z-index: 1000; max-width: 300px; font-size: 0.8rem;';
+                hint.innerHTML = `
+                    <i class="fas fa-keyboard me-2"></i>
+                    <strong>Keyboard Shortcuts:</strong><br>
+                    Press <kbd>H</kbd> for Home, <kbd>B</kbd> to go Back, <kbd>R</kbd> to Reload
+                `;
+                document.body.appendChild(hint);
+
+                // Auto-hide the hint after 10 seconds
+                setTimeout(() => {
+                    hint.style.transition = 'opacity 0.5s ease';
+                    hint.style.opacity = '0';
+                    setTimeout(() => hint.remove(), 500);
+                }, 10000);
+            }, 3000);
+        });
+
+        // Copy Request ID to clipboard
+        function copyRequestId() {
+            const requestId = '@Model.RequestId';
+            if (requestId) {
+                navigator.clipboard.writeText(requestId).then(() => {
+                    CampusLearn.utils.showToast('Request ID copied to clipboard!', 'success', 2000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = requestId;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    CampusLearn.utils.showToast('Request ID copied to clipboard!', 'success', 2000);
+                });
+            }
+        }
+
+        // Make Request ID clickable if it exists
+        @if (Model.ShowRequestId)
+        {
+                <text>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const requestIdCode = document.querySelector('code');
+                    if (requestIdCode) {
+                        requestIdCode.style.cursor = 'pointer';
+                        requestIdCode.title = 'Click to copy';
+                        requestIdCode.addEventListener('click', copyRequestId);
+                    }
+                });
+                </text>
+        }
+    </script>
+}
