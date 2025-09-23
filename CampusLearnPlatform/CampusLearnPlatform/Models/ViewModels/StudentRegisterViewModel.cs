@@ -14,7 +14,7 @@ namespace CampusLearnPlatform.Models.ViewModels
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address")]
-        [RegularExpression(@"^[^@\s]+@student\.belgiumcampus\.ac\.za$",
+        [RegularExpression(@"[0-9]{6}@student\.belgiumcampus\.ac\.za$",
         ErrorMessage = "Email must end with @student.belgiumcampus.ac.za")]
         public string Email { get; set; } = string.Empty;
 
@@ -26,7 +26,7 @@ namespace CampusLearnPlatform.Models.ViewModels
 
         [Required(ErrorMessage = "Password is required")]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&].*$",
+        [RegularExpression(@"^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$",
             ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")]
         public string Password { get; set; } = string.Empty;
 

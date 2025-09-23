@@ -1,7 +1,4 @@
-﻿/**
- * CampusLearn™ - Frontend Only JavaScript
- */
-
+﻿
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function () {
     initializeAnimations();
@@ -48,13 +45,6 @@ function initializeForms() {
         input.addEventListener('blur', validateBelgiumEmail);
     });
 
-    // Student ID formatting
-    const studentIdInputs = document.querySelectorAll('input[name="StudentId"]');
-    studentIdInputs.forEach(input => {
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, '').slice(0, 10);
-        });
-    });
 }
 
 // Alert handling
@@ -91,7 +81,7 @@ function handleFormSubmit(e) {
 // Email validation
 function validateBelgiumEmail(e) {
     const email = e.target.value;
-    const isValid = /^[a-zA-Z0-9._%+-]+@belgiumcampus\.ac\.za$/.test(email);
+    const isValid = /[0-9]{6}@student\.belgiumcampus\.ac\.za$/.test(email);
 
     if (email && !isValid) {
         showFieldError(e.target, 'Please use your Belgium Campus email address -  js');
