@@ -13,7 +13,7 @@ namespace CampusLearnPlatform.Models.ViewModels
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Student ID is required")]
-        [RegularExpression(@"^\d{8,10}$", ErrorMessage = "Please enter a valid Student ID (8-10 digits)")]
+        [RegularExpression(@"^\d{8,10}$", ErrorMessage = "Please enter a valid Student ID ")]
         public string StudentId { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]

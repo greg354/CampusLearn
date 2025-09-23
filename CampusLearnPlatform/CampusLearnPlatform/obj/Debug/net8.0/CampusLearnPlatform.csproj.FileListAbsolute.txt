@@ -266,10 +266,10 @@ C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\CampusLe.0F4D148A.Up2Date
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\CampusLearnPlatform.dll
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\refint\CampusLearnPlatform.dll
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\CampusLearnPlatform.pdb
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\CampusLearnPlatform.genruntimeconfig.cache
 C:\Users\debee\Source\Repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\ref\CampusLearnPlatform.dll
+C:\Users\debee\source\repos\CampusLearn\CampusLearnPlatform\CampusLearnPlatform\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
