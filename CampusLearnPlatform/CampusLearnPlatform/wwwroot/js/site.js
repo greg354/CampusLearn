@@ -94,7 +94,7 @@ function validateBelgiumEmail(e) {
     const isValid = /^[a-zA-Z0-9._%+-]+@belgiumcampus\.ac\.za$/.test(email);
 
     if (email && !isValid) {
-        showFieldError(e.target, 'Please use your Belgium Campus email address');
+        showFieldError(e.target, 'Please use your Belgium Campus email address -  js');
     } else if (email && isValid) {
         showFieldSuccess(e.target);
     }
