@@ -2,7 +2,7 @@
 
 namespace CampusLearnPlatform.Models.ViewModels
 {
-    public class RegisterViewModel
+    public class StudentRegisterViewModel
     {
         [Required(ErrorMessage = "First name is required")]
         [StringLength(50, ErrorMessage = "First name cannot exceed 50 characters")]
@@ -12,18 +12,17 @@ namespace CampusLearnPlatform.Models.ViewModels
         [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
         public string LastName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Student ID is required")]
-        [RegularExpression(@"^\d{8,10}$", ErrorMessage = "Please enter a valid Student ID ")]
-        public string StudentId { get; set; } = string.Empty;
-
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address")]
-        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@belgiumcampus\.ac\.za$",
-            ErrorMessage = "Please use your Belgium Campus email address (@belgiumcampus.ac.za)")]
+        [RegularExpression(@"^[^@\s]+@student\.belgiumcampus\.ac\.za$",
+        ErrorMessage = "Email must end with @student.belgiumcampus.ac.za")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Course selection is required")]
         public string Course { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Course selection is required")]
+        public string Year { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required")]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]

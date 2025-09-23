@@ -3,24 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\views\\account\\studentregister.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\views\\account\\studentregister.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\viewmodels\\registerviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\viewmodels\\registerviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\viewmodels\\studentregisterviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\viewmodels\\studentregisterviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\viewmodels\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\viewmodels\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\models\\users\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\models\\viewmodels\\dashboardviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -37,14 +45,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|solutionrelative:campuslearnplatform\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{099F3257-D669-4452-A497-A5FCE33EEDFC}|CampusLearnPlatform\\CampusLearnPlatform.csproj|c:\\users\\debee\\source\\repos\\campuslearn\\campuslearnplatform\\campuslearnplatform\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -154,7 +154,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -162,7 +162,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
               "Title": "LoginViewModel.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\LoginViewModel.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ViewModels\\LoginViewModel.cs",
@@ -175,46 +175,33 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RegisterViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\RegisterViewModel.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ViewModels\\RegisterViewModel.cs",
-              "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\RegisterViewModel.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\ViewModels\\RegisterViewModel.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAQwCIAAABGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T19:44:11.839Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "DashboardViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
-              "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
-              "RelativeToolTip": "CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T19:44:21.6Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Register.cshtml",
-              "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\Register.cshtml",
-              "RelativeDocumentMoniker": "CampusLearnPlatform\\Views\\Account\\Register.cshtml",
-              "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\Register.cshtml",
-              "RelativeToolTip": "CampusLearnPlatform\\Views\\Account\\Register.cshtml",
-              "ViewState": "AgIAAI0AAAAAAAAAAAAAAI4AAABCAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "StudentRegister.cshtml",
+              "DocumentMoniker": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\StudentRegister.cshtml",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Views\\Account\\StudentRegister.cshtml",
+              "ToolTip": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\StudentRegister.cshtml",
+              "RelativeToolTip": "CampusLearnPlatform\\Views\\Account\\StudentRegister.cshtml",
+              "ViewState": "AgIAACQAAAAAAAAAAAAAADgAAAA8AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-22T19:36:54.796Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 1,
+              "Title": "StudentRegisterViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\StudentRegisterViewModel.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ViewModels\\StudentRegisterViewModel.cs",
+              "ToolTip": "C:\\Users\\debee\\Source\\Repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\StudentRegisterViewModel.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\ViewModels\\StudentRegisterViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T19:44:11.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Dashboard\\Index.cshtml",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Views\\Dashboard\\Index.cshtml",
@@ -222,12 +209,11 @@
               "RelativeToolTip": "CampusLearnPlatform\\Views\\Dashboard\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAOIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-22T19:37:07.216Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T19:37:07.216Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 6,
               "Title": "Student.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Student.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Student.cs",
@@ -235,12 +221,11 @@
               "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Student.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABsAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T14:29:33.812Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T14:29:33.812Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "Administrator.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\Administrator.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\Administrator.cs",
@@ -248,12 +233,11 @@
               "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\Administrator.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T14:34:13.126Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T14:34:13.126Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 8,
               "Title": "StudentTest.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
@@ -261,47 +245,58 @@
               "RelativeToolTip": "CampusLearnPlatform\\Models\\Users\\StudentTest.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T15:03:15.519Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T15:03:15.519Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "AccountController.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Controllers\\AccountController.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Controllers\\AccountController.cs",
               "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Controllers\\AccountController.cs",
               "RelativeToolTip": "CampusLearnPlatform\\Controllers\\AccountController.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAA1wBMAAAANAAAAAAAAAA==",
+              "ViewState": "AgIAABMAAAAAAAAAAAAgwCQAAAAyAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-22T19:34:01.008Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 4,
               "Title": "Login.cshtml",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\Login.cshtml",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Views\\Account\\Login.cshtml",
               "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Views\\Account\\Login.cshtml",
               "RelativeToolTip": "CampusLearnPlatform\\Views\\Account\\Login.cshtml",
-              "ViewState": "AgIAAFwAAAAAAAAAAAAUwHQAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE0AAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-22T19:36:38.049Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Program.cs",
               "RelativeDocumentMoniker": "CampusLearnPlatform\\Program.cs",
               "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Program.cs",
               "RelativeToolTip": "CampusLearnPlatform\\Program.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAiwEwAAAAMAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEwAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-22T16:25:34.146Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "DashboardViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
+              "RelativeDocumentMoniker": "CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
+              "ToolTip": "C:\\Users\\debee\\source\\repos\\CampusLearn\\CampusLearnPlatform\\CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
+              "RelativeToolTip": "CampusLearnPlatform\\Models\\ViewModels\\DashboardViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-22T19:44:21.6Z"
             },
             {
               "$type": "Document",
@@ -313,8 +308,7 @@
               "RelativeToolTip": "CampusLearnPlatform\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-09-22T14:22:58.59Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T14:22:58.59Z"
             },
             {
               "$type": "Document",
@@ -326,8 +320,7 @@
               "RelativeToolTip": "CampusLearnPlatform\\Views\\Shared\\_ValidationScriptsPartial.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-22T20:32:39.771Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T20:32:39.771Z"
             },
             {
               "$type": "Document",
