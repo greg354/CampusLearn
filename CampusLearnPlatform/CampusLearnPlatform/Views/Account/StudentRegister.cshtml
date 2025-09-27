@@ -1,6 +1,6 @@
 ﻿@model CampusLearnPlatform.Models.ViewModels.StudentRegisterViewModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Student Registration";
 }
 
 <div class="auth-container">
@@ -12,6 +12,17 @@
         </div>
 
         <div class="auth-body">
+            <!-- Switch between Student and Tutor Registration -->
+            <div class="alert alert-info d-flex align-items-center justify-content-between mb-4" role="alert" data-persistent="true">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <small>Are you a tutor?</small>
+                </div>
+                <a href="@Url.Action("TutorRegister", "Account")" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-chalkboard-teacher me-1"></i> Tutor Registration
+                </a>
+            </div>
+
             <form asp-action="Register" asp-controller="Account" method="post" id="registerForm">
                 <!-- Personal Information -->
                 <div class="row">
@@ -39,7 +50,7 @@
                     <label asp-for="Email" class="form-label">
                         <i class="fas fa-envelope me-2"></i>Belgium Campus Email
                     </label>
-                    <input asp-for="Email" class="form-control" placeholder="999999@student.belgiumcampus.ac.za" />
+                    <input asp-for="Email" class="form-control" placeholder="999999@student.belgiumcampus.ac.za" data-email-type="student" />
                     <span asp-validation-for="Email" class="invalid-feedback"></span>
                 </div>
 
@@ -65,10 +76,10 @@
                     </label>
                     <select asp-for="Year" class="form-select">
                         <option value="">Select the year you are in</option>
-                        <option value="First Year'">First Year</option>
-                        <option value="Second Year'">Second Year</option>
-                        <option value="Third Year'">Third Year</option>
-                        <option value="Fourth Year'">Fourth Year</option>
+                        <option value="First Year">First Year</option>
+                        <option value="Second Year">Second Year</option>
+                        <option value="Third Year">Third Year</option>
+                        <option value="Fourth Year">Fourth Year</option>
                     </select>
                     <span asp-validation-for="Year" class="invalid-feedback"></span>
                 </div>
@@ -140,6 +151,13 @@
                 return;
             }
 
+            // Belgium Campus email validation
+            if (!email.endsWith('@@student.belgiumcampus.ac.za')) {
+                e.preventDefault();
+                alert('Please use your Belgium Campus email address');
+                return;
+            }
+
             // Password match validation
             if (password !== confirmPassword) {
                 e.preventDefault();
@@ -154,7 +172,5 @@
                 return;
             }
         });
-
-        
     </script>
 }

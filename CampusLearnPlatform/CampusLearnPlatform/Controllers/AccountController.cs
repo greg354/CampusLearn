@@ -47,5 +47,26 @@ namespace CampusLearnPlatform.Controllers
         {
             return RedirectToAction("Login");
         }
+
+        public IActionResult TutorRegister()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult TutorRegister(TutorRegisterViewModel model)
+        {
+            // For now, just redirects to login with success message (frontend only)
+            // Later we can add database saving like the student registration
+
+            if (ModelState.IsValid)
+            {
+                TempData["SuccessMessage"] = "Tutor registration successful! Please log in with your new account.";
+                return RedirectToAction("Login");
+            }
+
+            // If validation fails, stay on the page and show errors
+            return View(model);
+        }
     }
 }

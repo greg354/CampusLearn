@@ -49,9 +49,9 @@ function initializeForms() {
 
 // Alert handling
 function initializeAlerts() {
-    // Auto-hide alerts after 5 seconds
+    // Auto-hide alerts after 5 seconds (but NOT persistent ones)
     setTimeout(() => {
-        const alerts = document.querySelectorAll('.alert');
+        const alerts = document.querySelectorAll('.alert:not([data-persistent])');
         alerts.forEach(alert => {
             alert.style.opacity = '0';
             setTimeout(() => alert.remove(), 300);
@@ -81,10 +81,23 @@ function handleFormSubmit(e) {
 // Email validation
 function validateBelgiumEmail(e) {
     const email = e.target.value;
-    const isValid = /[0-9]{6}@student\.belgiumcampus\.ac\.za$/.test(email);
+    const emailType = e.target.getAttribute('data-email-type');
+
+    if (!emailType) return; // Skip if no type specified
+
+    let isValid = false;
+    let errorMessage = '';
+
+    if (emailType === 'student') {
+        isValid = /[0-9]{6}@student\.belgiumcampus\.ac\.za$/.test(email);
+        errorMessage = 'Please use your Belgium Campus student email address';
+    } else if (emailType === 'tutor') {
+        isValid = /^[a-zA-Z0-9._%+-]+@tutor\.belgiumcampus\.ac\.za$/.test(email);
+        errorMessage = 'Please use your Belgium Campus tutor email address';
+    }
 
     if (email && !isValid) {
-        showFieldError(e.target, 'Please use your Belgium Campus email address');
+        showFieldError(e.target, errorMessage);
     } else if (email && isValid) {
         showFieldSuccess(e.target);
     }
