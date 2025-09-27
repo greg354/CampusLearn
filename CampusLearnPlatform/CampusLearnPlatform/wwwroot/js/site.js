@@ -97,7 +97,9 @@ function validateBelgiumEmail(e) {
     }
 
     if (email && !isValid) {
+
         showFieldError(e.target, errorMessage);
+
     } else if (email && isValid) {
         showFieldSuccess(e.target);
     }
