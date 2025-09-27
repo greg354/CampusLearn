@@ -103,6 +103,29 @@ namespace CampusLearnPlatform.Controllers
             return RedirectToAction("Login");
         }
 
+//Tutor page to login if no problems
+        public IActionResult TutorRegister()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult TutorRegister(TutorRegisterViewModel model)
+        {
+            // For now, just redirects to login with success message (frontend only)
+            // Later we can add database saving like the student registration
+
+            if (ModelState.IsValid)
+            {
+                TempData["SuccessMessage"] = "Tutor registration successful! Please log in with your new account.";
+                return RedirectToAction("Login");
+            }
+
+            // If validation fails, stay on the page and show errors
+            return View(model);
+            
+            
+//Validation on student register (backend and DB?)
         private async Task<bool> IsValidRegistrationAsync(StudentRegisterViewModel model)
         {
             // Belgium Campus email validation
@@ -161,6 +184,7 @@ namespace CampusLearnPlatform.Controllers
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + "CampusLearnSalt2024"));
                 return Convert.ToBase64String(hashedBytes);
             }
+
         }
     }
 }
