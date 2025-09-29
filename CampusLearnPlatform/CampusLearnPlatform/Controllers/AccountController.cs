@@ -160,9 +160,11 @@ namespace CampusLearnPlatform.Controllers
                 ModelState.AddModelError("", "An error occurred while creating your account. Please try again.");
                 return View(model);
             }
+            
+            // If validation fails, stay on the page and show errors
+            return View(model);
         }
 
-        // STUDENT VALIDATION
         private async Task<bool> IsValidRegistrationAsync(StudentRegisterViewModel model)
         {
             // Belgium Campus email validation
