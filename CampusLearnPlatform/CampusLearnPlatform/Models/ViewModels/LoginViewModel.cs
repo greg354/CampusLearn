@@ -6,8 +6,8 @@ namespace CampusLearnPlatform.Models.ViewModels
     {
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address")]
-        [RegularExpression(@"[0-9]{6}@student\.belgiumcampus\.ac\.za$",
-            ErrorMessage = "Please use your Belgium Campus email address - Login")]
+        [RegularExpression(@"^([0-9]{6}@student\.belgiumcampus\.ac\.za|[a-zA-Z0-9._%+-]+@tutor\.belgiumcampus\.ac\.za)$",
+             ErrorMessage = "Please use your Belgium Campus email address (student or tutor)")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required")]

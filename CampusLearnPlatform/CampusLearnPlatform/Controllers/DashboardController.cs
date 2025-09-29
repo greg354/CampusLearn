@@ -5,16 +5,16 @@ namespace CampusLearnPlatform.Controllers
 {
     public class DashboardController : Controller
     {
-        public IActionResult Index(string role = "student")
+        public IActionResult Index(string role)
         {
             // For now, we'll use a query parameter to switch between roles
             // Later, this will come from authentication/session
             // Example: /Dashboard?role=student or /Dashboard?role=tutor
 
             // Get role from session if exists, otherwise use parameter
-            var userRole = HttpContext.Session.GetString("UserRole") ?? role.ToLower();
+            var userRole = HttpContext.Session.GetString("UserType") ?? role.ToLower();
 
-            if (userRole == "tutor")
+            if (userRole == "Tutor")
             {
                 return TutorDashboard();
             }
@@ -222,7 +222,7 @@ namespace CampusLearnPlatform.Controllers
         // Helper action to switch roles (for testing)
         public IActionResult SwitchRole(string role)
         {
-            HttpContext.Session.SetString("UserRole", role.ToLower());
+            HttpContext.Session.SetString("UserType", role.ToLower());
             return RedirectToAction("Index");
         }
     }
