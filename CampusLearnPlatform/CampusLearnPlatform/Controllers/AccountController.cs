@@ -73,7 +73,7 @@ namespace CampusLearnPlatform.Controllers
                     Name = $"{model.FirstName.Trim()} {model.LastName.Trim()}",
                     Email = model.Email.ToLower().Trim(),
                     PasswordHash = HashPassword(model.Password),
-                    ProfileInfo = $"Student in {model.Course}, {model.Year}"
+                    ProfileInfo = $"{model.Year}, {model.Course}"
                 };
 
                 // Save to database
@@ -103,36 +103,108 @@ namespace CampusLearnPlatform.Controllers
             return RedirectToAction("Login");
         }
 
-//Tutor page to login if no problems
+        // TUTOR REGISTRATION
         public IActionResult TutorRegister()
         {
             return View();
         }
 
         [HttpPost]
-        public IActionResult TutorRegister(TutorRegisterViewModel model)
+        public async Task<IActionResult> TutorRegister(TutorRegisterViewModel model)
         {
-            // For now, just redirects to login with success message (frontend only)
-            // Later we can add database saving like the student registration
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
+                return View(model);
+            }
+
+            try
+            {
+                // Additional validation
+                if (!await IsValidTutorRegistrationAsync(model))
+                {
+                    return View(model);
+                }
+
+                // Check if tutor already exists
+                var existingTutor = await _context.Tutors
+                    .FirstOrDefaultAsync(t => t.Email.ToLower() == model.Email.ToLower());
+
+                if (existingTutor != null)
+                {
+                    ModelState.AddModelError("Email", "A tutor with this email address already exists.");
+                    return View(model);
+                }
+
+                // Create new tutor
+                var tutor = new Tutor
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"{model.FirstName.Trim()} {model.LastName.Trim()}",
+                    Email = model.Email.ToLower().Trim(),
+                    PasswordHash = HashPassword(model.Password),
+                    Experience = string.Join(", ", model.Expertise) // Combine expertise areas
+                };
+
+                // Save to database
+                _context.Tutors.Add(tutor);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("New tutor registered: {TutorId}, {Email}", tutor.Id, tutor.Email);
+
                 TempData["SuccessMessage"] = "Tutor registration successful! Please log in with your new account.";
                 return RedirectToAction("Login");
             }
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during tutor registration: {Email}", model.Email);
+                ModelState.AddModelError("", "An error occurred while creating your account. Please try again.");
+                return View(model);
+            }
+            
             // If validation fails, stay on the page and show errors
             return View(model);
         }
-            
-            
-//Validation on student register (backend and DB?)
+
         private async Task<bool> IsValidRegistrationAsync(StudentRegisterViewModel model)
         {
             // Belgium Campus email validation
             if (!model.Email.EndsWith("@student.belgiumcampus.ac.za", StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError("Email", "Email must be a valid Belgium Campus student email (@student.belgiumcampus.ac.za)");
+                return false;
+            }
+
+            // Password validation
+            if (!IsPasswordValid(model.Password))
+            {
+                ModelState.AddModelError("Password", "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+                return false;
+            }
+
+            // Terms acceptance
+            if (!model.AcceptTerms)
+            {
+                ModelState.AddModelError("AcceptTerms", "You must accept the terms and conditions");
+                return false;
+            }
+
+            return true;
+        }
+
+        // TUTOR VALIDATION
+        private async Task<bool> IsValidTutorRegistrationAsync(TutorRegisterViewModel model)
+        {
+            // Belgium Campus tutor email validation
+            if (!model.Email.EndsWith("@tutor.belgiumcampus.ac.za", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Email", "Email must be a valid Belgium Campus tutor email (@tutor.belgiumcampus.ac.za)");
+                return false;
+            }
+
+            // Expertise validation
+            if (model.Expertise == null || model.Expertise.Count == 0)
+            {
+                ModelState.AddModelError("Expertise", "Please select at least one area of expertise");
                 return false;
             }
 
@@ -185,7 +257,6 @@ namespace CampusLearnPlatform.Controllers
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + "CampusLearnSalt2024"));
                 return Convert.ToBase64String(hashedBytes);
             }
-
         }
     }
 }
