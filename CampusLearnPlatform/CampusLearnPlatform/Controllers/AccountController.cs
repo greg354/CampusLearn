@@ -123,6 +123,7 @@ namespace CampusLearnPlatform.Controllers
 
             // If validation fails, stay on the page and show errors
             return View(model);
+        }
             
             
 //Validation on student register (backend and DB?)

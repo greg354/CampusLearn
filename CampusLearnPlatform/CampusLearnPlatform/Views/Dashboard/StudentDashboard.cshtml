@@ -1,0 +1,220 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<div class="dashboard-container">
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-card student-welcome fade-in-up">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>Welcome back, @Model.UserName! 👋</h1>
+                    <p>Ready to continue your learning journey? Check out what's new and get help from tutors.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex gap-2 justify-content-md-end justify-content-start mt-3 mt-md-0">
+                        <button class="btn btn-light" onclick="showComingSoon('AI Chat')">
+                            <i class="fas fa-robot me-2"></i>AI Tutor
+                        </button>
+                        <button class="btn btn-primary" onclick="showComingSoon('Ask Question')">
+                            <i class="fas fa-question-circle me-2"></i>Ask Question
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card subscriptions fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="stats-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stats-number">@Model.SubscribedTopics</div>
+                    <div class="stats-label">Subscribed Topics</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card questions fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="stats-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stats-number">@Model.PendingQuestions</div>
+                    <div class="stats-label">Pending Questions</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card sessions fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="stats-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stats-number">@Model.ResolvedQuestions</div>
+                    <div class="stats-label">Resolved Questions</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="stats-card discussions fade-in-up" style="animation-delay: 0.4s;">
+                    <div class="stats-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-number">@Model.ActiveTutors</div>
+                    <div class="stats-label">Active Tutors</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Main Content Area -->
+            <div class="col-lg-8 mb-4">
+                <!-- My Questions -->
+                <div class="card shadow-custom mb-4 fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>My Questions</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showComingSoon('View All')">
+                            View All
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.MyQuestions != null && Model.MyQuestions.Any())
+                        {
+                            @foreach (var question in Model.MyQuestions)
+                            {
+                                <div class="question-item">
+                                    <div class="question-header">
+                                        <h6 class="mb-1">@question.Question</h6>
+                                        @if (question.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Answered</span>
+                                        }
+                                    </div>
+                                    <div class="question-meta">
+                                        <span class="text-muted">
+                                            <i class="fas fa-tag me-1"></i>@question.Topic
+                                        </span>
+                                        <span class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>@question.TimeAgo
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-feed fade-in-up" style="animation-delay: 0.6s;">
+                    <div class="activity-header">
+                        <h4><i class="fas fa-clock me-2"></i>Recent Activity</h4>
+                    </div>
+                    @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                    {
+                        @foreach (var activity in Model.RecentActivities)
+                        {
+                            <div class="activity-item activity-@activity.Type">
+                                <div class="activity-icon">
+                                    <i class="@activity.Icon"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-description">@activity.Description</div>
+                                    <div class="activity-time">@activity.TimeAgo</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card shadow-custom mb-4 fade-in-up" style="animation-delay: 0.7s;">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="showComingSoon('Find Tutor')">
+                                <i class="fas fa-search me-2"></i>Find a Tutor
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="showComingSoon('Browse Topics')">
+                                <i class="fas fa-book me-2"></i>Browse Topics
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="showComingSoon('Join Forum')">
+                                <i class="fas fa-comments me-2"></i>Join Forum
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="showComingSoon('My Materials')">
+                                <i class="fas fa-download me-2"></i>My Materials
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Topics -->
+                <div class="card shadow-custom fade-in-up" style="animation-delay: 0.8s;">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>Recommended Topics</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.RecommendedTopics != null && Model.RecommendedTopics.Any())
+                        {
+                            @foreach (var topic in Model.RecommendedTopics)
+                            {
+                                <div class="recommended-topic-item">
+                                    <h6 class="mb-1">@topic.Title</h6>
+                                    <small class="text-muted d-block mb-2">@topic.Module</small>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users me-1"></i>@topic.StudentCount students
+                                        </small>
+                                        <button class="btn btn-sm btn-primary" onclick="showComingSoon('Subscribe')">
+                                            Subscribe
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Switcher (for testing) -->
+        <div class="text-center mt-4">
+            <a href="@Url.Action("SwitchRole", "Dashboard", new { role = "tutor" })" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-exchange-alt me-2"></i>Switch to Tutor View (Testing)
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stats numbers
+            document.querySelectorAll('.stats-number').forEach((number, index) => {
+                setTimeout(() => {
+                    animateNumber(number, parseInt(number.textContent));
+                }, index * 200);
+            });
+        });
+
+        function animateNumber(element, target) {
+            let current = 0;
+            const increment = Math.ceil(target / 30);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = current;
+            }, 50);
+        }
+    </script>
+}

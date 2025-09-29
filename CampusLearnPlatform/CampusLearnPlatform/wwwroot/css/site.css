@@ -356,3 +356,326 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+
+/* ROLE-BASED DASHBOARD STYLES */ 
+
+/* Student Dashboard Colors */
+
+.student-welcome {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stats-card.subscriptions {
+    border-left: 4px solid #3b82f6;
+}
+
+.stats-card.questions {
+    border-left: 4px solid #10b981;
+}
+
+.stats-card.sessions {
+    border-left: 4px solid #f59e0b;
+}
+
+.stats-card.discussions {
+    border-left: 4px solid #8b5cf6;
+}
+
+/* Tutor Dashboard Colors */
+.tutor-welcome {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stats-card.tutor-students {
+    border-left: 4px solid #10b981;
+}
+
+.stats-card.tutor-pending {
+    border-left: 4px solid #f59e0b;
+}
+
+.stats-card.tutor-topics {
+    border-left: 4px solid #3b82f6;
+}
+
+.stats-card.tutor-rate {
+    border-left: 4px solid #8b5cf6;
+}
+
+/* Question Items */
+.question-item {
+    padding: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+    .question-item:hover {
+        background-color: #f9fafb;
+        transform: translateX(5px);
+    }
+
+    .question-item:last-child {
+        border-bottom: none;
+    }
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+    .question-header h6 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+
+.question-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Tutor Question Items */
+.tutor-question-item {
+    padding: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+    .tutor-question-item:hover {
+        background-color: #f9fafb;
+    }
+
+    .tutor-question-item.urgent {
+        border-left-color: #dc3545;
+        background-color: #fff5f5;
+    }
+
+    .tutor-question-item:last-child {
+        border-bottom: none;
+    }
+
+.question-footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+}
+
+    .question-footer > span {
+        margin-right: auto;
+    }
+
+/* Recommended Topics */
+.recommended-topic-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+    .recommended-topic-item:hover {
+        background-color: #f9fafb;
+    }
+
+    .recommended-topic-item:last-child {
+        border-bottom: none;
+    }
+
+    .recommended-topic-item h6 {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+/* Tutor Topic Items */
+.tutor-topic-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+    .tutor-topic-item:hover {
+        background-color: #f9fafb;
+    }
+
+    .tutor-topic-item:last-child {
+        border-bottom: none;
+    }
+
+    .tutor-topic-item h6 {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+/* Activity Feed Enhancements */
+.activity-item.activity-response {
+    border-left-color: #10b981;
+}
+
+.activity-item.activity-material {
+    border-left-color: #3b82f6;
+}
+
+.activity-item.activity-subscription {
+    border-left-color: #8b5cf6;
+}
+
+.activity-item.activity-forum {
+    border-left-color: #f59e0b;
+}
+
+.activity-item.tutor-activity-question {
+    border-left-color: #f59e0b;
+}
+
+.activity-item.tutor-activity-subscription {
+    border-left-color: #10b981;
+}
+
+.activity-item.tutor-activity-material {
+    border-left-color: #3b82f6;
+}
+
+.activity-item.urgent {
+    background-color: #fff5f5;
+    border-left-color: #dc3545 !important;
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    font-weight: 600;
+}
+
+/* Card Enhancements */
+.card {
+    border: none;
+    overflow: hidden;
+}
+
+.card-header {
+    background-color: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+    .card-header h5 {
+        margin: 0;
+        font-size: 1.125rem;
+        color: #1f2937;
+    }
+
+/* Button Enhancements */
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-outline-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .question-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .question-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation Classes */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* Priority Indicator Pulse */
+@keyframes pulse-urgent {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.badge.bg-danger {
+    animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+/* Card Hover Effects */
+.card.shadow-custom {
+    transition: all 0.3s ease;
+}
+
+    .card.shadow-custom:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+
+/* Empty State Styles */
+.empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        margin: -15px 0 0 -15px;
+        border: 3px solid #f3f4f6;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
