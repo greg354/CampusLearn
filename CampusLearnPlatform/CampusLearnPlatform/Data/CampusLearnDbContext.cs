@@ -131,26 +131,50 @@ namespace CampusLearnPlatform.Data
             {
                 entity.ToTable("forum_post");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("post_id").HasDefaultValueSql("gen_random_uuid()");
-                entity.Property(e => e.TopicId).HasColumnName("topic_id");
-                entity.Property(e => e.AuthorId).HasColumnName("author_id");
-                entity.Property(e => e.AuthorType).HasColumnName("author_type");
-                entity.Property(e => e.PostContent).HasColumnName("post_content");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+                // Primary columns from database
+                entity.Property(e => e.Id)
+                    .HasColumnName("post_id")
+                    .HasDefaultValueSql("gen_random_uuid()");
+
+                entity.Property(e => e.TopicId)
+                    .HasColumnName("topic_id");
+
+                entity.Property(e => e.AuthorId)
+                    .HasColumnName("author_id");
+
+                entity.Property(e => e.AuthorType)
+                    .HasColumnName("author_type");
+
+                entity.Property(e => e.PostContent)
+                    .HasColumnName("post_content")
+                    .IsRequired();
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnName("created_at");
+
+                // CRITICAL: Map the new forum columns to snake_case database columns
+                entity.Property(e => e.ParentPostId)
+                    .HasColumnName("parent_post_id");
+
+                entity.Property(e => e.IsAnonymous)
+                    .HasColumnName("is_anonymous");
+
+                entity.Property(e => e.UpvoteCount)
+                    .HasColumnName("upvote_count");
+
+                entity.Property(e => e.DownvoteCount)
+                    .HasColumnName("downvote_count");
 
                 // Ignore properties that don't exist in database
                 entity.Ignore(e => e.Title);
                 entity.Ignore(e => e.Content);
                 entity.Ignore(e => e.PostedAt);
-                entity.Ignore(e => e.IsAnonymous);
-                entity.Ignore(e => e.UpvoteCount);
-                entity.Ignore(e => e.DownvoteCount);
                 entity.Ignore(e => e.IsModerated);
                 entity.Ignore(e => e.IsApproved);
                 entity.Ignore(e => e.ModerationNotes);
                 entity.Ignore(e => e.PostedById);
-                entity.Ignore(e => e.ModuleId);        // ← This was causing the error!
-                entity.Ignore(e => e.ParentPostId);    // ← This too!
+                entity.Ignore(e => e.ModuleId);
                 entity.Ignore(e => e.PostedBy);
                 entity.Ignore(e => e.Module);
                 entity.Ignore(e => e.ParentPost);

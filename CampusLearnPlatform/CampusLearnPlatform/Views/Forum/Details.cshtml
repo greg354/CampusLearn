@@ -1,0 +1,295 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.ForumPostDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="forum-details-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Back Button -->
+                <div class="mb-3 fade-in-up">
+                    <a href="@Url.Action("Index", "Forum")" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Forum
+                    </a>
+                </div>
+
+                <!-- Main Post -->
+                <div class="forum-post-detail fade-in-up" style="animation-delay: 0.1s;">
+                    <div class="post-votes-vertical">
+                        <button class="vote-btn upvote" onclick="votePost('@Model.Id', 'up')">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <span class="vote-count" id="votes-@Model.Id">@Model.NetVotes</span>
+                        <button class="vote-btn downvote" onclick="votePost('@Model.Id', 'down')">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+
+                    <div class="post-main-content">
+                        <h1 class="post-title">@Model.Title</h1>
+
+                        <div class="post-meta mb-4">
+                            <span class="author">
+                                @if (Model.IsAnonymous)
+                                {
+                                    <i class="fas fa-user-secret me-1"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user me-1"></i>
+                                }
+                                <strong>@Model.AuthorName</strong>
+                            </span>
+                            <span class="time">
+                                <i class="fas fa-clock me-1"></i>@Model.TimeAgo
+                            </span>
+                        </div>
+
+                        <div class="post-content-body">
+                            @Html.Raw(Model.Content.Replace("\n", "<br/>"))
+                        </div>
+
+                        <div class="post-actions mt-4">
+                            <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('replyBox').scrollIntoView({ behavior: 'smooth' })">
+                                <i class="fas fa-reply me-2"></i>Reply
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="sharePost()">
+                                <i class="fas fa-share me-2"></i>Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Replies Section -->
+                <div class="replies-section fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="replies-header">
+                        <h4>
+                            <i class="fas fa-comments me-2"></i>
+                            @Model.Replies.Count @(Model.Replies.Count == 1 ? "Reply" : "Replies")
+                        </h4>
+
+                        @if (Model.Replies.Any())
+                        {
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="@Url.Action("Details", new { id = Model.Id, sortBy = "recent" })"
+                                   class="btn @(Model.CurrentSort == "recent" ? "btn-primary" : "btn-outline-primary")">
+                                    Most Recent
+                                </a>
+                                <a href="@Url.Action("Details", new { id = Model.Id, sortBy = "upvoted" })"
+                                   class="btn @(Model.CurrentSort == "upvoted" ? "btn-primary" : "btn-outline-primary")">
+                                    Most Upvoted
+                                </a>
+                                <a href="@Url.Action("Details", new { id = Model.Id, sortBy = "oldest" })"
+                                   class="btn @(Model.CurrentSort == "oldest" ? "btn-primary" : "btn-outline-primary")">
+                                    Oldest
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.Replies.Any())
+                    {
+                        <div class="replies-list">
+                            @foreach (var reply in Model.Replies)
+                            {
+                                <div class="reply-card">
+                                    <div class="reply-votes">
+                                        <button class="vote-btn upvote" onclick="votePost('@reply.Id', 'up')">
+                                            <i class="fas fa-chevron-up"></i>
+                                        </button>
+                                        <span class="vote-count" id="votes-@reply.Id">@reply.NetVotes</span>
+                                        <button class="vote-btn downvote" onclick="votePost('@reply.Id', 'down')">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="reply-content">
+                                        <div class="reply-meta mb-2">
+                                            <span class="author">
+                                                @if (reply.IsAnonymous)
+                                                {
+                                                    <i class="fas fa-user-secret me-1"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-user me-1"></i>
+                                                }
+                                                <strong>@reply.AuthorName</strong>
+                                            </span>
+                                            <span class="time text-muted">
+                                                <i class="fas fa-clock me-1"></i>@reply.TimeAgo
+                                            </span>
+                                        </div>
+                                        <div class="reply-text">
+                                            @Html.Raw(reply.Content.Replace("\n", "<br/>"))
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-replies text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No replies yet. Be the first to respond!</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Reply Box -->
+                <div class="reply-box-section fade-in-up" style="animation-delay: 0.3s;" id="replyBox">
+                    <div class="card shadow-custom">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-reply me-2"></i>Add Your Reply
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-controller="Forum" asp-action="Reply" method="post" id="replyForm">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ParentPostId" value="@Model.Id" />
+
+                                <div class="form-group mb-3">
+                                    <textarea name="Content"
+                                              class="form-control"
+                                              rows="5"
+                                              placeholder="Share your thoughts..."
+                                              required></textarea>
+                                    <small class="form-text text-muted">
+                                        Minimum 1 character required
+                                    </small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <div class="card bg-light">
+                                        <div class="card-body py-2">
+                                            <div class="form-check form-switch">
+                                                <input name="IsAnonymous"
+                                                       class="form-check-input"
+                                                       type="checkbox"
+                                                       id="replyAnonymous" />
+                                                <label class="form-check-label" for="replyAnonymous">
+                                                    <i class="fas fa-user-secret me-1"></i>Reply Anonymously
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary" id="replyBtn">
+                                        <i class="fas fa-paper-plane me-2"></i>Post Reply
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearReply()">
+                                        <i class="fas fa-times me-2"></i>Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function votePost(postId, direction) {
+            try {
+                const url = direction === 'up'
+                    ? '@Url.Action("Upvote", "Forum")'
+                    : '@Url.Action("Downvote", "Forum")';
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({ id: postId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const voteElement = document.getElementById('votes-' + postId);
+                    voteElement.textContent = data.netVotes;
+
+                    // Visual feedback
+                    voteElement.style.transform = 'scale(1.3)';
+                    voteElement.style.fontWeight = 'bold';
+                    setTimeout(() => {
+                        voteElement.style.transform = 'scale(1)';
+                        voteElement.style.fontWeight = 'normal';
+                    }, 300);
+                } else {
+                    alert(data.message || 'Unable to vote. Please login first.');
+                }
+            } catch (error) {
+                console.error('Error voting:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        function sharePost() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: '@Model.Title',
+                    url: url
+                }).catch(err => console.log('Error sharing:', err));
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function clearReply() {
+            document.querySelector('[name="Content"]').value = '';
+            document.getElementById('replyAnonymous').checked = false;
+        }
+
+        // Reply form submission
+        const replyForm = document.getElementById('replyForm');
+        const replyBtn = document.getElementById('replyBtn');
+
+        replyForm.addEventListener('submit', function(e) {
+            const content = document.querySelector('[name="Content"]').value.trim();
+
+            if (!content) {
+                e.preventDefault();
+                alert('Please enter your reply');
+                return;
+            }
+
+            // Show loading state
+            replyBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Posting...';
+            replyBtn.disabled = true;
+        });
+
+        // Auto-grow textarea
+        const textarea = document.querySelector('textarea[name="Content"]');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Smooth scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reply-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+}

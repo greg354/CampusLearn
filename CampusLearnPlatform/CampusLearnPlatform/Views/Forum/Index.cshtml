@@ -1,0 +1,203 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.ForumIndexViewModel
+@{
+    ViewData["Title"] = "Community Forum";
+}
+
+<div class="forum-container">
+    <div class="container">
+        <!-- Header -->
+        <div class="forum-header fade-in-up">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-comments me-3"></i>Community Forum</h1>
+                    <p class="text-muted mb-0">Connect, share knowledge, and help each other succeed</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="@Url.Action("Create", "Forum")" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Post
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="forum-stats fade-in-up" style="animation-delay: 0.1s;">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <i class="fas fa-comments fa-2x mb-2 text-primary"></i>
+                        <h4>@Model.TotalPosts</h4>
+                        <p class="text-muted mb-0">Total Posts</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <i class="fas fa-users fa-2x mb-2 text-success"></i>
+                        <h4>Active</h4>
+                        <p class="text-muted mb-0">Community</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <i class="fas fa-shield-alt fa-2x mb-2 text-info"></i>
+                        <h4>Safe</h4>
+                        <p class="text-muted mb-0">Anonymous Option</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort Controls -->
+        <div class="forum-controls fade-in-up" style="animation-delay: 0.2s;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Discussions
+                </h5>
+                <div class="sort-dropdown">
+                    <label class="me-2">Sort by:</label>
+                    <div class="btn-group" role="group">
+                        <a href="@Url.Action("Index", new { sortBy = "recent" })"
+                           class="btn btn-sm @(Model.CurrentSort == "recent" ? "btn-primary" : "btn-outline-primary")">
+                            <i class="fas fa-clock me-1"></i>Most Recent
+                        </a>
+                        <a href="@Url.Action("Index", new { sortBy = "upvoted" })"
+                           class="btn btn-sm @(Model.CurrentSort == "upvoted" ? "btn-primary" : "btn-outline-primary")">
+                            <i class="fas fa-fire me-1"></i>Most Upvoted
+                        </a>
+                        <a href="@Url.Action("Index", new { sortBy = "oldest" })"
+                           class="btn btn-sm @(Model.CurrentSort == "oldest" ? "btn-primary" : "btn-outline-primary")">
+                            <i class="fas fa-history me-1"></i>Oldest
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forum Posts -->
+        <div class="forum-posts">
+            @if (Model.Posts != null && Model.Posts.Any())
+            {
+                @foreach (var post in Model.Posts)
+                {
+                    <div class="forum-post-card fade-in-up" style="animation-delay: @(0.1 * (Model.Posts.IndexOf(post) + 1))s;">
+                        <div class="post-votes">
+                            <button class="vote-btn upvote" onclick="votePost('@post.Id', 'up')">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                            <span class="vote-count" id="votes-@post.Id">@post.NetVotes</span>
+                            <button class="vote-btn downvote" onclick="votePost('@post.Id', 'down')">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+
+                        <div class="post-content">
+                            <a href="@Url.Action("Details", new { id = post.Id })" class="post-title">
+                                @post.Title
+                            </a>
+
+                            <p class="post-excerpt">
+                                @if (post.Content.Length > 200)
+                                {
+                                    @(post.Content.Substring(0, 200))
+                                    <text>...</text>
+                                }
+                                else
+                                {
+                                    @post.Content
+                                }
+                            </p>
+
+                            <div class="post-meta">
+                                <span class="author">
+                                    @if (post.IsAnonymous)
+                                    {
+                                        <i class="fas fa-user-secret me-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user me-1"></i>
+                                    }
+                                    @post.AuthorName
+                                </span>
+                                <span class="time">
+                                    <i class="fas fa-clock me-1"></i>@post.TimeAgo
+                                </span>
+                                <span class="replies">
+                                    <i class="fas fa-comments me-1"></i>@post.ReplyCount @(post.ReplyCount == 1 ? "reply" : "replies")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state text-center py-5 fade-in-up">
+                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                    <h4>No posts yet</h4>
+                    <p class="text-muted mb-4">Be the first to start a discussion!</p>
+                    <a href="@Url.Action("Create", "Forum")" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create First Post
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function votePost(postId, direction) {
+            try {
+                const url = direction === 'up'
+                    ? '@Url.Action("Upvote", "Forum")'
+                    : '@Url.Action("Downvote", "Forum")';
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({ id: postId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('votes-' + postId).textContent = data.netVotes;
+
+                    // Visual feedback
+                    const voteCount = document.getElementById('votes-' + postId);
+                    voteCount.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        voteCount.style.transform = 'scale(1)';
+                    }, 200);
+                } else {
+                    alert(data.message || 'Unable to vote');
+                }
+            } catch (error) {
+                console.error('Error voting:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        // Animate on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.forum-post-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+}

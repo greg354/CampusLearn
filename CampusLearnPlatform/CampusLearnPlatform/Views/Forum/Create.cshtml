@@ -1,0 +1,175 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.CreateForumPostViewModel
+@{
+    ViewData["Title"] = "Create Forum Post";
+}
+
+<div class="forum-create-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="create-header fade-in-up">
+                    <h1><i class="fas fa-edit me-3"></i>Create New Post</h1>
+                    <p class="text-muted">Share your thoughts, ask questions, or start a discussion</p>
+                </div>
+
+                <!-- Info Alert -->
+                <div class="alert alert-info fade-in-up" style="animation-delay: 0.1s;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Posting Guidelines:</strong> Be respectful, stay on topic, and help build a positive learning community.
+                </div>
+
+                <!-- Create Form -->
+                <div class="card shadow-custom fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="card-body p-4">
+                        <form asp-action="Create" method="post" id="createPostForm">
+                            @Html.AntiForgeryToken()
+
+                            <!-- Title -->
+                            <div class="form-group mb-4">
+                                <label asp-for="Title" class="form-label">
+                                    <i class="fas fa-heading me-2"></i>Title
+                                </label>
+                                <input asp-for="Title"
+                                       class="form-control form-control-lg"
+                                       placeholder="Enter a clear, descriptive title"
+                                       maxlength="200" />
+                                <span asp-validation-for="Title" class="invalid-feedback"></span>
+                                <small class="form-text text-muted">
+                                    <span id="titleCount">0</span>/200 characters
+                                </small>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="form-group mb-4">
+                                <label asp-for="Content" class="form-label">
+                                    <i class="fas fa-align-left me-2"></i>Content
+                                </label>
+                                <textarea asp-for="Content"
+                                          class="form-control"
+                                          rows="10"
+                                          placeholder="Share your thoughts, ask your question, or provide details..."></textarea>
+                                <span asp-validation-for="Content" class="invalid-feedback"></span>
+                                <small class="form-text text-muted">
+                                    Minimum 10 characters required
+                                </small>
+                            </div>
+
+                            <!-- Anonymous Toggle -->
+                            <div class="form-group mb-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch">
+                                            <input asp-for="IsAnonymous"
+                                                   class="form-check-input"
+                                                   type="checkbox"
+                                                   id="anonymousToggle" />
+                                            <label asp-for="IsAnonymous" class="form-check-label" for="anonymousToggle">
+                                                <i class="fas fa-user-secret me-2"></i>
+                                                <strong>Post Anonymously</strong>
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2" id="anonymousHelp">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            When enabled, your identity will be hidden and you'll be assigned a unique codename.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="form-group">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="@Url.Action("Index", "Forum")" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="fas fa-paper-plane me-2"></i>Publish Post
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tips Card -->
+                <div class="card mt-4 border-0 bg-light fade-in-up" style="animation-delay: 0.3s;">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-lightbulb me-2 text-warning"></i>Tips for a Great Post</h6>
+                        <ul class="mb-0 small">
+                            <li>Use a clear, descriptive title</li>
+                            <li>Provide enough context and details</li>
+                            <li>Be respectful and constructive</li>
+                            <li>Check for similar existing posts first</li>
+                            <li>Use proper formatting and grammar</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Character counter for title
+        const titleInput = document.querySelector('[name="Title"]');
+        const titleCount = document.getElementById('titleCount');
+
+        titleInput.addEventListener('input', function() {
+            titleCount.textContent = this.value.length;
+
+            if (this.value.length > 180) {
+                titleCount.style.color = '#dc3545';
+            } else {
+                titleCount.style.color = '#6c757d';
+            }
+        });
+
+        // Anonymous toggle feedback
+        const anonymousToggle = document.getElementById('anonymousToggle');
+        const anonymousHelp = document.getElementById('anonymousHelp');
+
+        anonymousToggle.addEventListener('change', function() {
+            if (this.checked) {
+                anonymousHelp.innerHTML = '<i class="fas fa-check-circle me-1 text-success"></i> Your identity will be hidden with a unique codename.';
+            } else {
+                anonymousHelp.innerHTML = '<i class="fas fa-info-circle me-1"></i> When enabled, your identity will be hidden and you\'ll be assigned a unique codename.';
+            }
+        });
+
+        // Form submission
+        const form = document.getElementById('createPostForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            const title = titleInput.value.trim();
+            const content = document.querySelector('[name="Content"]').value.trim();
+
+            if (!title || !content) {
+                e.preventDefault();
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (content.length < 10) {
+                e.preventDefault();
+                alert('Post content must be at least 10 characters');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Publishing...';
+            submitBtn.disabled = true;
+        });
+
+        // Auto-grow textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+}
