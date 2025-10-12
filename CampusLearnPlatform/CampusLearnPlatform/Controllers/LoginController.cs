@@ -27,8 +27,16 @@ namespace CampusLearnPlatform.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(LoginViewModel model)
         {
+            _logger.LogInformation("Login attempt - Email: {Email}, ModelState Valid: {IsValid}",
+               model.Email, ModelState.IsValid);
+
             if (!ModelState.IsValid)
             {
+              
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    _logger.LogWarning("Validation Error: {Error}", error.ErrorMessage);
+                }
                 return View("~/Views/Account/Login.cshtml");
             }
 
@@ -98,7 +106,7 @@ namespace CampusLearnPlatform.Controllers
             HttpContext.Session.SetString("UserId", student.Id.ToString());
             HttpContext.Session.SetString("UserName", student.Name);
             HttpContext.Session.SetString("UserEmail", student.Email);
-            HttpContext.Session.SetString("UserType", "Student");
+            HttpContext.Session.SetString("UserType", "student");
 
             if (!string.IsNullOrEmpty(student.ProfileInfo))
             {
@@ -135,7 +143,7 @@ namespace CampusLearnPlatform.Controllers
             HttpContext.Session.SetString("UserId", tutor.Id.ToString());
             HttpContext.Session.SetString("UserName", tutor.Name);
             HttpContext.Session.SetString("UserEmail", tutor.Email);
-            HttpContext.Session.SetString("UserType", "Tutor");
+            HttpContext.Session.SetString("UserType", "tutor");
 
             if (!string.IsNullOrEmpty(tutor.Experience))
             {

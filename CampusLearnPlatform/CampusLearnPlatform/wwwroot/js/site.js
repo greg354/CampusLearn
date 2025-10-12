@@ -317,6 +317,37 @@ function showPasswordStrength(e) {
 
     // Show feedback (you can customize this)
     console.log('Password strength:', feedback);
+// Number animation
+function animateNumber(element) {
+    // Check if already animated
+    if (element.dataset.animated === 'true') {
+        return;
+    }
+
+    // Mark as animated to prevent double animation
+    element.dataset.animated = 'true';
+
+    const text = element.textContent.trim();
+    const target = parseInt(text, 10);
+
+    // If target is not a valid number, don't animate
+    if (isNaN(target) || target < 0) {
+        element.textContent = '0';
+        return;
+    }
+
+    let current = 0;
+    const increment = Math.ceil(target / 30) || 1;
+
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.textContent = target;
+            clearInterval(timer);
+        } else {
+            element.textContent = current;
+        }
+    }, 50);
 }
 
 // ========================================

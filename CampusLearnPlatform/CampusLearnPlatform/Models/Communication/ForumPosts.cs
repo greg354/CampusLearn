@@ -16,21 +16,18 @@ namespace CampusLearnPlatform.Models.Communication
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        [Column("topic_id")]
-        public Guid TopicId { get; set; }
-
-        [Column("author_id")]
-        public Guid AuthorId { get; set; }
-
-        [Column("author_type")]
-        public string AuthorType { get; set; }
-
         [Required]
         [Column("post_content")]
         public string PostContent { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
+
+        [Column("student_author_id")]
+        public Guid? StudentAuthorId { get; set; }
+
+        [Column("tutor_author_id")]
+        public Guid? TutorAuthorId { get; set; }
 
         public string Title { get; set; }
         public string Content { get; set; }
@@ -44,9 +41,10 @@ namespace CampusLearnPlatform.Models.Communication
 
         public int PostedById { get; set; }
         public int ModuleId { get; set; }
-
-        // FIXED: Changed from int? to Guid? to match database schema
-        public Guid? ParentPostId { get; set; }
+        public int? ParentPostId { get; set; }
+        public Guid TopicId { get; set; }
+        public Guid AuthorId { get; set; }
+        public string AuthorType { get; set; }
 
         public virtual User PostedBy { get; set; }
         public virtual Module Module { get; set; }
