@@ -1,0 +1,486 @@
+@model CampusLearnPlatform.Models.ViewModels.TopicDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="topic-details-container">
+    <div class="container">
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="@Url.Action("Browse", "Topics")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Topics
+            </a>
+        </div>
+
+        <!-- Topic Header Card -->
+        <div class="card shadow-sm mb-4 fade-in-up">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h2 class="mb-2">@Model.Title</h2>
+                                <p class="text-muted mb-3">@Model.Description</p>
+                            </div>
+                            <div class="ms-3">
+                                @if (Model.Priority == "Urgent")
+                                {
+                                    <span class="badge bg-danger fs-6">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Urgent
+                                    </span>
+                                }
+                                else if (Model.Priority == "High")
+                                {
+                                    <span class="badge bg-warning text-dark fs-6">
+                                        <i class="fas fa-arrow-up me-1"></i>High
+                                    </span>
+                                }
+                                else if (Model.Priority == "Medium")
+                                {
+                                    <span class="badge bg-info fs-6">Medium</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary fs-6">Low</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3 col-6 mb-2">
+                                <small class="text-muted d-block">Module</small>
+                                <strong><i class="fas fa-book me-1"></i>@Model.Module</strong>
+                            </div>
+                            <div class="col-md-3 col-6 mb-2">
+                                <small class="text-muted d-block">Created By</small>
+                                <strong>
+                                    <i class="fas @(Model.CreatedByType == "Tutor" ? "fa-chalkboard-teacher" : "fa-user-graduate") me-1"></i>
+                                    @Model.CreatedBy
+                                </strong>
+                            </div>
+                            <div class="col-md-3 col-6 mb-2">
+                                <small class="text-muted d-block">Status</small>
+                                <strong>
+                                    @if (Model.Status == "Open")
+                                    {
+                                        <span class="badge bg-success">Open</span>
+                                    }
+                                    else if (Model.Status == "In Progress")
+                                    {
+                                        <span class="badge bg-primary">In Progress</span>
+                                    }
+                                    else if (Model.Status == "Resolved")
+                                    {
+                                        <span class="badge bg-dark">Resolved</span>
+                                    }
+                                </strong>
+                            </div>
+                            <div class="col-md-3 col-6 mb-2">
+                                <small class="text-muted d-block">Created</small>
+                                <strong><i class="fas fa-clock me-1"></i>@Model.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 mb-2">
+                            <span class="text-muted">
+                                <i class="fas fa-users me-1"></i>
+                                <strong>@Model.SubscriberCount</strong> subscribers
+                            </span>
+                            <span class="text-muted">
+                                <i class="fas fa-eye me-1"></i>
+                                <strong>@Model.ViewCount</strong> views
+                            </span>
+                            <span class="text-muted">
+                                <i class="fas fa-file-alt me-1"></i>
+                                <strong>@Model.Materials.Count</strong> materials
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="d-grid gap-2">
+                            @if (Model.IsSubscribed)
+                            {
+                                <button class="btn btn-success btn-lg" disabled>
+                                    <i class="fas fa-check-circle me-2"></i>Subscribed
+                                </button>
+                                <form asp-action="Unsubscribe" asp-controller="Topics" method="post">
+                                    <input type="hidden" name="topicId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="fas fa-bell-slash me-2"></i>Unsubscribe
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Subscribe" asp-controller="Topics" method="post">
+                                    <input type="hidden" name="topicId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-bell me-2"></i>Subscribe to Topic
+                                    </button>
+                                </form>
+                            }
+
+                            @if (Model.IsCreator)
+                            {
+                                <button class="btn btn-outline-primary" onclick="showComingSoon('Edit Topic')">
+                                    <i class="fas fa-edit me-2"></i>Edit Topic
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="showComingSoon('Change Status')">
+                                    <i class="fas fa-cog me-2"></i>Change Status
+                                </button>
+                            }
+
+                            <button class="btn btn-outline-secondary" onclick="showComingSoon('Share Topic')">
+                                <i class="fas fa-share-alt me-2"></i>Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="card shadow-sm fade-in-up" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
+                            <i class="fas fa-comments me-2"></i>Messages
+                            <span class="badge bg-primary ms-1">@Model.Messages.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button" role="tab">
+                            <i class="fas fa-folder-open me-2"></i>Materials
+                            <span class="badge bg-secondary ms-1">@Model.Materials.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="subscribers-tab" data-bs-toggle="tab" data-bs-target="#subscribers" type="button" role="tab">
+                            <i class="fas fa-users me-2"></i>Subscribers
+                            <span class="badge bg-secondary ms-1">@Model.Subscribers.Count</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card-body">
+                <div class="tab-content">
+                    <!-- Messages Tab -->
+                    <div class="tab-pane fade show active" id="messages" role="tabpanel">
+                        <div class="messages-section">
+                            <!-- Message Input -->
+                            <div class="message-input-card mb-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-comment-dots me-2"></i>Post a Message
+                                        </h6>
+                                        <form>
+                                            <div class="mb-3">
+                                                <textarea class="form-control" rows="3" placeholder="Ask a question, share your thoughts, or provide help..."></textarea>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Be respectful and helpful in your messages
+                                                </small>
+                                                <button type="button" class="btn btn-primary" onclick="showComingSoon('Send Message')">
+                                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Messages List -->
+                            <div class="messages-list">
+                                @if (Model.Messages.Any())
+                                {
+                                    @foreach (var message in Model.Messages.OrderBy(m => m.SentAt))
+                                    {
+                                        <div class="message-item @(message.SenderType == "Tutor" ? "tutor-message" : "student-message") @(!message.IsRead ? "unread" : "")">
+                                            <div class="message-header">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="message-avatar">
+                                                        <i class="fas @(message.SenderType == "Tutor" ? "fa-chalkboard-teacher" : "fa-user-graduate")"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>@message.SenderName</strong>
+                                                        @if (message.SenderType == "Tutor")
+                                                        {
+                                                            <span class="badge bg-success ms-2">Tutor</span>
+                                                        }
+                                                        <br>
+                                                        <small class="text-muted">@message.TimeAgo</small>
+                                                    </div>
+                                                </div>
+                                                @if (!message.IsRead)
+                                                {
+                                                    <span class="badge bg-primary">New</span>
+                                                }
+                                            </div>
+                                            <div class="message-content">
+                                                @message.Content
+                                            </div>
+                                            <div class="message-actions">
+                                                <button class="btn btn-sm btn-link" onclick="showComingSoon('Reply')">
+                                                    <i class="fas fa-reply me-1"></i>Reply
+                                                </button>
+                                                <button class="btn btn-sm btn-link" onclick="showComingSoon('React')">
+                                                    <i class="fas fa-thumbs-up me-1"></i>Helpful
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">No messages yet. Be the first to post!</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Tab -->
+                    <div class="tab-pane fade" id="materials" role="tabpanel">
+                        <div class="materials-section">
+                            <!-- Upload Material Button -->
+                            <div class="mb-4">
+                                <button class="btn btn-primary" onclick="showComingSoon('Upload Material')">
+                                    <i class="fas fa-upload me-2"></i>Upload Material
+                                </button>
+                            </div>
+
+                            <!-- Materials List -->
+                            @if (Model.Materials.Any())
+                            {
+                                <div class="materials-list">
+                                    @foreach (var material in Model.Materials)
+                                    {
+                                        <div class="material-item">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-1 text-center">
+                                                    <i class="fas @GetFileIcon(material.FileType) fa-2x text-primary"></i>
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <h6 class="mb-1">@material.Title</h6>
+                                                    <small class="text-muted">
+                                                        @material.FileName • @material.FileSize
+                                                    </small>
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        Uploaded by <strong>@material.UploadedBy</strong> @material.TimeAgo
+                                                    </small>
+                                                </div>
+                                                <div class="col-md-2 text-center">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-download me-1"></i>
+                                                        @material.DownloadCount downloads
+                                                    </small>
+                                                </div>
+                                                <div class="col-md-2 text-end">
+                                                    <button class="btn btn-sm btn-primary" onclick="showComingSoon('Download')">
+                                                        <i class="fas fa-download me-1"></i>Download
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No materials uploaded yet.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Subscribers Tab -->
+                    <div class="tab-pane fade" id="subscribers" role="tabpanel">
+                        <div class="subscribers-section">
+                            @if (Model.Subscribers.Any())
+                            {
+                                <div class="row">
+                                    @foreach (var subscriber in Model.Subscribers)
+                                    {
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="subscriber-avatar me-3">
+                                                            <i class="fas @(subscriber.Type == "Tutor" ? "fa-chalkboard-teacher" : "fa-user-graduate") fa-2x"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1">@subscriber.Name</h6>
+                                                            @if (subscriber.Type == "Tutor")
+                                                            {
+                                                                <span class="badge bg-success">Tutor</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-primary">Student</span>
+                                                            }
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                Subscribed @subscriber.SubscribedAt.ToString("MMM dd, yyyy")
+                                                            </small>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-primary" onclick="showComingSoon('Message User')">
+                                                            <i class="fas fa-envelope"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No subscribers yet.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetFileIcon(string fileType)
+    {
+        return fileType.ToLower() switch
+        {
+            "pdf" => "fa-file-pdf",
+            "video" => "fa-video",
+            "code" => "fa-file-code",
+            "image" => "fa-image",
+            _ => "fa-file"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        // Auto-scroll to latest message
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesTab = document.getElementById('messages');
+            if (messagesTab) {
+                const messagesList = messagesTab.querySelector('.messages-list');
+                if (messagesList) {
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }
+            }
+        });
+    </script>
+
+    <style>
+        .topic-details-container {
+            padding: 2rem 0;
+            min-height: 100vh;
+        }
+
+        .message-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .message-item.unread {
+            border-left: 4px solid #1b6ec2;
+            background: #f8f9fa;
+        }
+
+        .message-item.tutor-message {
+            border-left: 4px solid #28a745;
+        }
+
+        .message-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1b6ec2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+
+        .message-content {
+            margin-left: 56px;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .message-actions {
+            margin-left: 56px;
+        }
+
+        .material-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .material-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .subscriber-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1b6ec2;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #1b6ec2;
+            font-weight: 600;
+        }
+
+        .message-input-card {
+            position: sticky;
+            top: 80px;
+            z-index: 100;
+        }
+    </style>
+}

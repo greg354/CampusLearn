@@ -14,9 +14,6 @@
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="d-flex gap-2 justify-content-md-end justify-content-start mt-3 mt-md-0">
-                        <button class="btn btn-light" onclick="showComingSoon('AI Chat')">
-                            <i class="fas fa-robot me-2"></i>AI Tutor
-                        </button>
                         <button class="btn btn-primary" onclick="showComingSoon('Ask Question')">
                             <i class="fas fa-question-circle me-2"></i>Ask Question
                         </button>
@@ -183,14 +180,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Role Switcher (for testing) -->
-        <div class="text-center mt-4">
-            <a href="@Url.Action("SwitchRole", "Dashboard", new { role = "tutor" })" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-exchange-alt me-2"></i>Switch to Tutor View (Testing)
-            </a>
-        </div>
-    </div>
 </div>
 
 @section Scripts {

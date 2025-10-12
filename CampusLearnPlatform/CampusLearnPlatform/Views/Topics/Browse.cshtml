@@ -1,0 +1,461 @@
+@model CampusLearnPlatform.Models.ViewModels.TopicsViewModel
+@{
+    ViewData["Title"] = "Topics";
+}
+
+<div class="topics-container">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="topics-header fade-in-up">
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-book-open me-3"></i>Topics</h1>
+                    <p class="text-muted">Browse, create, and subscribe to learning topics</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTopicModal">
+                        <i class="fas fa-plus me-2"></i>Create New Topic
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Search -->
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search topics...">
+                            </div>
+                        </div>
+
+                        <!-- Module Filter -->
+                        <div class="col-md-4">
+                            <select class="form-select" id="moduleFilter">
+                                <option value="All">All Modules</option>
+                                @foreach (var module in Model.AvailableModules)
+                                {
+                                    <option value="@module">@module</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- View Filter -->
+                        <div class="col-md-3">
+                            <select class="form-select" id="viewFilter">
+                                <option value="All" selected>All Topics</option>
+                                <option value="My">My Topics</option>
+                                <option value="Subscribed">Subscribed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Quick Filter Tags -->
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <span class="text-muted small me-2">Quick Filters:</span>
+                        <button class="btn btn-sm btn-outline-primary filter-tag active" data-filter="All">
+                            <i class="fas fa-th me-1"></i>All
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger filter-tag" data-filter="Urgent">
+                            <i class="fas fa-exclamation-circle me-1"></i>Urgent
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning filter-tag" data-filter="High">
+                            <i class="fas fa-arrow-up me-1"></i>High Priority
+                        </button>
+                        <button class="btn btn-sm btn-outline-success filter-tag" data-filter="Open">
+                            <i class="fas fa-folder-open me-1"></i>Open
+                        </button>
+                        <button class="btn btn-sm btn-outline-info filter-tag" data-filter="HasMaterials">
+                            <i class="fas fa-file-alt me-1"></i>Has Materials
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topics Grid -->
+        <div class="topics-grid" id="topicsGrid">
+            @foreach (var topic in Model.AllTopics)
+            {
+                <div class="topic-card fade-in-up" 
+                     data-module="@topic.Module" 
+                     data-priority="@topic.Priority"
+                     data-status="@topic.Status"
+                     data-has-materials="@(topic.MaterialCount > 0 ? "true" : "false")">
+                    <div class="card shadow-sm h-100">
+                        <!-- Topic Header -->
+                        <div class="card-header d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    <a href="@Url.Action("Details", "Topics", new { id = topic.Id })" class="text-decoration-none text-dark">
+                                        @topic.Title
+                                    </a>
+                                </h5>
+                                <small class="text-muted">
+                                    <i class="fas fa-book me-1"></i>@topic.Module
+                                </small>
+                            </div>
+                            <div class="d-flex flex-column align-items-end gap-1">
+                                @if (topic.Priority == "Urgent")
+                                {
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Urgent
+                                    </span>
+                                }
+                                else if (topic.Priority == "High")
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-arrow-up me-1"></i>High
+                                    </span>
+                                }
+                                else if (topic.Priority == "Medium")
+                                {
+                                    <span class="badge bg-info">Medium</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Low</span>
+                                }
+
+                                @if (topic.Status == "Open")
+                                {
+                                    <span class="badge bg-success">Open</span>
+                                }
+                                else if (topic.Status == "In Progress")
+                                {
+                                    <span class="badge bg-primary">In Progress</span>
+                                }
+                                else if (topic.Status == "Resolved")
+                                {
+                                    <span class="badge bg-dark">Resolved</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Topic Body -->
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-3">@topic.Description</p>
+
+                            <!-- Topic Stats -->
+                            <div class="topic-stats d-flex justify-content-between mb-3">
+                                <span class="text-muted small">
+                                    <i class="fas fa-users me-1"></i>
+                                    @topic.SubscriberCount subscribers
+                                </span>
+                                <span class="text-muted small">
+                                    <i class="fas fa-file-alt me-1"></i>
+                                    @topic.MaterialCount materials
+                                </span>
+                                <span class="text-muted small">
+                                    <i class="fas fa-comments me-1"></i>
+                                    @topic.MessageCount messages
+                                </span>
+                            </div>
+
+                            <!-- Created By -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="fas @(topic.CreatedByType == "Tutor" ? "fa-chalkboard-teacher" : "fa-user-graduate") me-1"></i>
+                                    @topic.CreatedBy
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>@topic.TimeAgo
+                                </small>
+                            </div>
+
+                            @if (topic.HasUnreadMessages)
+                            {
+                                <div class="alert alert-info alert-sm py-2 mb-3">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    <small>New messages available</small>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Topic Footer -->
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex gap-2">
+                                <a href="@Url.Action("Details", "Topics", new { id = topic.Id })" class="btn btn-sm btn-primary flex-fill">
+                                    <i class="fas fa-eye me-1"></i>View Details
+                                </a>
+                                @if (topic.IsSubscribed)
+                                {
+                                    <button class="btn btn-sm btn-success" disabled>
+                                        <i class="fas fa-check me-1"></i>Subscribed
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-primary" onclick="subscribeTopic('@topic.Id')">
+                                        <i class="fas fa-bell me-1"></i>Subscribe
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-5" style="display: none;">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No topics found</h4>
+            <p class="text-muted">Try adjusting your search or filters</p>
+        </div>
+    </div>
+</div>
+
+<!-- Create Topic Modal -->
+<div class="modal fade" id="createTopicModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Topic
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="Create" asp-controller="Topics" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-heading me-2"></i>Topic Title
+                        </label>
+                        <input type="text" class="form-control" name="Title" placeholder="E.g., Understanding Binary Search Trees" required>
+                        <small class="text-muted">Be specific and clear about what you need help with</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </label>
+                        <textarea class="form-control" name="Description" rows="4" placeholder="Provide details about what you need help with..." required></textarea>
+                        <small class="text-muted">The more details you provide, the better tutors can help you</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-book me-2"></i>Module
+                            </label>
+                            <select class="form-select" name="Module" required>
+                                <option value="">Select a module...</option>
+                                @foreach (var module in Model.AvailableModules)
+                                {
+                                    <option value="@module">@module</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Priority
+                            </label>
+                            <select class="form-select" name="Priority" required>
+                                <option value="">Select priority...</option>
+                                <option value="Low">Low - Not urgent</option>
+                                <option value="Medium">Medium - Need help soon</option>
+                                <option value="High">High - Need help this week</option>
+                                <option value="Urgent">Urgent - Assignment due soon</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>
+                            Once you create this topic, all tutors registered for this module will be notified. 
+                            You and other students can also subscribe to receive updates.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Topic
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            filterTopics();
+        });
+
+        // Module filter
+        document.getElementById('moduleFilter').addEventListener('change', function(e) {
+            filterTopics();
+        });
+
+        // View filter
+        document.getElementById('viewFilter').addEventListener('change', function(e) {
+            // This would filter to show My Topics or Subscribed Topics
+            // For now, just show all topics
+            filterTopics();
+        });
+
+        // Quick filter tags
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                applyQuickFilter(filter);
+            });
+        });
+
+        function filterTopics() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const moduleFilter = document.getElementById('moduleFilter').value;
+            const topicCards = document.querySelectorAll('.topic-card');
+            let visibleCount = 0;
+
+            topicCards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.card-text').textContent.toLowerCase();
+                const module = card.getAttribute('data-module');
+
+                const matchesSearch = title.includes(searchTerm) || description.includes(searchTerm);
+                const matchesModule = moduleFilter === 'All' || module === moduleFilter;
+
+                if (matchesSearch && matchesModule) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        function applyQuickFilter(filter) {
+            const topicCards = document.querySelectorAll('.topic-card');
+            let visibleCount = 0;
+
+            topicCards.forEach(card => {
+                let show = false;
+
+                if (filter === 'All') {
+                    show = true;
+                } else if (filter === 'Urgent') {
+                    show = card.getAttribute('data-priority') === 'Urgent';
+                } else if (filter === 'High') {
+                    show = card.getAttribute('data-priority') === 'High';
+                } else if (filter === 'Open') {
+                    show = card.getAttribute('data-status') === 'Open';
+                } else if (filter === 'HasMaterials') {
+                    show = card.getAttribute('data-has-materials') === 'true';
+                }
+
+                if (show) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        function subscribeTopic(topicId) {
+            // In real implementation, this would make an AJAX call
+            alert('Subscribe functionality - would redirect to topic details');
+            window.location.href = '/Topics/Details/' + topicId;
+        }
+
+        // Animation on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.topic-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+
+    <style>
+        .topics-container {
+            padding: 2rem 0;
+            min-height: 100vh;
+        }
+
+        .topics-header {
+            margin-bottom: 2rem;
+        }
+
+        .topics-header h1 {
+            color: #1b6ec2;
+            font-weight: 600;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .topic-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            opacity: 1 !important;
+        }
+
+        .topic-card .card {
+            transition: box-shadow 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+
+        .topic-card .card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .topic-card .card-title a:hover {
+            color: #1b6ec2 !important;
+        }
+
+        .topic-stats span {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-tag {
+            transition: all 0.3s ease;
+        }
+
+        .filter-tag.active {
+            background-color: #1b6ec2 !important;
+            color: white !important;
+            border-color: #1b6ec2 !important;
+        }
+
+        .alert-sm {
+            padding: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        @@media (max-width: 768px) {
+            .topics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}

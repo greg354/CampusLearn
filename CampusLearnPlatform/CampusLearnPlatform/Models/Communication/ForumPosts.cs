@@ -1,4 +1,5 @@
-﻿using CampusLearnPlatform.Models.Learning;
+﻿using CampusLearnPlatform.Enums;
+using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.Users;
 using System;
 using System.Collections.Generic;
@@ -70,28 +71,34 @@ namespace CampusLearnPlatform.Models.Communication
         }
 
         public void AddReply(ForumPosts reply) { }
+
         public void Upvote()
         {
             UpvoteCount++;
         }
+
         public void Downvote()
         {
             DownvoteCount++;
         }
+
         public void Moderate(bool approve, string notes)
         {
             IsModerated = true;
             IsApproved = approve;
             ModerationNotes = notes;
         }
+
         public int GetNetVotes()
         {
             return UpvoteCount - DownvoteCount;
         }
+
         public bool IsReply()
         {
             return ParentPostId.HasValue;
         }
+
         public void UpdateContent(string newContent)
         {
             Content = newContent;

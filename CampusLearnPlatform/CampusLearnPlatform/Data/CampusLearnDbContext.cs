@@ -140,9 +140,6 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.Title);
                 entity.Ignore(e => e.Content);
                 entity.Ignore(e => e.PostedAt);
-                entity.Ignore(e => e.IsAnonymous);
-                entity.Ignore(e => e.UpvoteCount);
-                entity.Ignore(e => e.DownvoteCount);
                 entity.Ignore(e => e.IsModerated);
                 entity.Ignore(e => e.IsApproved);
                 entity.Ignore(e => e.ModerationNotes);
