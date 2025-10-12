@@ -132,27 +132,13 @@ namespace CampusLearnPlatform.Data
                 entity.ToTable("forum_post");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("post_id").HasDefaultValueSql("gen_random_uuid()");
-                entity.Property(e => e.PostContent).HasColumnName("post_content");
+                entity.Property(e => e.PostContent).HasColumnName("post_content").IsRequired();
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.StudentAuthorId).HasColumnName("student_author_id");
                 entity.Property(e => e.TutorAuthorId).HasColumnName("tutor_author_id");
-
-                entity.Ignore(e => e.Title);
-                entity.Ignore(e => e.Content);
-                entity.Ignore(e => e.PostedAt);
-                entity.Ignore(e => e.IsModerated);
-                entity.Ignore(e => e.IsApproved);
-                entity.Ignore(e => e.ModerationNotes);
-                entity.Ignore(e => e.PostedById);
-                entity.Ignore(e => e.ModuleId);
-                entity.Ignore(e => e.ParentPostId);
-                entity.Ignore(e => e.TopicId);
-                entity.Ignore(e => e.AuthorId);
-                entity.Ignore(e => e.AuthorType);
-                entity.Ignore(e => e.PostedBy);
-                entity.Ignore(e => e.Module);
-                entity.Ignore(e => e.ParentPost);
-                entity.Ignore(e => e.Replies);
+                entity.Property(e => e.IsAnonymous).HasColumnName("is_anonymous").HasDefaultValue(false);
+                entity.Property(e => e.UpvoteCount).HasColumnName("upvote_count").HasDefaultValue(0);
+                entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0);
             });
 
             // ===== FORUM POST REPLY CONFIGURATION =====

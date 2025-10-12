@@ -24,9 +24,7 @@ namespace CampusLearnPlatform.Controllers
         {
             try
             {
-                var posts = await _context.ForumPosts
-                    .Where(p => p.ParentPostId == null) // Only get top-level posts
-                    .ToListAsync();
+                var posts = await _context.ForumPosts.ToListAsync();
 
                 var viewModel = new ForumIndexViewModel
                 {
@@ -37,15 +35,21 @@ namespace CampusLearnPlatform.Controllers
 
                 foreach (var post in posts)
                 {
-                    var replyCount = await _context.ForumPosts
-                        .CountAsync(p => p.ParentPostId == post.Id);
+                    // Get reply count from forum_post_reply table
+                    var replyCount = await _context.ForumPostReplies
+                        .CountAsync(r => r.PostId == post.Id);
+
+                    // Extract title and content from PostContent
+                    var (title, content) = ExtractTitleAndContent(post.PostContent);
 
                     viewModel.Posts.Add(new ForumPostViewModel
                     {
                         Id = post.Id,
-                        Title = post.PostContent, // Using PostContent as title for now
-                        Content = post.PostContent,
-                        AuthorName = post.IsAnonymous ? GetCodename(post.AuthorId) : GetAuthorName(post.AuthorId, post.AuthorType),
+                        Title = title,
+                        Content = content,
+                        AuthorName = post.IsAnonymous
+                            ? GetCodename(post.AuthorId)
+                            : GetAuthorName(post.AuthorId, post.AuthorType),
                         IsAnonymous = post.IsAnonymous,
                         CreatedAt = post.CreatedAt,
                         UpvoteCount = post.UpvoteCount,
@@ -58,9 +62,10 @@ namespace CampusLearnPlatform.Controllers
                 // Apply sorting
                 viewModel.Posts = sortBy.ToLower() switch
                 {
-                    "upvoted" => viewModel.Posts.OrderByDescending(p => p.NetVotes).ThenByDescending(p => p.CreatedAt).ToList(),
+                    "upvoted" => viewModel.Posts.OrderByDescending(p => p.NetVotes)
+                                               .ThenByDescending(p => p.CreatedAt).ToList(),
                     "oldest" => viewModel.Posts.OrderBy(p => p.CreatedAt).ToList(),
-                    _ => viewModel.Posts.OrderByDescending(p => p.CreatedAt).ToList() // recent
+                    _ => viewModel.Posts.OrderByDescending(p => p.CreatedAt).ToList()
                 };
 
                 return View(viewModel);
@@ -112,15 +117,26 @@ namespace CampusLearnPlatform.Controllers
                 var post = new ForumPosts
                 {
                     Id = Guid.NewGuid(),
-                    PostContent = $"{model.Title}\n\n{model.Content}", // Combining title and content
-                    AuthorId = userId,
-                    AuthorType = userType ?? "Student",
+                    PostContent = $"{model.Title}\n\n{model.Content}",
                     IsAnonymous = model.IsAnonymous,
                     CreatedAt = DateTime.UtcNow,
-                    TopicId = Guid.NewGuid(), // Placeholder - you might want to link to actual topics
                     UpvoteCount = 0,
                     DownvoteCount = 0
                 };
+
+                // Set author based on user type
+                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    post.StudentAuthorId = userId;
+                }
+                else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    post.TutorAuthorId = userId;
+                }
+                else
+                {
+                    post.StudentAuthorId = userId; // Default to student
+                }
 
                 _context.ForumPosts.Add(post);
                 await _context.SaveChangesAsync();
@@ -150,16 +166,21 @@ namespace CampusLearnPlatform.Controllers
                     return RedirectToAction("Index");
                 }
 
-                var replies = await _context.ForumPosts
-                    .Where(p => p.ParentPostId == id)
+                // Get replies from forum_post_reply table
+                var replies = await _context.ForumPostReplies
+                    .Where(r => r.PostId == id)
                     .ToListAsync();
+
+                var (title, content) = ExtractTitleAndContent(post.PostContent);
 
                 var viewModel = new ForumPostDetailsViewModel
                 {
                     Id = post.Id,
-                    Title = ExtractTitle(post.PostContent),
-                    Content = ExtractContent(post.PostContent),
-                    AuthorName = post.IsAnonymous ? GetCodename(post.AuthorId) : GetAuthorName(post.AuthorId, post.AuthorType),
+                    Title = title,
+                    Content = content,
+                    AuthorName = post.IsAnonymous
+                        ? GetCodename(post.AuthorId)
+                        : GetAuthorName(post.AuthorId, post.AuthorType),
                     IsAnonymous = post.IsAnonymous,
                     CreatedAt = post.CreatedAt,
                     UpvoteCount = post.UpvoteCount,
@@ -171,23 +192,27 @@ namespace CampusLearnPlatform.Controllers
 
                 foreach (var reply in replies)
                 {
+                    var replyAuthorId = reply.StudentPosterId ?? reply.TutorPosterId ?? Guid.Empty;
+                    var replyAuthorType = reply.StudentPosterId.HasValue ? "Student" : "Tutor";
+
                     viewModel.Replies.Add(new ForumReplyViewModel
                     {
-                        Id = reply.Id,
-                        Content = reply.PostContent,
-                        AuthorName = reply.IsAnonymous ? GetCodename(reply.AuthorId) : GetAuthorName(reply.AuthorId, reply.AuthorType),
+                        Id = reply.ReplyId,
+                        Content = reply.ReplyContent,
+                        AuthorName = reply.IsAnonymous
+                            ? GetCodename(replyAuthorId)
+                            : GetAuthorName(replyAuthorId, replyAuthorType),
                         IsAnonymous = reply.IsAnonymous,
                         CreatedAt = reply.CreatedAt,
-                        UpvoteCount = reply.UpvoteCount,
-                        DownvoteCount = reply.DownvoteCount,
-                        NetVotes = reply.GetNetVotes()
+                        UpvoteCount = 0, // Replies don't have votes in current schema
+                        DownvoteCount = 0,
+                        NetVotes = 0
                     });
                 }
 
                 // Apply sorting to replies
                 viewModel.Replies = sortBy.ToLower() switch
                 {
-                    "upvoted" => viewModel.Replies.OrderByDescending(r => r.NetVotes).ThenByDescending(r => r.CreatedAt).ToList(),
                     "oldest" => viewModel.Replies.OrderBy(r => r.CreatedAt).ToList(),
                     _ => viewModel.Replies.OrderByDescending(r => r.CreatedAt).ToList()
                 };
@@ -226,24 +251,33 @@ namespace CampusLearnPlatform.Controllers
             {
                 var userId = Guid.Parse(userIdString);
 
-                var reply = new ForumPosts
+                var reply = new ForumPostReply
                 {
-                    Id = Guid.NewGuid(),
-                    PostContent = model.Content,
-                    AuthorId = userId,
-                    AuthorType = userType ?? "Student",
+                    ReplyId = Guid.NewGuid(),
+                    PostId = model.ParentPostId,
+                    ReplyContent = model.Content,
                     IsAnonymous = model.IsAnonymous,
-                    ParentPostId = model.ParentPostId,
-                    CreatedAt = DateTime.UtcNow,
-                    TopicId = Guid.NewGuid(), // Placeholder
-                    UpvoteCount = 0,
-                    DownvoteCount = 0
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                _context.ForumPosts.Add(reply);
+                // Set poster based on user type
+                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    reply.StudentPosterId = userId;
+                }
+                else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    reply.TutorPosterId = userId;
+                }
+                else
+                {
+                    reply.StudentPosterId = userId; // Default to student
+                }
+
+                _context.ForumPostReplies.Add(reply);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Reply created: {ReplyId} to post {PostId}", reply.Id, model.ParentPostId);
+                _logger.LogInformation("Reply created: {ReplyId} to post {PostId}", reply.ReplyId, model.ParentPostId);
                 TempData["SuccessMessage"] = "Your reply has been posted!";
 
                 return RedirectToAction("Details", new { id = model.ParentPostId });
@@ -258,7 +292,7 @@ namespace CampusLearnPlatform.Controllers
 
         // POST: Forum/Upvote
         [HttpPost]
-        public async Task<IActionResult> Upvote(Guid id)
+        public async Task<IActionResult> Upvote([FromBody] VoteRequest request)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdString))
@@ -268,7 +302,7 @@ namespace CampusLearnPlatform.Controllers
 
             try
             {
-                var post = await _context.ForumPosts.FindAsync(id);
+                var post = await _context.ForumPosts.FindAsync(request.Id);
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
@@ -281,14 +315,14 @@ namespace CampusLearnPlatform.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error upvoting post {PostId}", id);
+                _logger.LogError(ex, "Error upvoting post {PostId}", request.Id);
                 return Json(new { success = false, message = "Unable to upvote" });
             }
         }
 
         // POST: Forum/Downvote
         [HttpPost]
-        public async Task<IActionResult> Downvote(Guid id)
+        public async Task<IActionResult> Downvote([FromBody] VoteRequest request)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdString))
@@ -298,7 +332,7 @@ namespace CampusLearnPlatform.Controllers
 
             try
             {
-                var post = await _context.ForumPosts.FindAsync(id);
+                var post = await _context.ForumPosts.FindAsync(request.Id);
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
@@ -311,7 +345,7 @@ namespace CampusLearnPlatform.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error downvoting post {PostId}", id);
+                _logger.LogError(ex, "Error downvoting post {PostId}", request.Id);
                 return Json(new { success = false, message = "Unable to downvote" });
             }
         }
@@ -341,7 +375,6 @@ namespace CampusLearnPlatform.Controllers
 
         private string GetCodename(Guid userId)
         {
-            // Generate a consistent codename based on user ID
             using (var sha256 = SHA256.Create())
             {
                 var hash = sha256.ComputeHash(userId.ToByteArray());
@@ -353,20 +386,32 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        private string ExtractTitle(string postContent)
+        private (string title, string content) ExtractTitleAndContent(string postContent)
         {
-            var lines = postContent.Split(new[] { "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-            return lines.FirstOrDefault() ?? "Untitled Post";
-        }
+            if (string.IsNullOrWhiteSpace(postContent))
+            {
+                return ("Untitled Post", "");
+            }
 
-        private string ExtractContent(string postContent)
-        {
-            var lines = postContent.Split(new[] { "\n\n" }, 2, StringSplitOptions.None);
-            return lines.Length > 1 ? lines[1] : postContent;
+            var parts = postContent.Split(new[] { "\n\n" }, 2, StringSplitOptions.None);
+            if (parts.Length == 2)
+            {
+                return (parts[0].Trim(), parts[1].Trim());
+            }
+
+            // If no double newline, use first line as title
+            var lines = postContent.Split('\n');
+            return (lines[0].Trim(), postContent);
         }
     }
 
-    // Codename generator
+    // Request model for voting
+    public class VoteRequest
+    {
+        public Guid Id { get; set; }
+    }
+
+    // Codename generator for anonymous users
     public static class Codenames
     {
         public static List<string> Adjectives = new List<string>

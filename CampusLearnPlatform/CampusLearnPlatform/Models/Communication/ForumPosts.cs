@@ -1,7 +1,4 @@
-﻿using CampusLearnPlatform.Enums;
-using CampusLearnPlatform.Models.Learning;
-using CampusLearnPlatform.Models.Users;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,48 +26,30 @@ namespace CampusLearnPlatform.Models.Communication
         [Column("tutor_author_id")]
         public Guid? TutorAuthorId { get; set; }
 
-        public string Title { get; set; }
-        public string Content { get; set; }
-        public DateTime PostedAt { get; set; }
+        [Column("is_anonymous")]
         public bool IsAnonymous { get; set; }
+
+        [Column("upvote_count")]
         public int UpvoteCount { get; set; }
+
+        [Column("downvote_count")]
         public int DownvoteCount { get; set; }
-        public bool IsModerated { get; set; }
-        public bool IsApproved { get; set; }
-        public string ModerationNotes { get; set; }
 
-        public int PostedById { get; set; }
-        public int ModuleId { get; set; }
-        public int? ParentPostId { get; set; }
-        public Guid TopicId { get; set; }
-        public Guid AuthorId { get; set; }
-        public string AuthorType { get; set; }
+        // Computed properties (not in DB)
+        [NotMapped]
+        public Guid AuthorId => StudentAuthorId ?? TutorAuthorId ?? Guid.Empty;
 
-        public virtual User PostedBy { get; set; }
-        public virtual Module Module { get; set; }
-        public virtual ForumPosts ParentPost { get; set; }
-        public virtual ICollection<ForumPosts> Replies { get; set; }
+        [NotMapped]
+        public string AuthorType => StudentAuthorId.HasValue ? "Student" :
+                                     TutorAuthorId.HasValue ? "Tutor" : "Unknown";
 
         public ForumPosts()
         {
-            PostedAt = DateTime.Now;
+            CreatedAt = DateTime.UtcNow;
             UpvoteCount = 0;
             DownvoteCount = 0;
-            IsModerated = false;
-            IsApproved = false;
-            Replies = new List<ForumPosts>();
+            IsAnonymous = false;
         }
-
-        public ForumPosts(string title, string content, int postedById, int moduleId, bool isAnonymous) : this()
-        {
-            Title = title;
-            Content = content;
-            PostedById = postedById;
-            ModuleId = moduleId;
-            IsAnonymous = isAnonymous;
-        }
-
-        public void AddReply(ForumPosts reply) { }
 
         public void Upvote()
         {
@@ -82,26 +61,9 @@ namespace CampusLearnPlatform.Models.Communication
             DownvoteCount++;
         }
 
-        public void Moderate(bool approve, string notes)
-        {
-            IsModerated = true;
-            IsApproved = approve;
-            ModerationNotes = notes;
-        }
-
         public int GetNetVotes()
         {
             return UpvoteCount - DownvoteCount;
-        }
-
-        public bool IsReply()
-        {
-            return ParentPostId.HasValue;
-        }
-
-        public void UpdateContent(string newContent)
-        {
-            Content = newContent;
         }
     }
 }
