@@ -27,7 +27,6 @@ namespace CampusLearnPlatform.Controllers
                     return BadRequest(new { Status = "Cannot connect to database" });
                 }
 
-                // Count records in all tables
                 var studentCount = await _context.Students.CountAsync();
                 var tutorCount = await _context.Tutors.CountAsync();
                 var adminCount = await _context.Administrators.CountAsync();
@@ -35,13 +34,14 @@ namespace CampusLearnPlatform.Controllers
                 var topicCount = await _context.Topics.CountAsync();
                 var materialCount = await _context.LearningMaterials.CountAsync();
                 var forumPostCount = await _context.ForumPosts.CountAsync();
+                var forumPostReplyCount = await _context.ForumPostReplies.CountAsync();
+                var topicReplyCount = await _context.TopicReplies.CountAsync();
                 var messageCount = await _context.Messages.CountAsync();
                 var notificationCount = await _context.Notifications.CountAsync();
                 var studentModuleCount = await _context.StudentModules.CountAsync();
                 var tutorModuleCount = await _context.TutorModules.CountAsync();
                 var subscriptionCount = await _context.Subscriptions.CountAsync();
                 var tutorSubscriptionCount = await _context.TutorSubscriptions.CountAsync();
-                var tutorTopicCount = await _context.TutorTopics.CountAsync();
 
                 return Ok(new
                 {
@@ -55,16 +55,17 @@ namespace CampusLearnPlatform.Controllers
                         Topics = topicCount,
                         LearningMaterials = materialCount,
                         ForumPosts = forumPostCount,
+                        ForumPostReplies = forumPostReplyCount,
+                        TopicReplies = topicReplyCount,
                         Messages = messageCount,
                         Notifications = notificationCount,
                         StudentModules = studentModuleCount,
                         TutorModules = tutorModuleCount,
                         Subscriptions = subscriptionCount,
-                        TutorSubscriptions = tutorSubscriptionCount,
-                        TutorTopics = tutorTopicCount
+                        TutorSubscriptions = tutorSubscriptionCount
                     },
                     DatabaseName = "CampusLearn",
-                    TotalTables = 14
+                    TotalTables = 15
                 });
             }
             catch (Exception ex)

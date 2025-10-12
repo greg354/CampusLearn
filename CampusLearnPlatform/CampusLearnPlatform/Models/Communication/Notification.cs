@@ -23,26 +23,27 @@ namespace CampusLearnPlatform.Models.Communication
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
 
-        [Column("recipient_id")]
-        public Guid RecipientId { get; set; }
+        [Column("student_recipient_id")]
+        public Guid? StudentRecipientId { get; set; }
 
-        [Column("recipient_type")]
-        public string RecipientType { get; set; }
+        [Column("tutor_recipient_id")]
+        public Guid? TutorRecipientId { get; set; }
+
+        [Column("admin_recipient_id")]
+        public Guid? AdminRecipientId { get; set; }
+
         public string Title { get; set; }
-
         public bool IsRead { get; set; }
         public NotificationTypes NotificationType { get; set; }
         public DateTime? ReadAt { get; set; }
         public bool IsSent { get; set; }
         public DateTime? SentAt { get; set; }
         public string ActionUrl { get; set; }
-
-    
         public int UserId { get; set; }
-
+        public Guid RecipientId { get; set; }
+        public string RecipientType { get; set; }
 
         public virtual User User { get; set; }
-
 
         public Notification()
         {
@@ -58,7 +59,6 @@ namespace CampusLearnPlatform.Models.Communication
             Message = message;
             NotificationType = type;
         }
-
 
         public void MarkAsRead()
         {

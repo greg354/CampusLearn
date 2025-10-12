@@ -17,9 +17,8 @@ namespace CampusLearnPlatform.Controllers
             _logger = logger;
         }
 
-        public async  Task<IActionResult> Index(string role)
+        public async Task<IActionResult> Index(string role)
         {
-           
             var userID = HttpContext.Session.GetString("UserId");
             var userRole = HttpContext.Session.GetString("UserType") ?? role.ToLower();
 
@@ -28,11 +27,10 @@ namespace CampusLearnPlatform.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            if(!Guid.TryParse(userID, out Guid userGuid))
+            if (!Guid.TryParse(userID, out Guid userGuid))
             {
                 _logger.LogError("Invalid user ID in session: {UserId}", userID);
                 return RedirectToAction("Login", "Account");
-
             }
 
             if (userRole.Equals("Tutor", StringComparison.OrdinalIgnoreCase))
@@ -43,15 +41,12 @@ namespace CampusLearnPlatform.Controllers
             {
                 return await StudentDashboard(userGuid);
             }
-
-
         }
 
         private async Task<IActionResult> StudentDashboard(Guid studentId)
         {
             try
             {
-                // Get student info
                 var student = await _context.Students
                     .FirstOrDefaultAsync(s => s.Id == studentId);
 
@@ -61,35 +56,26 @@ namespace CampusLearnPlatform.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Count subscribed topics
                 var subscribedTopicsCount = await _context.Subscriptions
                     .Where(s => s.StudentId == studentId)
                     .CountAsync();
 
-                // Count forum posts by student (pending questions)
                 var pendingQuestionsCount = await _context.ForumPosts
-                    .Where(fp => fp.AuthorId == studentId && fp.AuthorType == "student")
+                    .Where(fp => fp.StudentAuthorId == studentId)
                     .CountAsync();
 
-                // Count resolved questions (you can adjust this logic based on your needs)
                 var resolvedQuestionsCount = await _context.ForumPosts
-                    .Where(fp => fp.AuthorId == studentId && fp.AuthorType == "student")
-                    .CountAsync() / 2; // Mock calculation - adjust based on actual resolution tracking
+                    .Where(fp => fp.StudentAuthorId == studentId)
+                    .CountAsync() / 2;
 
-                // Count active tutors (tutors who have responded to this student)
                 var activeTutorsCount = await _context.Messages
-                    .Where(m => m.ReceiverId == studentId && m.SenderType == "tutor")
-                    .Select(m => m.SenderId)
+                    .Where(m => m.StudentReceiverId == studentId && m.TutorSenderId != null)
+                    .Select(m => m.TutorSenderId)
                     .Distinct()
                     .CountAsync();
 
-                // Get recent activities
                 var recentActivities = await GetStudentRecentActivities(studentId);
-
-                // Get student's questions
                 var myQuestions = await GetStudentQuestions(studentId);
-
-                // Get recommended topics
                 var recommendedTopics = await GetRecommendedTopics(studentId);
 
                 var viewModel = new StudentDashboardViewModel
@@ -112,14 +98,12 @@ namespace CampusLearnPlatform.Controllers
                 TempData["ErrorMessage"] = "Error loading dashboard. Please try again.";
                 return RedirectToAction("Login", "Account");
             }
-
         }
 
         private async Task<IActionResult> TutorDashboard(Guid tutorId)
         {
             try
             {
-                // Get tutor info
                 var tutor = await _context.Tutors
                     .FirstOrDefaultAsync(t => t.Id == tutorId);
 
@@ -129,39 +113,29 @@ namespace CampusLearnPlatform.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // Count students helped (unique students who received messages from this tutor)
                 var studentsHelpedCount = await _context.Messages
-                    .Where(m => m.SenderId == tutorId && m.SenderType == "tutor")
-                    .Select(m => m.ReceiverId)
+                    .Where(m => m.TutorSenderId == tutorId && m.StudentReceiverId != null)
+                    .Select(m => m.StudentReceiverId)
                     .Distinct()
                     .CountAsync();
 
-                // Get topics this tutor manages
-                var tutorTopicIds = await _context.TutorTopics
-                    .Where(tt => tt.TutorId == tutorId)
-                    .Select(tt => tt.TopicId)
+                var tutorTopicIds = await _context.Topics
+                    .Where(t => t.TutorCreatorId == tutorId)
+                    .Select(t => t.Id)
                     .ToListAsync();
 
-                // Count pending queries (only forum posts in topics this tutor manages)
                 var pendingQueriesCount = tutorTopicIds.Any()
                     ? await _context.ForumPosts
-                        .Where(fp => tutorTopicIds.Contains(fp.TopicId) && fp.AuthorType == "student")
+                        .Where(fp => fp.StudentAuthorId != null)
                         .CountAsync()
                     : 0;
 
-                // Count topics managed by this tutor
                 var topicsManagedCount = tutorTopicIds.Count;
 
-                // Calculate response rate (mock - you can adjust this)
                 var responseRate = studentsHelpedCount > 0 ? 92 : 0;
 
-                // Get recent activities
                 var recentActivities = await GetTutorRecentActivities(tutorId);
-
-                // Get questions requiring response
                 var questionsRequiringResponse = await GetQuestionsRequiringResponse(tutorId);
-
-                // Get tutor's topics
                 var myTopics = await GetTutorTopics(tutorId);
 
                 var viewModel = new TutorDashboardViewModel
@@ -186,15 +160,12 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // Helper action to switch roles (for testing)
-
         private async Task<List<StudentActivityItem>> GetStudentRecentActivities(Guid studentId)
         {
             var activities = new List<StudentActivityItem>();
 
-            // Get recent forum posts
             var recentPosts = await _context.ForumPosts
-                .Where(fp => fp.AuthorId == studentId)
+                .Where(fp => fp.StudentAuthorId == studentId)
                 .OrderByDescending(fp => fp.CreatedAt)
                 .Take(2)
                 .ToListAsync();
@@ -210,7 +181,6 @@ namespace CampusLearnPlatform.Controllers
                 });
             }
 
-            // Get recent subscriptions
             var recentSubscriptions = await _context.Subscriptions
                 .Where(s => s.StudentId == studentId)
                 .OrderByDescending(s => s.CreatedAt)
@@ -219,7 +189,6 @@ namespace CampusLearnPlatform.Controllers
 
             foreach (var sub in recentSubscriptions)
             {
-                // Fetch topic separately since navigation property is ignored
                 var topic = await _context.Topics.FindAsync(sub.TopicId);
 
                 activities.Add(new StudentActivityItem
@@ -234,11 +203,10 @@ namespace CampusLearnPlatform.Controllers
             return activities.OrderByDescending(a => a.TimeAgo).Take(4).ToList();
         }
 
-
         private async Task<List<QuestionItem>> GetStudentQuestions(Guid studentId)
         {
             var questions = await _context.ForumPosts
-                .Where(fp => fp.AuthorId == studentId && fp.AuthorType == "student")
+                .Where(fp => fp.StudentAuthorId == studentId)
                 .OrderByDescending(fp => fp.CreatedAt)
                 .Take(3)
                 .ToListAsync();
@@ -248,15 +216,14 @@ namespace CampusLearnPlatform.Controllers
                 Question = q.PostContent?.Length > 50
                     ? q.PostContent.Substring(0, 50) + "..."
                     : q.PostContent ?? "No content",
-                Topic = "General", // You can enhance this by joining with Topic table
-                Status = "Pending", // You can add logic to determine status
+                Topic = "General",
+                Status = "Pending",
                 TimeAgo = GetTimeAgo(q.CreatedAt)
             }).ToList();
         }
 
         private async Task<List<TopicItem>> GetRecommendedTopics(Guid studentId)
         {
-            // Get topics the student is NOT subscribed to
             var subscribedTopicIds = await _context.Subscriptions
                 .Where(s => s.StudentId == studentId)
                 .Select(s => s.TopicId)
@@ -275,14 +242,14 @@ namespace CampusLearnPlatform.Controllers
                     .Where(s => s.TopicId == topic.Id)
                     .CountAsync();
 
-                var tutorCount = await _context.TutorTopics
-                    .Where(tt => tt.TopicId == topic.Id)
+                var tutorCount = await _context.Topics
+                    .Where(t => t.Id == topic.Id && t.TutorCreatorId != null)
                     .CountAsync();
 
                 topicItems.Add(new TopicItem
                 {
                     Title = topic.Title,
-                    Module = "General", 
+                    Module = "General",
                     StudentCount = studentCount,
                     TutorCount = tutorCount
                 });
@@ -294,9 +261,8 @@ namespace CampusLearnPlatform.Controllers
         {
             var activities = new List<TutorActivityItem>();
 
-            // Get recent messages sent by tutor
             var recentMessages = await _context.Messages
-                .Where(m => m.SenderId == tutorId && m.SenderType == "tutor")
+                .Where(m => m.TutorSenderId == tutorId && m.StudentReceiverId != null)
                 .OrderByDescending(m => m.Timestamp)
                 .Take(4)
                 .ToListAsync();
@@ -318,15 +284,13 @@ namespace CampusLearnPlatform.Controllers
 
         private async Task<List<QuestionToAnswerItem>> GetQuestionsRequiringResponse(Guid tutorId)
         {
-            // Get topics this tutor manages
-            var tutorTopicIds = await _context.TutorTopics
-                .Where(tt => tt.TutorId == tutorId)
-                .Select(tt => tt.TopicId)
+            var tutorTopicIds = await _context.Topics
+                .Where(t => t.TutorCreatorId == tutorId)
+                .Select(t => t.Id)
                 .ToListAsync();
 
-            // Get forum posts in those topics
             var questions = await _context.ForumPosts
-                .Where(fp => tutorTopicIds.Contains(fp.TopicId) && fp.AuthorType == "student")
+                .Where(fp => fp.StudentAuthorId != null)
                 .OrderByDescending(fp => fp.CreatedAt)
                 .Take(3)
                 .ToListAsync();
@@ -335,16 +299,15 @@ namespace CampusLearnPlatform.Controllers
 
             foreach (var question in questions)
             {
-                // Get student name
                 var student = await _context.Students
-                    .FirstOrDefaultAsync(s => s.Id == question.AuthorId);
+                    .FirstOrDefaultAsync(s => s.Id == question.StudentAuthorId);
 
                 questionItems.Add(new QuestionToAnswerItem
                 {
                     Question = question.PostContent?.Length > 60
                         ? question.PostContent.Substring(0, 60) + "..."
                         : question.PostContent ?? "No content",
-                    Topic = "General", // Enhance by joining with Topic
+                    Topic = "General",
                     StudentName = student?.Name ?? "Unknown Student",
                     TimeAgo = GetTimeAgo(question.CreatedAt),
                     Priority = "Normal"
@@ -356,28 +319,26 @@ namespace CampusLearnPlatform.Controllers
 
         private async Task<List<TutorTopicItem>> GetTutorTopics(Guid tutorId)
         {
-            var tutorTopics = await _context.TutorTopics
-                .Where(tt => tt.TutorId == tutorId)
+            var tutorTopics = await _context.Topics
+                .Where(t => t.TutorCreatorId == tutorId)
                 .Take(3)
                 .ToListAsync();
 
             var topicItems = new List<TutorTopicItem>();
 
-            foreach (var tt in tutorTopics)
+            foreach (var topic in tutorTopics)
             {
-                var topic = await _context.Topics.FindAsync(tt.TopicId);
-
                 var subscriberCount = await _context.Subscriptions
-                    .Where(s => s.TopicId == tt.TopicId)
+                    .Where(s => s.TopicId == topic.Id)
                     .CountAsync();
 
                 var pendingQuestions = await _context.ForumPosts
-                    .Where(fp => fp.TopicId == tt.TopicId && fp.AuthorType == "student")
+                    .Where(fp => fp.StudentAuthorId != null)
                     .CountAsync();
 
                 topicItems.Add(new TutorTopicItem
                 {
-                    Title = topic?.Title ?? "Unknown Topic",
+                    Title = topic.Title,
                     Module = "General",
                     SubscriberCount = subscriberCount,
                     PendingQuestions = pendingQuestions

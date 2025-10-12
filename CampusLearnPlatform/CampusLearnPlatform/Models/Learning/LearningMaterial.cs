@@ -28,33 +28,31 @@ namespace CampusLearnPlatform.Models.Learning
         [Column("topic_id")]
         public Guid TopicId { get; set; }
 
-        [Column("poster_id")]
-        public Guid PosterId { get; set; }
-
-        [Column("poster_type")]
-        public string PosterType { get; set; }
-
         [Column("uploaded_at")]
         public DateTime UploadedAt { get; set; }
-   
+
+        [Column("student_poster_id")]
+        public Guid? StudentPosterId { get; set; }
+
+        [Column("tutor_poster_id")]
+        public Guid? TutorPosterId { get; set; }
+
+        [Column("admin_poster_id")]
+        public Guid? AdminPosterId { get; set; }
+
         public string Description { get; set; }
         public string FileName { get; set; }
-
         public long FileSize { get; set; }
         public MaterialTypes MaterialType { get; set; }
-    
         public int DownloadCount { get; set; }
         public bool IsPublic { get; set; }
-
-  
-   
         public int UploadedByUserId { get; set; }
+        public Guid PosterId { get; set; }
+        public string PosterType { get; set; }
 
- 
         public virtual Topic Topic { get; set; }
         public virtual User UploadedBy { get; set; }
 
-      
         public LearningMaterial()
         {
             UploadedAt = DateTime.Now;
@@ -71,7 +69,6 @@ namespace CampusLearnPlatform.Models.Learning
             UploadedByUserId = uploadedBy;
         }
 
-    
         public bool ValidateFile()
         {
             return !string.IsNullOrEmpty(FileName) && FileSize > 0;
