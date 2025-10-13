@@ -20,6 +20,8 @@ namespace CampusLearnPlatform.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            TempData.Clear();
+
             HttpContext.Session.Clear();
             return View();
         }

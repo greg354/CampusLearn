@@ -18,120 +18,36 @@
     <!-- Font Awesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Custom CSS - Load after Bootstrap to override -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="@Url.Content("~/css/site.css")" />
 
-    <!-- Favicon (optional) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 </head>
 <body>
-    <!-- Navigation -->
+    <!-- Minimal Authentication Header -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark fixed-top campus-navbar">
+        <nav class="navbar navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Account")">
-                    <i class="fas fa-graduation-cap me-2"></i>CampusLearn™
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="@Url.Action("Login", "Account")">
+                    <i class="fas fa-graduation-cap me-2 text-primary" style="font-size: 1.5rem;"></i>
+                    <span class="text-primary">CampusLearn™</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+                <!-- Theme Toggle Button -->
+                <button class="btn btn-link text-decoration-none theme-toggle-auth"
+                        aria-label="Toggle theme"
+                        onclick="toggleTheme()"
+                        style="border: none; background: none; cursor: pointer;">
+                    <i class="fas fa-moon theme-icon text-muted" style="font-size: 1.2rem;"></i>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Dashboard")">
-                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Index", "Forum")">
-                                <i class="fas fa-comments me-1"></i>Forum
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Browse", "Topics")">
-                                <i class="fas fa-book me-1"></i>Topics
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showComingSoon('Materials')">
-                                <i class="fas fa-folder me-1"></i>Materials
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showComingSoon('Notifications')">
-                                <i class="fas fa-bell me-1"></i>
-                                <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">3</span>
-                            </a>
-                        </li>
-                        <!-- Theme Toggle Button in Navbar -->
-                        <li class="nav-item">
-                            <button class="nav-link btn btn-link theme-toggle-navbar"
-                                    aria-label="Toggle theme"
-                                    onclick="toggleTheme()"
-                                    style="border: none; background: none; cursor: pointer; padding: 0.5rem 0.75rem;">
-                                <i class="fas fa-moon theme-icon"></i>
-                            </button>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>Account
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Profile')"><i class="fas fa-user me-2"></i>My Profile</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Settings')"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
             </div>
         </nav>
     </header>
 
     <!-- Main Content -->
-    <main role="main" class="main-content">
-        
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="container mt-3">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        @TempData["SuccessMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </div>
-            }
-
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="container mt-3">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        @TempData["ErrorMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </div>
-            }
-
-            @if (TempData["InfoMessage"] != null)
-            {
-                <div class="container mt-3">
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        @TempData["InfoMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </div>
-            }
-        }
-
+    <main role="main" class="main-content" style="min-height: calc(100vh - 180px);">
         @RenderBody()
-
     </main>
 
     <!-- Footer -->
@@ -166,11 +82,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- AI Chatbot Button (Floating Bottom Right) -->
-    <button class="ai-chatbot-toggle" aria-label="Open AI Chatbot" onclick="showComingSoon('AI Chatbot')">
-        <i class="fas fa-robot"></i>
-    </button>
 
     <!-- Scripts -->
     <!-- Bootstrap Bundle with Popper -->
@@ -261,61 +172,51 @@
     </script>
 
     <style>
-        /* Theme Toggle Button Styling in Navbar */
-        .theme-toggle-navbar {
-            color: rgba(255, 255, 255, 0.8) !important;
+        /* Auth Header Styling */
+        .navbar-light .navbar-brand:hover {
+            opacity: 0.8;
+        }
+
+        .theme-toggle-auth {
             transition: all 0.3s ease;
         }
 
-            .theme-toggle-navbar:hover {
-                color: rgba(255, 255, 255, 1) !important;
+            .theme-toggle-auth:hover {
                 transform: rotate(180deg);
             }
 
         .theme-icon {
-            font-size: 1.1rem;
-        }
-
-        /* AI Chatbot Button - Bottom Right - FIXED CSS */
-        .ai-chatbot-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-            cursor: pointer;
-            z-index: 1000;
+            font-size: 1.2rem;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
         }
 
-            .ai-chatbot-toggle:hover {
-                transform: scale(1.1);
-                box-shadow: 0 15px 40px rgba(99, 102, 241, 0.6);
-            }
+        /* Auth Container Styling */
+        .main-content {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
 
-            .ai-chatbot-toggle:active {
-                transform: scale(0.95);
-            }
+        /* Footer positioning for auth pages */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
 
         /* Responsive adjustments */
         @@media (max-width: 768px) {
-            .ai-chatbot-toggle
+            .navbar-brand
 
         {
-            width: 50px;
-            height: 50px;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
+        }
+
+        .main-content {
+            padding-top: 1rem;
         }
 
         }

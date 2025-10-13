@@ -100,6 +100,15 @@ namespace CampusLearnPlatform.Controllers
 
         public IActionResult Logout()
         {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            HttpContext.Session.Clear();
+            TempData.Clear();
+
+            _logger.LogInformation("{UserType} logged out: {Email}", userType ?? "User", userEmail ?? "Unknown");
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+
             return RedirectToAction("Login");
         }
 
