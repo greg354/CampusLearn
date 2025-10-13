@@ -379,10 +379,10 @@ namespace CampusLearnPlatform.Controllers
             {
                 var hash = sha256.ComputeHash(userId.ToByteArray());
                 var hashInt = BitConverter.ToInt32(hash, 0);
-                var index = Math.Abs(hashInt % Codenames.Adjectives.Count);
-                var index2 = Math.Abs(hashInt % Codenames.Nouns.Count);
+                var index = Math.Abs(hashInt % Codename.Adjectives.Count);
+                var index2 = Math.Abs(hashInt % Codename.Nouns.Count);
 
-                return $"{Codenames.Adjectives[index]} {Codenames.Nouns[index2]}";
+                return $"{Codename.Adjectives[index]} {Codename.Nouns[index2]}";
             }
         }
 
@@ -412,7 +412,7 @@ namespace CampusLearnPlatform.Controllers
     }
 
     // Codename generator for anonymous users
-    public static class Codenames
+    public static class Codename
     {
         public static List<string> Adjectives = new List<string>
         {

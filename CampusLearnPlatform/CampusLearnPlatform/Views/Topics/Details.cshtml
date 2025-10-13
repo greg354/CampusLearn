@@ -177,7 +177,9 @@
                                         <h6 class="mb-3">
                                             <i class="fas fa-comment-dots me-2"></i>Post a Message
                                         </h6>
-                                        <form>
+                                        <form asp-controller="Topics" asp-action="Reply" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="topicId" value="@Model.Id" />
                                             <div class="mb-3">
                                                 <textarea class="form-control" rows="3" placeholder="Ask a question, share your thoughts, or provide help..."></textarea>
                                             </div>
@@ -186,7 +188,7 @@
                                                     <i class="fas fa-info-circle me-1"></i>
                                                     Be respectful and helpful in your messages
                                                 </small>
-                                                <button type="button" class="btn btn-primary" onclick="showComingSoon('Send Message')">
+                                                <button type="submit" class="btn btn-primary">
                                                     <i class="fas fa-paper-plane me-2"></i>Send Message
                                                 </button>
                                             </div>
