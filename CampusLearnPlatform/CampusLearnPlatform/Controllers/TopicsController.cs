@@ -136,6 +136,7 @@ namespace CampusLearnPlatform.Controllers
 
                 if (topic == null)
                 {
+                    _logger.LogWarning("Topic not found: {TopicId}", id);
                     TempData["ErrorMessage"] = "Topic not found.";
                     return RedirectToAction("Browse");
                 }
@@ -144,25 +145,31 @@ namespace CampusLearnPlatform.Controllers
                 topic.IncrementViewCount();
                 await _context.SaveChangesAsync();
 
-                // Get module name
+                // Get module name - WITH NULL CHECK
                 var module = await _context.Modules.FindAsync(topic.ModuleId);
                 var moduleName = module?.ModuleName ?? "Unknown Module";
 
-                // Get creator information
+                // Get creator information - WITH BETTER NULL HANDLING
                 string creatorName = "Unknown";
                 string creatorType = "Student";
 
                 if (topic.StudentCreatorId.HasValue)
                 {
                     var student = await _context.Students.FindAsync(topic.StudentCreatorId.Value);
-                    creatorName = student?.Name ?? "Unknown Student";
-                    creatorType = "Student";
+                    if (student != null)
+                    {
+                        creatorName = student.Name ?? "Unknown Student";
+                        creatorType = "Student";
+                    }
                 }
                 else if (topic.TutorCreatorId.HasValue)
                 {
                     var tutor = await _context.Tutors.FindAsync(topic.TutorCreatorId.Value);
-                    creatorName = tutor?.Name ?? "Unknown Tutor";
-                    creatorType = "Tutor";
+                    if (tutor != null)
+                    {
+                        creatorName = tutor.Name ?? "Unknown Tutor";
+                        creatorType = "Tutor";
+                    }
                 }
 
                 // Check if user is subscribed
@@ -170,8 +177,8 @@ namespace CampusLearnPlatform.Controllers
                     .AnyAsync(s => s.StudentId == userGuid && s.TopicId == id);
 
                 // Check if user is creator
-                var isCreator = (userType == "Student" && topic.StudentCreatorId == userGuid) ||
-                               (userType == "Tutor" && topic.TutorCreatorId == userGuid);
+                var isCreator = (userType.Equals("Student", StringComparison.OrdinalIgnoreCase) && topic.StudentCreatorId == userGuid) ||
+                               (userType.Equals("Tutor", StringComparison.OrdinalIgnoreCase) && topic.TutorCreatorId == userGuid);
 
                 // Get subscriber count
                 var subscriberCount = await _context.Subscriptions
@@ -189,7 +196,7 @@ namespace CampusLearnPlatform.Controllers
                 var viewModel = new TopicDetailsViewModel
                 {
                     Id = topic.Id,
-                    Title = topic.Title,
+                    Title = topic.Title ?? "Untitled Topic",
                     Description = topic.Description ?? "",
                     Module = moduleName,
                     CreatedBy = creatorName,
@@ -201,9 +208,9 @@ namespace CampusLearnPlatform.Controllers
                     ViewCount = topic.ViewCount,
                     IsSubscribed = isSubscribed,
                     IsCreator = isCreator,
-                    Materials = materials,
-                    Messages = messages,
-                    Subscribers = subscribers
+                    Materials = materials ?? new List<TopicMaterialItem>(),
+                    Messages = messages ?? new List<TopicMessageItem>(),
+                    Subscribers = subscribers ?? new List<TopicSubscriberItem>()
                 };
 
                 return View(viewModel);
@@ -211,23 +218,23 @@ namespace CampusLearnPlatform.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading topic details for {TopicId}", id);
-                TempData["ErrorMessage"] = "Unable to load topic details. Please try again.";
+                TempData["ErrorMessage"] = $"Unable to load topic details: {ex.Message}";
                 return RedirectToAction("Browse");
             }
         }
 
         // GET: Topics/Create
-        public IActionResult Create()
-        {
-            var userId = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["ErrorMessage"] = "Please login to create a topic.";
-                return RedirectToAction("Login", "Account");
-            }
+        /*  public IActionResult Create()
+          {
+              var userId = HttpContext.Session.GetString("UserId");
+              if (string.IsNullOrEmpty(userId))
+              {
+                  TempData["ErrorMessage"] = "Please login to create a topic.";
+                  return RedirectToAction("Login", "Account");
+              }
 
-            return View();
-        }
+              return View();
+          } */
 
         // POST: Topics/Create
         [HttpPost]
@@ -245,7 +252,9 @@ namespace CampusLearnPlatform.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(model);
+                // Instead of returning a view, redirect back to Browse with error message
+                TempData["ErrorMessage"] = "Please fill in all required fields correctly.";
+                return RedirectToAction("Browse");
             }
 
             try
@@ -304,27 +313,30 @@ namespace CampusLearnPlatform.Controllers
                 await _context.SaveChangesAsync();
 
                 // Auto-subscribe creator to the topic
-                var subscription = new Subscriptions
+                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
                 {
-                    Id = Guid.NewGuid(),
-                    StudentId = userId,
-                    TopicId = topic.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-                _context.Subscriptions.Add(subscription);
-                await _context.SaveChangesAsync();
-
+                    var subscription = new Subscriptions
+                    {
+                        Id = Guid.NewGuid(),
+                        StudentId = userId,
+                        TopicId = topic.Id,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true
+                    };
+                    _context.Subscriptions.Add(subscription);
+                    await _context.SaveChangesAsync();
+                }
+                
                 _logger.LogInformation("Topic created: {TopicId} by {UserId}", topic.Id, userId);
-                TempData["SuccessMessage"] = "Topic created successfully! Tutors have been notified.";
+                TempData["SuccessMessage"] = "Topic created successfully!";
 
                 return RedirectToAction("Details", new { id = topic.Id });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating topic");
-                ModelState.AddModelError("", "Unable to create topic. Please try again.");
-                return View(model);
+                TempData["ErrorMessage"] = "Unable to create topic. Please try again.";
+                return RedirectToAction("Browse");
             }
         }
 
