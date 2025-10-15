@@ -9,15 +9,18 @@ namespace CampusLearnPlatform.Models.Communication
         public DateTime StartedAt { get; set; }
         public DateTime? EndedAt { get; set; }
         public bool IsActive { get; set; }
-        public string? SessionData { get; set; }  // Made nullable to handle NULL in database
+        public string? SessionData { get; set; }
         public int MessageCount { get; set; }
         public bool WasEscalated { get; set; }
-        public string? SessionSummary { get; set; }  // Made nullable to handle NULL in database
+        public string? SessionSummary { get; set; }
 
-        public Guid StudentId { get; set; }
+        // Both are nullable - only one should be set
+        public Guid? StudentId { get; set; }
+        public Guid? TutorId { get; set; }
         public int ChatbotId { get; set; }
 
         public virtual Student? Student { get; set; }
+        public virtual Tutor? Tutor { get; set; }
         public virtual ChatBot? Chatbot { get; set; }
 
         public ChatSession()
@@ -30,10 +33,20 @@ namespace CampusLearnPlatform.Models.Communication
             SessionSummary = string.Empty;
         }
 
+        // Constructor for student sessions
         public ChatSession(Guid studentId, int chatbotId) : this()
         {
             StudentId = studentId;
             ChatbotId = chatbotId;
+            TutorId = null;
+        }
+
+        // Constructor for tutor sessions
+        public ChatSession(int chatbotId, Guid tutorId) : this()
+        {
+            TutorId = tutorId;
+            ChatbotId = chatbotId;
+            StudentId = null;
         }
 
         public void StartSession()

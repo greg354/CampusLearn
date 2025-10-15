@@ -372,20 +372,41 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.MessageCount).HasColumnName("message_count").HasDefaultValue(0);
                 entity.Property(e => e.WasEscalated).HasColumnName("was_escalated").HasDefaultValue(false);
                 entity.Property(e => e.SessionSummary).HasColumnName("session_summary");
-                entity.Property(e => e.StudentId).HasColumnName("student_id");
+
+                // Both should be nullable
+                entity.Property(e => e.StudentId).HasColumnName("student_id").IsRequired(false);
+                entity.Property(e => e.TutorId).HasColumnName("tutor_id").IsRequired(false);
+
                 entity.Property(e => e.ChatbotId).HasColumnName("chatbot_id");
 
                 // Relationships
                 entity.HasOne(e => e.Student)
                       .WithMany()
                       .HasForeignKey(e => e.StudentId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Tutor)
+                      .WithMany()
+                      .HasForeignKey(e => e.TutorId)
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired(false);
 
                 entity.HasOne(e => e.Chatbot)
                       .WithMany(c => c.ChatSessions)
                       .HasForeignKey(e => e.ChatbotId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
+            // check constraint
+            modelBuilder.Entity<ChatSession>()
+                .ToTable(t =>
+                {
+                    t.HasCheckConstraint(
+                        "ck_one_user_only",
+                        "(student_id IS NOT NULL AND tutor_id IS NULL) OR (student_id IS NULL AND tutor_id IS NOT NULL)"
+                    );
+                });
 
             // ===== CHAT MESSAGE CONFIGURATION =====
             modelBuilder.Entity<ChatMessage>(entity =>
