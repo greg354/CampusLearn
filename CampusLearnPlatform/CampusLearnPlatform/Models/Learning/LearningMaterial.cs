@@ -40,17 +40,37 @@ namespace CampusLearnPlatform.Models.Learning
         [Column("admin_poster_id")]
         public Guid? AdminPosterId { get; set; }
 
+        [NotMapped]
         public string Description { get; set; }
+
+        [NotMapped]
         public string FileName { get; set; }
+
+        [NotMapped]
         public long FileSize { get; set; }
+
+        [NotMapped]
         public MaterialTypes MaterialType { get; set; }
+
+        [NotMapped]
         public int DownloadCount { get; set; }
+
+        [NotMapped]
         public bool IsPublic { get; set; }
+
+        [NotMapped]
         public int UploadedByUserId { get; set; }
+
+        [NotMapped]
         public Guid PosterId { get; set; }
+
+        [NotMapped]
         public string PosterType { get; set; }
 
+        [NotMapped]
         public virtual Topic Topic { get; set; }
+
+        [NotMapped]
         public virtual User UploadedBy { get; set; }
 
         public LearningMaterial()

@@ -256,12 +256,26 @@
                     <!-- Materials Tab -->
                     <div class="tab-pane fade" id="materials" role="tabpanel">
                         <div class="materials-section">
-                            <!-- Upload Material Button -->
-                            <div class="mb-4">
-                                <button class="btn btn-primary" onclick="showComingSoon('Upload Material')">
-                                    <i class="fas fa-upload me-2"></i>Upload Material
-                                </button>
-                            </div>
+                            <!-- Upload Material Button - Only show to creator -->
+                            @if (Model.IsCreator)
+                            {
+                                <div class="mb-4">
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadMaterialModal">
+                                        <i class="fas fa-upload me-2"></i>Upload Material
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" onclick="location.reload()">
+                                        <i class="fas fa-sync me-2"></i>Refresh
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info mb-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Only the topic creator can upload materials. You can download any available materials below.
+                                </div>
+                            }
+
 
                             <!-- Materials List -->
                             @if (Model.Materials.Any())
@@ -277,7 +291,11 @@
                                                 <div class="col-md-7">
                                                     <h6 class="mb-1">@material.Title</h6>
                                                     <small class="text-muted">
-                                                        @material.FileName • @material.FileSize
+                                                        @material.FileName
+                                                        @if (!string.IsNullOrEmpty(material.FileSize))
+                                                        {
+                                                            <text> • @material.FileSize</text>
+                                                        }
                                                     </small>
                                                     <br>
                                                     <small class="text-muted">
@@ -286,14 +304,15 @@
                                                 </div>
                                                 <div class="col-md-2 text-center">
                                                     <small class="text-muted">
-                                                        <i class="fas fa-download me-1"></i>
-                                                        @material.DownloadCount downloads
+                                                        <i class="fas fa-file-alt me-1"></i>
+                                                        @material.FileType
                                                     </small>
                                                 </div>
                                                 <div class="col-md-2 text-end">
-                                                    <button class="btn btn-sm btn-primary" onclick="showComingSoon('Download')">
+                                                    <a href="@Url.Action("DownloadMaterial", "Topics", new { id = material.Id })"
+                                                       class="btn btn-sm btn-primary">
                                                         <i class="fas fa-download me-1"></i>Download
-                                                    </button>
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -305,6 +324,9 @@
                                 <div class="text-center py-5">
                                     <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">No materials uploaded yet.</p>
+                                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#uploadMaterialModal">
+                                        <i class="fas fa-upload me-2"></i>Be the first to upload!
+                                    </button>
                                 </div>
                             }
                         </div>
@@ -363,6 +385,83 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="uploadMaterialModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload me-2"></i>Upload Learning Material
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="UploadMaterial" asp-controller="Topics" method="post" enctype="multipart/form-data" id="uploadMaterialForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TopicId" value="@Model.Id" />
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-heading me-2"></i>Material Title
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="Title"
+                                   placeholder="E.g., Lecture Notes - Week 5" required>
+                            <small class="text-muted">Give your material a descriptive title</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description (Optional)
+                            </label>
+                            <textarea class="form-control" name="Description" rows="3"
+                                      placeholder="Add any additional information about this material..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-file me-2"></i>Select File
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="file" class="form-control" name="File" id="fileInput" required>
+                            <small class="text-muted">
+                                Maximum file size: 50MB.
+                                Supported formats: PDF, Word, PowerPoint, Excel, Images, Videos, Audio, Code files, Archives
+                            </small>
+                        </div>
+
+                        <!-- File Preview -->
+                        <div id="filePreview" class="alert alert-info" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file fa-2x me-3" id="fileIcon"></i>
+                                <div class="flex-grow-1">
+                                    <strong id="fileName"></strong>
+                                    <br>
+                                    <small id="fileSize" class="text-muted"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>
+                                <strong>Note:</strong> All subscribers to this topic will be notified about this new material.
+                                Make sure your file doesn't contain any sensitive or personal information.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="uploadBtn">
+                            <i class="fas fa-upload me-2"></i>Upload Material
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @functions {
@@ -390,6 +489,70 @@
                     messagesList.scrollTop = messagesList.scrollHeight;
                 }
             }
+        });
+
+
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const preview = document.getElementById('filePreview');
+                const fileName = document.getElementById('fileName');
+                const fileSize = document.getElementById('fileSize');
+                const fileIcon = document.getElementById('fileIcon');
+
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+
+                // Update icon based on file type
+                const extension = file.name.split('.').pop().toLowerCase();
+                let iconClass = 'fa-file';
+
+                if (['pdf'].includes(extension)) {
+                    iconClass = 'fa-file-pdf';
+                } else if (['doc', 'docx'].includes(extension)) {
+                    iconClass = 'fa-file-word';
+                } else if (['ppt', 'pptx'].includes(extension)) {
+                    iconClass = 'fa-file-powerpoint';
+                } else if (['xls', 'xlsx'].includes(extension)) {
+                    iconClass = 'fa-file-excel';
+                } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+                    iconClass = 'fa-file-image';
+                } else if (['mp4', 'avi', 'mov'].includes(extension)) {
+                    iconClass = 'fa-file-video';
+                } else if (['mp3', 'wav'].includes(extension)) {
+                    iconClass = 'fa-file-audio';
+                } else if (['zip', 'rar', '7z'].includes(extension)) {
+                    iconClass = 'fa-file-archive';
+                } else if (['cs', 'java', 'py', 'js', 'html', 'css'].includes(extension)) {
+                    iconClass = 'fa-file-code';
+                }
+
+                fileIcon.className = `fas ${iconClass} fa-2x me-3`;
+                preview.style.display = 'block';
+
+                // Validate file size
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                if (file.size > maxSize) {
+                    alert('File size exceeds 50MB. Please select a smaller file.');
+                    e.target.value = '';
+                    preview.style.display = 'none';
+                }
+            }
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Form submission with loading state
+        document.getElementById('uploadMaterialForm').addEventListener('submit', function(e) {
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
         });
     </script>
 

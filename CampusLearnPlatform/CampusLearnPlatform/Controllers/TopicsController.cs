@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CampusLearnPlatform.Data;
-using CampusLearnPlatform.Models.ViewModels;
+﻿using CampusLearnPlatform.Data;
+using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Learning;
+using CampusLearnPlatform.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -80,7 +81,7 @@ namespace CampusLearnPlatform.Controllers
 
                     allTopics.Add(topicCard);
 
-                    // Add to my topics if user created it
+                   
                     if ((userType == "Student" && topic.StudentCreatorId == userGuid) ||
                         (userType == "Tutor" && topic.TutorCreatorId == userGuid))
                     {
@@ -598,18 +599,48 @@ namespace CampusLearnPlatform.Controllers
                     var tutor = await _context.Tutors.FindAsync(material.TutorPosterId.Value);
                     uploaderName = tutor?.Name ?? "Unknown Tutor";
                 }
+                else if (material.AdminPosterId.HasValue)
+                {
+                    var admin = await _context.Administrators.FindAsync(material.AdminPosterId.Value);
+                    uploaderName = admin?.Name ?? "Unknown Admin";
+                }
+
+                // Extract filename from file path
+                var fileName = Path.GetFileName(material.FilePath);
+                // Remove GUID prefix if it exists
+                if (fileName.Contains('_'))
+                {
+                    fileName = fileName.Substring(fileName.IndexOf('_') + 1);
+                }
+
+                // Calculate file size from actual file on disk (not stored in DB)
+                string fileSize = "Unknown size";
+                try
+                {
+                    var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", material.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(physicalPath))
+                    {
+                        var fileInfo = new FileInfo(physicalPath);
+                        fileSize = FormatFileSize(fileInfo.Length);
+                    }
+                }
+                catch
+                {
+                    // If file doesn't exist or can't be accessed, show unknown
+                    fileSize = "Unknown size";
+                }
 
                 materialItems.Add(new TopicMaterialItem
                 {
                     Id = material.Id,
                     Title = material.Title,
-                    FileName = material.FilePath,
-                    FileType = material.FileType,
-                    FileSize = FormatFileSize(material.FileSize),
+                    FileName = fileName,
+                    FileType = material.FileType.ToString().ToLower(), 
+                    FileSize = fileSize,
                     UploadedBy = uploaderName,
                     UploadedAt = material.UploadedAt,
                     TimeAgo = GetTimeAgo(material.UploadedAt),
-                    DownloadCount = material.DownloadCount
+                    DownloadCount = 0
                 });
             }
 
@@ -738,6 +769,217 @@ namespace CampusLearnPlatform.Controllers
             }
 
             return $"{len:0.##} {sizes[order]}";
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMaterial(UploadMaterialViewModel model)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                TempData["ErrorMessage"] = "Please login to upload materials.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please provide all required information.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+
+            if (model.File == null || model.File.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select a file to upload.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+
+            try
+            {
+                var userId = Guid.Parse(userIdString);
+
+                var topic = await _context.Topics.FindAsync(model.TopicId);
+
+                if (topic == null)
+                {
+                    TempData["ErrorMessage"] = "Topic not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userId) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userId);
+
+                if (!isCreator)
+                {
+                    TempData["ErrorMessage"] = "Only the topic creator can upload materials.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Validate file size (max 50MB)
+                const long maxFileSize = 50 * 1024 * 1024; // 50MB
+                if (model.File.Length > maxFileSize)
+                {
+                    TempData["ErrorMessage"] = "File size cannot exceed 50MB.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".ppt", ".pptx",
+            ".xls", ".xlsx", ".txt", ".zip", ".rar", ".7z",
+            ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov",
+            ".mp3", ".wav", ".cs", ".java", ".py", ".js", ".html", ".css" };
+
+                var fileExtension = Path.GetExtension(model.File.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    TempData["ErrorMessage"] = "File type not supported. Please upload a valid file.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Create uploads directory if it doesn't exist
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "materials");
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.File.FileName)}";
+                var filePath = Path.Combine(uploadsPath, uniqueFileName);
+
+                // Save file to disk
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.File.CopyToAsync(stream);
+                }
+
+                
+                var fileExtensions = Path.GetExtension(model.File.FileName).ToLower();
+                var fileKind = GetFileKindFromExtension(fileExtensions);
+
+                var material = new LearningMaterial
+                {
+                    Id = Guid.NewGuid(),
+                    Title = model.Title,
+                    FilePath = $"/uploads/materials/{uniqueFileName}",
+                    FileType = fileKind.ToString().ToLower(), 
+                    TopicId = model.TopicId,
+                    UploadedAt = DateTime.UtcNow
+                };
+
+                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.StudentPosterId = userId;
+                }
+                else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.TutorPosterId = userId;
+                }
+                else if (userType?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.AdminPosterId = userId;
+                }
+                else
+                {
+                    material.StudentPosterId = userId; // Default to student
+                }
+
+                _context.LearningMaterials.Add(material);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Material uploaded: {MaterialId} to topic {TopicId} by user {UserId}",
+                    material.Id, model.TopicId, userId);
+
+                TempData["SuccessMessage"] = "Material uploaded successfully!";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading material to topic {TopicId}", model.TopicId);
+                TempData["ErrorMessage"] = "Unable to upload material. Please try again.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+        }
+
+        // GET: Topics/DownloadMaterial/5
+        public async Task<IActionResult> DownloadMaterial(Guid id)
+        {
+            try
+            {
+                var material = await _context.LearningMaterials.FindAsync(id);
+
+                if (material == null)
+                {
+                    _logger.LogWarning("Material not found: {MaterialId}", id);
+                    TempData["ErrorMessage"] = "Material not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Get file path
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", material.FilePath.TrimStart('/'));
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    _logger.LogWarning("File not found on disk: {FilePath}", filePath);
+                    TempData["ErrorMessage"] = "File not found.";
+                    return RedirectToAction("Details", new { id = material.TopicId });
+                }
+
+                // Get original filename from the stored path
+                var fileName = Path.GetFileName(material.FilePath);
+                // Remove the GUID prefix for a cleaner download name
+                var displayName = fileName.Contains('_') ? fileName.Substring(fileName.IndexOf('_') + 1) : fileName;
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                var contentType = GetContentType(material.FileType.ToString());
+                return File(memory, contentType, displayName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading material {MaterialId}", id);
+                TempData["ErrorMessage"] = "Unable to download material. Please try again.";
+                return RedirectToAction("Browse");
+            }
+        }
+
+        // Helper method to get content type
+        private string GetContentType(string fileType)
+        {
+            return fileType?.ToLower() switch
+            {
+                "pdf" => "application/pdf",
+                "document" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "presentation" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "spreadsheet" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "image" => "image/jpeg",
+                "video" => "video/mp4",
+                "audio" => "audio/mpeg",
+                "text" => "text/plain",
+                "code" => "text/plain",
+                "archive" => "application/zip",
+                _ => "application/octet-stream"
+            };
+        }
+
+        private FileKind GetFileKindFromExtension(string fileExtension)
+        {
+            return fileExtension.ToLower() switch
+            {
+                ".pdf" => FileKind.pdf,
+                ".mp4" or ".avi" or ".mov" or ".wmv" or ".mkv" => FileKind.video,
+                ".mp3" or ".wav" or ".ogg" or ".m4a" or ".flac" => FileKind.audio,
+                ".ppt" or ".pptx" or ".pps" or ".ppsx" => FileKind.slide,
+                ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => FileKind.image,
+                _ => FileKind.other
+            };
         }
     }
 

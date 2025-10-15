@@ -1,9 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CampusLearnPlatform.Models.Users;
-using CampusLearnPlatform.Models.Learning;
-using CampusLearnPlatform.Models.Communication;
+﻿using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.AI;
+using CampusLearnPlatform.Models.Communication;
+using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.System;
+using CampusLearnPlatform.Models.Users;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal;
 
 namespace CampusLearnPlatform.Data
 {
@@ -36,6 +39,16 @@ namespace CampusLearnPlatform.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+           
+
+            // Configure LearningMaterial FileType to use the enum properly
+            modelBuilder.Entity<LearningMaterial>(entity =>
+            {
+                entity.Property(e => e.FileType)
+                      .HasConversion<string>() // Convert enum to string for PostgreSQL
+                      .HasColumnType("file_kind"); // Use the PostgreSQL enum type
+            });
+
             modelBuilder.Ignore<User>();
             modelBuilder.Ignore<UserProfile>();
 
@@ -211,6 +224,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Title).HasColumnName("title");
                 entity.Property(e => e.FilePath).HasColumnName("file_path");
                 entity.Property(e => e.FileType).HasColumnName("file_type");
+
                 entity.Property(e => e.TopicId).HasColumnName("topic_id");
                 entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at");
                 entity.Property(e => e.StudentPosterId).HasColumnName("student_poster_id");
