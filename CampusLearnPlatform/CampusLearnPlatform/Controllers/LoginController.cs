@@ -116,7 +116,7 @@ namespace CampusLearnPlatform.Controllers
             }
 
             _logger.LogInformation("Student logged in successfully: {Email}", email);
-            TempData["SuccessMessage"] = $"Welcome back, {student.Name}!";
+            //TempData["SuccessMessage"] = $"Welcome back, {student.Name}!";
 
             return RedirectToAction("Index", "Dashboard");
         }
@@ -153,7 +153,7 @@ namespace CampusLearnPlatform.Controllers
             }
 
             _logger.LogInformation("Tutor logged in successfully: {Email}", email);
-            TempData["SuccessMessage"] = $"Welcome back, {tutor.Name}!";
+            //TempData["SuccessMessage"] = $"Welcome back, {tutor.Name}!";
 
             return RedirectToAction("Index", "Dashboard");
         }
@@ -168,3 +168,4 @@ namespace CampusLearnPlatform.Controllers
         }
     }
 }
+
