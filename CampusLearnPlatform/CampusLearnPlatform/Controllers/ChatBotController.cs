@@ -1,6 +1,7 @@
 ﻿using CampusLearnPlatform.Data;
 using CampusLearnPlatform.Models.AI;
 using CampusLearnPlatform.Models.Communication;
+using CampusLearnPlatform.Models.Users;
 using CampusLearnPlatform.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +28,19 @@ namespace CampusLearnPlatform.Controllers
             _logger = logger;
         }
 
+        private bool IsPlatformQuestion(string query)
+        {
+            var platformKeywords = new[]
+            {
+                "upload", "material", "topic", "create", "forum", "post",
+                "tutor", "register", "profile", "settings", "navigation",
+                "how to", "platform", "campuslearn", "website"
+            };
+
+            var queryLower = query.ToLower();
+            return platformKeywords.Any(keyword => queryLower.Contains(keyword));
+        }
+
         // POST: api/ChatBot/chat
         [HttpPost("chat")]
         public async Task<IActionResult> Chat([FromBody] ChatRequest request)
@@ -42,12 +56,7 @@ namespace CampusLearnPlatform.Controllers
                     return Unauthorized(new { error = "You must be logged in to use the chatbot" });
                 }
 
-                //if (userType != "student")
-                //{
-                //    return Forbid("Only students can use the chatbot");
-                //}
-
-                if (!Guid.TryParse(userIdString, out Guid studentId))
+                if (!Guid.TryParse(userIdString, out Guid userId))  // Changed from studentId to userId
                 {
                     return BadRequest(new { error = "Invalid user ID format" });
                 }
@@ -60,29 +69,38 @@ namespace CampusLearnPlatform.Controllers
                 // Get or create chatbot instance
                 var chatbot = await GetOrCreateChatbot();
 
-                // Get or create chat session
-                var session = await GetOrCreateSession(studentId, chatbot.Id);
+                // Get or create chat session - THIS IS THE LINE TO CHANGE
+                var session = await GetOrCreateSession(userId, chatbot.Id);  // Changed from studentId to userId
 
-                // Search FAQs first for quick answers
+
+                // Search FAQs first for quick answers - but only for specific platform questions
                 var faqMatch = await SearchFAQs(request.Message);
+
 
                 string response;
                 bool shouldEscalate = false;
 
-                if (faqMatch != null)
+
+                // Only use FAQ for very specific platform-related questions
+                if (faqMatch != null && IsPlatformQuestion(request.Message))
                 {
-                    // Found a matching FAQ
+                    // Found a matching FAQ for platform questions
                     response = faqMatch.Answer;
                     faqMatch.IncrementViewCount();
                     chatbot.IncrementSuccessfulQueries();
                 }
                 else
                 {
-                    // Use Gemini API for more complex queries
+                    // Use Gemini API for academic and general questions
                     try
                     {
                         // Build context from recent messages
                         var conversationContext = await BuildConversationContext(session.Id);
+
+                        // error logging, after building context:
+                        _logger.LogInformation("Conversation Context Length: {Length}", conversationContext.Length);
+                        _logger.LogInformation("Conversation Context: {Context}", conversationContext);
+
 
                         response = await _geminiService.GenerateContentAsync(request.Message, conversationContext);
 
@@ -141,6 +159,55 @@ namespace CampusLearnPlatform.Controllers
             {
                 _logger.LogError(ex, "Error in Chat endpoint");
                 return StatusCode(500, new { error = "An error occurred while processing your message" });
+            }
+        }
+
+        // GET: api/ChatBot/debug-sessions
+        [HttpGet("debug-sessions")]
+        public async Task<IActionResult> DebugSessions()
+        {
+            try
+            {
+                var userIdString = HttpContext.Session.GetString("UserId");
+                var userType = HttpContext.Session.GetString("UserType");
+
+                if (string.IsNullOrEmpty(userIdString))
+                {
+                    return Unauthorized(new { error = "You must be logged in" });
+                }
+
+                if (!Guid.TryParse(userIdString, out Guid userId))
+                {
+                    return BadRequest(new { error = "Invalid user ID" });
+                }
+
+                var sessions = await _context.ChatSessions
+                    .Where(s => (userType == "student" && s.StudentId == userId) ||
+                               (userType == "tutor" && s.TutorId == userId))
+                    .OrderByDescending(s => s.StartedAt)
+                    .Select(s => new
+                    {
+                        s.Id,
+                        s.StartedAt,
+                        s.IsActive,
+                        s.MessageCount,
+                        s.WasEscalated,
+                        UserType = s.StudentId != null ? "student" : "tutor"
+                    })
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    currentUserId = userId,
+                    userType = userType,
+                    totalSessions = sessions.Count,
+                    sessions = sessions
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in DebugSessions endpoint");
+                return StatusCode(500, new { error = "An error occurred while retrieving sessions" });
             }
         }
 
@@ -316,36 +383,73 @@ namespace CampusLearnPlatform.Controllers
             return chatbot;
         }
 
-        private async Task<ChatSession> GetOrCreateSession(Guid studentId, int chatbotId)
+        private async Task<ChatSession> GetOrCreateSession(Guid userId, int chatbotId)
         {
-            // VALIDATION: First, verify the student exists in the database
-            var isStudent = await _context.Students.AnyAsync(s => s.Id == studentId);
-            var isTutor = await _context.Tutors.AnyAsync(t => t.Id == studentId);
+            var userType = HttpContext.Session.GetString("UserType");
 
-            if (!isStudent && !isTutor)
+            // FIRST: Try to find an existing active session for this user
+            ChatSession? existingSession = null;
+
+            if (userType == "student")
             {
-                _logger.LogError($"User with ID {studentId} not found in database");
-                throw new InvalidOperationException($"User with ID {studentId} does not exist. Please ensure you're logged in with a valid account.");
+                existingSession = await _context.ChatSessions
+                    .FirstOrDefaultAsync(s => s.StudentId == userId && s.IsActive);
+            }
+            else if (userType == "tutor")
+            {
+                existingSession = await _context.ChatSessions
+                    .FirstOrDefaultAsync(s => s.TutorId == userId && s.IsActive);
             }
 
-            // Check for existing active session
-            var session = await _context.ChatSessions
-                .FirstOrDefaultAsync(s => s.StudentId == studentId && s.IsActive);
-
-            if (session == null)
+            // If found, return existing session
+            if (existingSession != null)
             {
-                session = new ChatSession(studentId, chatbotId);
-                _context.ChatSessions.Add(session);
-                await _context.SaveChangesAsync();
+                _logger.LogInformation("Found existing active session: {SessionId} for user {UserId}",
+                    existingSession.Id, userId);
+                return existingSession;
             }
 
-            return session;
+            // Otherwise, create new session
+            ChatSession newSession;
+
+            if (userType == "student")
+            {
+                var studentExists = await _context.Students.AnyAsync(s => s.Id == userId);
+                if (!studentExists)
+                {
+                    throw new InvalidOperationException("Student not found");
+                }
+                newSession = new ChatSession(userId, chatbotId);
+            }
+            else if (userType == "tutor")
+            {
+                var tutorExists = await _context.Tutors.AnyAsync(t => t.Id == userId);
+                if (!tutorExists)
+                {
+                    throw new InvalidOperationException("Tutor not found");
+                }
+                newSession = new ChatSession(chatbotId, userId);
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid user type");
+            }
+
+            _context.ChatSessions.Add(newSession);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Created new session: {SessionId} for user {UserId}",
+                newSession.Id, userId);
+
+            return newSession;
         }
 
         private async Task<FAQ?> SearchFAQs(string query)
         {
-            var keywords = query.ToLower().Split(' ')
+            var keywords = query.ToLower()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Where(w => w.Length > 3)
+                .Select(w => w.Trim())
                 .ToList();
 
             if (!keywords.Any())
@@ -355,11 +459,18 @@ namespace CampusLearnPlatform.Controllers
                 .Where(f => f.IsActive)
                 .ToListAsync();
 
-            // Simple keyword matching
+            // Improved matching logic
             foreach (var faq in faqs)
             {
                 var questionLower = faq.Question.ToLower();
-                if (keywords.Any(k => questionLower.Contains(k)))
+                var answerLower = faq.Answer.ToLower();
+
+                // Count how many keywords match
+                var matchCount = keywords.Count(k =>
+                    questionLower.Contains(k) || answerLower.Contains(k));
+
+                // Only return FAQ if at least 2 keywords match and it's not a generic question
+                if (matchCount >= 2 && !IsGenericQuestion(query))
                 {
                     return faq;
                 }
@@ -368,39 +479,94 @@ namespace CampusLearnPlatform.Controllers
             return null;
         }
 
+        private bool IsGenericQuestion(string query)
+        {
+            var genericQuestions = new[]
+            {
+                "what", "how", "why", "when", "where", "explain", "describe",
+                "tell me about", "what is", "what are", "can you"
+            };
+
+            var queryLower = query.ToLower();
+            return genericQuestions.Any(g => queryLower.StartsWith(g));
+        }
+
         private async Task<string> BuildConversationContext(int sessionId)
         {
-            var recentMessages = await _context.ChatMessages
-                .Where(m => m.SessionId == sessionId)
-                .OrderByDescending(m => m.CreatedAt)
-                .Take(5)
-                .ToListAsync();
-
-            if (!recentMessages.Any())
-                return string.Empty;
-
-            var context = "Recent conversation:\n";
-            foreach (var msg in recentMessages.OrderBy(m => m.CreatedAt))
+            try
             {
-                context += $"Student: {msg.Message}\nAssistant: {msg.Response}\n";
-            }
+                var recentMessages = await _context.ChatMessages
+                    .Where(m => m.SessionId == sessionId)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Take(8)
+                    .OrderBy(m => m.CreatedAt)
+                    .ToListAsync();
 
-            return context;
+                _logger.LogInformation("Building context from {Count} messages for session {SessionId}",
+                    recentMessages.Count, sessionId);
+
+                if (!recentMessages.Any())
+                {
+                    _logger.LogInformation("No recent messages found for session {SessionId}", sessionId);
+                    return "No previous conversation in this session.";
+                }
+
+                var context = "=== CONVERSATION CONTEXT ===\n";
+                context += "IMPORTANT: Remember all personal details mentioned in this conversation.\n";
+                context += "If the user mentions their name, programming language, or what they're studying, REMEMBER IT.\n\n";
+                context += "Previous messages in this chat:\n";
+
+                foreach (var msg in recentMessages)
+                {
+                    if (msg.IsFromStudent)
+                    {
+                        context += $"USER: {msg.Message}\n";
+
+                        // Extract and highlight personal details
+                        if (msg.Message.ToLower().Contains("name is"))
+                            context += "[NOTE: User mentioned their name here]\n";
+                        if (msg.Message.ToLower().Contains("help with") || msg.Message.ToLower().Contains("learning"))
+                            context += "[NOTE: User mentioned what they're studying/needing help with]\n";
+                    }
+                    else
+                    {
+                        context += $"ASSISTANT: {msg.Response}\n";
+                    }
+                    context += "---\n";
+                }
+
+                context += "\nCURRENT CONVERSATION - REMEMBER THE ABOVE CONTEXT!\n";
+                _logger.LogInformation("Built context with {Length} characters", context.Length);
+
+                return context;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error building conversation context for session {SessionId}", sessionId);
+                return "Error loading conversation history.";
+            }
         }
 
         private bool ShouldEscalateToTutor(string query, string response)
         {
-            // Keywords that suggest complex academic questions
-            var escalationKeywords = new[]
+            // Don't escalate for basic programming help requests
+            var basicHelpPhrases = new[]
             {
-                "assignment", "project", "exam", "test", "homework",
-                "code", "programming", "algorithm", "don't understand",
-                "confused", "help me solve", "how do i", "explain",
-                "deadline", "submission"
+                "help with", "need help", "explain", "what is", "how to"
             };
 
             var queryLower = query.ToLower();
-            return escalationKeywords.Any(keyword => queryLower.Contains(keyword));
+            if (basicHelpPhrases.Any(phrase => queryLower.Contains(phrase)))
+                return false;
+
+            // Only escalate for complex, assignment-specific requests
+            var escalationPhrases = new[]
+            {
+                "solve this", "debug my", "fix my code", "assignment due",
+                "project help", "exam preparation", "complex problem"
+            };
+
+            return escalationPhrases.Any(phrase => queryLower.Contains(phrase));
         }
     }
 
