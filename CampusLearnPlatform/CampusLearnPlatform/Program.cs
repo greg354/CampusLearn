@@ -1,4 +1,5 @@
 using CampusLearnPlatform.Data;
+using CampusLearnPlatform.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearnPlatform
@@ -36,6 +37,9 @@ namespace CampusLearnPlatform
 
             // Add HTTP client for external APIs
             builder.Services.AddHttpClient();
+
+            // Register Gemini Service
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
 
             // Add logging
             builder.Services.AddLogging(logging =>

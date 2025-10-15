@@ -1,73 +1,87 @@
-﻿using CampusLearnPlatform.Models.Users;
-using System;
-using CampusLearnPlatform.Enums;
-using CampusLearnPlatform.Models.Learning;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace CampusLearnPlatform.Models.AI
 {
+    [Table("escalation_request")]
     public class EscalationRequest
     {
-
+        [Column("id")]
         public int Id { get; set; }
-        public string Query { get; set; }
+
+        [Column("session_id")]
+        public int SessionId { get; set; }
+
+        [Column("student_id")]
+        public Guid StudentId { get; set; }
+
+        [Column("query")]
+        public string Query { get; set; } = string.Empty;
+
+        [Column("module")]
+        public string Module { get; set; } = string.Empty;
+
+        [Column("priority")]
+        public string Priority { get; set; } = "Medium";
+
+        [Column("status")]
+        public string Status { get; set; } = "Pending";
+
+        [Column("created_at")]
         public DateTime CreatedAt { get; set; }
-        public EscalationStatus Status { get; set; }
-        public DateTime? AssignedAt { get; set; }
+
+        [Column("assigned_tutor_id")]  // FIXED: Use snake_case to match database
+        public Guid? AssignedTutorId { get; set; }
+
+        [Column("resolved_at")]  // FIXED: Use snake_case to match database
         public DateTime? ResolvedAt { get; set; }
-        public string Resolution { get; set; }
-        public Priorities Priority { get; set; }
 
-   
-        public int StudentId { get; set; }
-        public int? TutorId { get; set; }
-        public int ModuleId { get; set; }
-
-
-        public virtual Student Student { get; set; }
-        public virtual Tutor Tutor { get; set; }
-        public virtual Module Module { get; set; }
+        // Navigation properties - commented out to avoid circular dependencies
+        // public virtual ChatSession? ChatSession { get; set; }
+        // public virtual Student? Student { get; set; }
 
         public EscalationRequest()
         {
-            CreatedAt = DateTime.Now;
-            Status = EscalationStatus.Pending;
-            Priority = Priorities.Medium;
+            CreatedAt = DateTime.UtcNow;
+            Status = "Pending";
+            Priority = "Medium";
         }
 
-        public EscalationRequest(string query, int studentId, int moduleId) : this()
+        public EscalationRequest(int sessionId, Guid studentId, string query, string module)
+            : this()
         {
-            Query = query;
+            SessionId = sessionId;
             StudentId = studentId;
-            ModuleId = moduleId;
+            Query = query;
+            Module = module;
         }
 
+        // Helper methods
+        public void AssignToTutor(Guid tutorId)
+        {
+            AssignedTutorId = tutorId;
+            Status = "Assigned";
+        }
 
-        public void AssignToTutor(int tutorId)
+        public void Resolve()
         {
-            TutorId = tutorId;
-            Status = EscalationStatus.Assigned;
-            AssignedAt = DateTime.Now;
+            Status = "Resolved";
+            ResolvedAt = DateTime.UtcNow;
         }
-        public void Resolve(string resolution)
+
+        public void Cancel()
         {
-            Status = EscalationStatus.Resolved;
-            Resolution = resolution;
-            ResolvedAt = DateTime.Now;
+            Status = "Cancelled";
         }
-        public void SetPriority(Priorities priority)
+
+        public bool IsResolved()
         {
-            Priority = priority;
+            return Status == "Resolved";
         }
-        public bool IsOverdue()
+
+        public bool IsPending()
         {
-            return Status == EscalationStatus.Pending && CreatedAt < DateTime.Now.AddHours(-24);
-        }
-        public void UpdateStatus(EscalationStatus newStatus)
-        {
-            Status = newStatus;
-        }
-        public TimeSpan GetWaitTime()
-        {
-            return (AssignedAt ?? DateTime.Now).Subtract(CreatedAt);
+            return Status == "Pending";
         }
     }
 }
