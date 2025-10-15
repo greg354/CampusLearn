@@ -81,7 +81,7 @@ namespace CampusLearnPlatform.Controllers
 
                     allTopics.Add(topicCard);
 
-                   
+
                     if ((userType == "Student" && topic.StudentCreatorId == userGuid) ||
                         (userType == "Tutor" && topic.TutorCreatorId == userGuid))
                     {
@@ -327,7 +327,7 @@ namespace CampusLearnPlatform.Controllers
                     _context.Subscriptions.Add(subscription);
                     await _context.SaveChangesAsync();
                 }
-                
+
                 _logger.LogInformation("Topic created: {TopicId} by {UserId}", topic.Id, userId);
                 TempData["SuccessMessage"] = "Topic created successfully!";
 
@@ -635,7 +635,7 @@ namespace CampusLearnPlatform.Controllers
                     Id = material.Id,
                     Title = material.Title,
                     FileName = fileName,
-                    FileType = material.FileType.ToString().ToLower(), 
+                    FileType = material.FileType.ToString().ToLower(),
                     FileSize = fileSize,
                     UploadedBy = uploaderName,
                     UploadedAt = material.UploadedAt,
@@ -855,7 +855,7 @@ namespace CampusLearnPlatform.Controllers
                     await model.File.CopyToAsync(stream);
                 }
 
-                
+
                 var fileExtensions = Path.GetExtension(model.File.FileName).ToLower();
                 var fileKind = GetFileKindFromExtension(fileExtensions);
 
@@ -864,7 +864,7 @@ namespace CampusLearnPlatform.Controllers
                     Id = Guid.NewGuid(),
                     Title = model.Title,
                     FilePath = $"/uploads/materials/{uniqueFileName}",
-                    FileType = fileKind.ToString().ToLower(), 
+                    FileType = fileKind.ToString().ToLower(),
                     TopicId = model.TopicId,
                     UploadedAt = DateTime.UtcNow
                 };
@@ -980,6 +980,145 @@ namespace CampusLearnPlatform.Controllers
                 ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => FileKind.image,
                 _ => FileKind.other
             };
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetTopicForEdit(Guid id)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Please login to edit topics." });
+            }
+
+            try
+            {
+                Guid userGuid = Guid.Parse(userId);
+                var topic = await _context.Topics.FindAsync(id);
+
+                if (topic == null)
+                {
+                    return Json(new { success = false, message = "Topic not found." });
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
+
+                if (!isCreator)
+                {
+                    return Json(new { success = false, message = "Only the topic creator can edit this topic." });
+                }
+
+                // Get module name
+                var module = await _context.Modules.FindAsync(topic.ModuleId);
+                var moduleName = module?.ModuleName ?? "Unknown Module";
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        id = topic.Id,
+                        title = topic.Title,
+                        description = topic.Description,
+                        module = moduleName,
+                        priority = topic.Priority.ToString()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading topic for edit {TopicId}", id);
+                return Json(new { success = false, message = "Unable to load topic data." });
+            }
+        }
+
+        // POST: Topics/Update
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(Guid id, string title, string description, string module, string priority)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "Please login to edit topics.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
+            {
+                TempData["ErrorMessage"] = "Title and description are required.";
+                return RedirectToAction("Details", new { id = id });
+            }
+
+            try
+            {
+                Guid userGuid = Guid.Parse(userId);
+                var topic = await _context.Topics.FindAsync(id);
+
+                if (topic == null)
+                {
+                    TempData["ErrorMessage"] = "Topic not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
+
+                if (!isCreator)
+                {
+                    TempData["ErrorMessage"] = "Only the topic creator can edit this topic.";
+                    return RedirectToAction("Details", new { id = id });
+                }
+
+                // Find or create module if it changed
+                var moduleEntity = await _context.Modules
+                    .FirstOrDefaultAsync(m => m.ModuleName == module);
+
+                if (moduleEntity == null)
+                {
+                    moduleEntity = new Module
+                    {
+                        Id = Guid.NewGuid(),
+                        ModuleName = module,
+                        Description = $"Module for {module}"
+                    };
+                    _context.Modules.Add(moduleEntity);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Update topic
+                topic.Title = title;
+                topic.Description = description;
+                topic.ModuleId = moduleEntity.Id;
+
+                if (Enum.TryParse<Priorities>(priority, out var priorityEnum))
+                {
+                    topic.Priority = priorityEnum;
+                }
+
+                _context.Topics.Update(topic);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Topic {TopicId} updated by user {UserId}", topic.Id, userGuid);
+                TempData["SuccessMessage"] = "Topic updated successfully!";
+
+                return RedirectToAction("Details", new { id = topic.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating topic {TopicId}", id);
+                TempData["ErrorMessage"] = "Unable to update topic. Please try again.";
+                return RedirectToAction("Details", new { id = id });
+            }
         }
     }
 

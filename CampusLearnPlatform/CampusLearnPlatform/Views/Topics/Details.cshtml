@@ -123,7 +123,7 @@
 
                             @if (Model.IsCreator)
                             {
-                                <button class="btn btn-outline-primary" onclick="showComingSoon('Edit Topic')">
+                                <button class="btn btn-outline-primary" onclick="loadEditTopicModal()">
                                     <i class="fas fa-edit me-2"></i>Edit Topic
                                 </button>
                                 <button class="btn btn-outline-warning" onclick="showComingSoon('Change Status')">
@@ -324,9 +324,7 @@
                                 <div class="text-center py-5">
                                     <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">No materials uploaded yet.</p>
-                                    <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#uploadMaterialModal">
-                                        <i class="fas fa-upload me-2"></i>Be the first to upload!
-                                    </button>
+                                    
                                 </div>
                             }
                         </div>
@@ -462,6 +460,89 @@
             </div>
         </div>
     </div>
+
+
+
+    <div class="modal fade" id="editTopicModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Edit Topic
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form asp-action="Update" asp-controller="Topics" method="post" id="editTopicForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="editTopicId" value="@Model.Id" />
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-heading me-2"></i>Topic Title
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="title" id="editTitle"
+                                   placeholder="E.g., Need help with Recursion in Data Structures" required>
+                            <small class="text-muted">Choose a clear, descriptive title</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Description
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" name="description" id="editDescription" rows="4"
+                                      placeholder="Describe your topic in detail..." required></textarea>
+                            <small class="text-muted">Provide context to help others understand your topic</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-book me-2"></i>Module
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="module" id="editModule" required>
+                                <option value="">-- Select Module --</option>
+                                @foreach (var module in CreateTopicViewModel.AvailableModules)
+                                {
+                                    <option value="@module">@module</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-exclamation-circle me-2"></i>Priority
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="priority" id="editPriority" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                            <small class="text-muted">How urgent is this topic?</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <small>
+                                <strong>Note:</strong> All subscribers will be notified about significant changes to this topic.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="updateTopicBtn">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @functions {
@@ -553,6 +634,41 @@
             const uploadBtn = document.getElementById('uploadBtn');
             uploadBtn.disabled = true;
             uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+        });
+
+            function loadEditTopicModal() {
+            const topicId = '@Model.Id';
+
+            // Fetch topic data
+            fetch(`/Topics/GetTopicForEdit/${topicId}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Populate form fields
+                        document.getElementById('editTopicId').value = result.data.id;
+                        document.getElementById('editTitle').value = result.data.title;
+                        document.getElementById('editDescription').value = result.data.description;
+                        document.getElementById('editModule').value = result.data.module;
+                        document.getElementById('editPriority').value = result.data.priority;
+
+                        // Show modal
+                        const modal = new bootstrap.Modal(document.getElementById('editTopicModal'));
+                        modal.show();
+                    } else {
+                        alert(result.message || 'Unable to load topic data');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while loading topic data');
+                });
+        }
+
+        // Handle form submission with loading state
+        document.getElementById('editTopicForm')?.addEventListener('submit', function() {
+            const updateBtn = document.getElementById('updateTopicBtn');
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
         });
     </script>
 
