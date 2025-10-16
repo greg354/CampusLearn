@@ -1,10 +1,4 @@
-﻿@{
-    // Use session to detect "logged in" (since the app doesn’t use Identity cookies)
-    var studentName = Context.Session.GetString("CurrentStudentName");
-    var isLoggedIn = !string.IsNullOrWhiteSpace(studentName);
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -38,79 +32,62 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top campus-navbar">
             <div class="container">
-                <a class="navbar-brand fw-bold" href="@Url.Action("Login", "Account")">
+                <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Account")">
                     <i class="fas fa-graduation-cap me-2"></i>CampusLearn™
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        @if (isLoggedIn)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Index", "Dashboard")">
-                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Index", "Forum")">
-                                    <i class="fas fa-comments me-1"></i>Forum
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Browse", "Topics")">
-                                    <i class="fas fa-book me-1"></i>Topics
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#" onclick="showComingSoon('Materials')">
-                                    <i class="fas fa-folder me-1"></i>Materials
-                                </a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Dashboard")">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "Forum")">
+                                <i class="fas fa-comments me-1"></i>Forum
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Browse", "Topics")">
+                                <i class="fas fa-book me-1"></i>Topics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showComingSoon('Materials')">
+                                <i class="fas fa-folder me-1"></i>Materials
+                            </a>
+                        </li>
                     </ul>
-
                     <ul class="navbar-nav">
-                        @if (isLoggedIn)
-                        {
-                            <li class="nav-item d-flex align-items-center text-white me-2">
-                                <small class="opacity-75">Hi, @studentName</small>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user-circle me-1"></i>Account
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="@Url.Action("My", "Profile")">
-                                            <i class="fas fa-user me-2"></i>My Profile
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#" onclick="showComingSoon('Settings')">
-                                            <i class="fas fa-cog me-2"></i>Settings
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" href="@Url.Action("Logout", "Account")">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-light text-primary me-2" href="@Url.Action("Login", "Account")">Sign In</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-light" href="@Url.Action("Register", "Account")">Create Account</a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showComingSoon('Notifications')">
+                                <i class="fas fa-bell me-1"></i>
+                                <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">3</span>
+                            </a>
+                        </li>
+                        <!-- Theme Toggle Button in Navbar -->
+                        <li class="nav-item">
+                            <button class="nav-link btn btn-link theme-toggle-navbar"
+                                    aria-label="Toggle theme"
+                                    onclick="toggleTheme()"
+                                    style="border: none; background: none; cursor: pointer; padding: 0.5rem 0.75rem;">
+                                <i class="fas fa-moon theme-icon"></i>
+                            </button>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>Account
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Profile')"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Settings')"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -119,41 +96,41 @@
 
     <!-- Main Content -->
     <main role="main" class="main-content">
-        Profile_
-        <!-- TempData alerts -->
-        @if (TempData["SuccessMessage"] != null)
-=======
 
         @if (User.Identity?.IsAuthenticated == true)
-        main
         {
-            <div class="container mt-4">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 </div>
-            </div>
-        }
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="container mt-4">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 </div>
-            </div>
-        }
-        @if (TempData["InfoMessage"] != null)
-        {
-            <div class="container mt-4">
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="fas fa-info-circle me-2"></i>
-                    @TempData["InfoMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <div class="container mt-3">
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        @TempData["InfoMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                 </div>
-            </div>
+            }
         }
 
         @RenderBody()
@@ -168,27 +145,8 @@
                         <strong>CampusLearn™</strong> - Empowering Student Success Through Peer-Powered Learning
                     </p>
                 </div>
-         Profile_
-                <div class="col-md-6 text-md-end">
-                    <div class="mb-2">
-                        <a href="#" onclick="showComingSoon('About'); return false;" class="text-muted text-decoration-none me-3">
-                            <small>About</small>
-                        </a>
-                        <a href="#" onclick="showComingSoon('Help'); return false;" class="text-muted text-decoration-none me-3">
-                            <small>Help</small>
-                        </a>
-                        <a href="@Url.Action("Privacy", "Home")" class="text-muted text-decoration-none me-3">
-                            <small>Privacy</small>
-                        </a>
-                        <a href="#" onclick="showComingSoon('Terms'); return false;" class="text-muted text-decoration-none">
-                            <small>Terms</small>
-                        </a>
-                    </div>
-                    <p class="mb-0 text-muted">
-=======
                 <div class="col-md-6 text-center text-md-end">
                     <p class="mb-0">
-       main
                         <small>&copy; @DateTime.Now.Year Belgium Campus. All rights reserved.</small>
                     </p>
                 </div>
@@ -202,11 +160,12 @@
     </button>
 
     <!-- Scripts -->
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
     <script src="~/js/site.js"></script>
 
-         Profile_
-=======
     <!-- Chatbot JS  -->
     <script src="~/js/chatbot.js"></script>
     <script>
@@ -215,20 +174,52 @@
     </script>
 
     <!-- Page-specific Scripts -->
-         main
     @await RenderSectionAsync("Scripts", required: false)
 
+    <!-- Theme Toggle Functionality -->
     <script>
-        // Simple "Coming Soon" modal
+        // Theme toggle function
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const icon = document.querySelector('.theme-icon');
+
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Update icon
+            if (newTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const icon = document.querySelector('.theme-icon');
+
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            // Set initial icon
+            if (savedTheme === 'dark') {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Global Coming Soon Function
         if (typeof showComingSoon === 'undefined') {
             function showComingSoon(feature) {
                 const modal = document.createElement('div');
                 modal.style.cssText = `
-         Profile_
-                    position: fixed; inset: 0; background: rgba(0,0,0,.7);
-                    display:flex; align-items:center; justify-content:center;
-                    z-index: 2000; backdrop-filter: blur(5px);
-=======
                     position: fixed;
                     top: 0;
                     left: 0;
@@ -239,21 +230,9 @@
                     align-items: center;
                     justify-content: center;
                     z-index: 10000;
-         main
                 `;
+
                 modal.innerHTML = `
-         Profile_
-                    <div style="background:#fff; padding:2rem; border-radius:1rem; max-width:420px; margin:1rem; text-align:center;">
-                        <div style="width:72px;height:72px;margin:0 auto 1rem;background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-rocket fa-2x" style="color:#fff;"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2">${feature} Coming Soon</h5>
-                        <p class="text-muted mb-3">This feature is currently under development.</p>
-                        <button class="btn btn-primary" onclick="this.closest('div').parentElement.remove()">Got it</button>
-                    </div>`;
-                document.body.appendChild(modal);
-                modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-=======
                     <div style="
                         background: white;
                         padding: 2rem;
@@ -285,14 +264,11 @@
                 };
 
                 document.body.appendChild(modal);
-         main
             }
         }
     </script>
 
     <style>
-         Profile_
-=======
         /* Theme Toggle Button Styling in Navbar */
         .theme-toggle-navbar {
             color: rgba(255, 255, 255, 0.8) !important;
@@ -309,7 +285,6 @@
         }
 
         /* AI Chatbot Button - Bottom Right */
-        main
         .ai-chatbot-toggle {
             position: fixed;
             bottom: 2rem;
@@ -320,10 +295,10 @@
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
             border: none;
-            box-shadow: 0 10px 30px rgba(99,102,241,.4);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
             cursor: pointer;
             z-index: 1000;
-            transition: all .3s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -331,13 +306,14 @@
         }
 
             .ai-chatbot-toggle:hover {
-                transform: scale(1.08);
+                transform: scale(1.1);
+                box-shadow: 0 15px 40px rgba(99, 102, 241, 0.6);
             }
 
-           Profile_
-        /* keep your existing site.css for theme/branding */
-    </style>
-=======
+            .ai-chatbot-toggle:active {
+                transform: scale(0.95);
+            }
+
         /* Responsive adjustments */
         @@media (max-width: 768px) {
             .ai-chatbot-toggle
@@ -351,6 +327,5 @@
         }
 
         }</style>
-        main
 </body>
 </html>
