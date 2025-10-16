@@ -296,11 +296,50 @@
         });
 
         // View filter
-        document.getElementById('viewFilter').addEventListener('change', function(e) {
-            // This would filter to show My Topics or Subscribed Topics
-            // For now, just show all topics
-            filterTopics();
+                document.getElementById('viewFilter').addEventListener('change', function(e) {
+            const viewType = this.value;
+            filterTopicsByView(viewType);
         });
+
+               function filterTopicsByView(viewType) {
+            const topicCards = document.querySelectorAll('.topic-card');
+            let visibleCount = 0;
+
+            topicCards.forEach(card => {
+                let show = false;
+
+                if (viewType === 'All') {
+                    show = true;
+                } else if (viewType === 'My') {
+                    // Better detection for "My Topics"
+                    const cardHtml = card.innerHTML;
+
+                    // Method 1: Look for "You" in any text content
+                    const allText = card.textContent || card.innerText;
+                    show = allText.includes('You');
+
+                    // Method 2: Check if this card exists in the server-side "My Topics" collection
+                    // We'll need to add a data attribute for this (see below)
+
+                } else if (viewType === 'Subscribed') {
+                    // Look for subscribed state
+                    const subscribeBtn = card.querySelector('.btn-success');
+                    show = subscribeBtn !== null &&
+                           (subscribeBtn.textContent.includes('Subscribed') ||
+                            subscribeBtn.innerHTML.includes('fa-check'));
+                }
+
+                if (show) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+            console.log(`Showing ${visibleCount} topics for view: ${viewType}`);
+        }
 
         // Quick filter tags
         document.querySelectorAll('.filter-tag').forEach(tag => {
@@ -431,7 +470,7 @@
         .topic-card .card-title a:hover {
             color: #1b6ec2 !important;
         }
-
+        w
         .topic-stats span {
             display: flex;
             align-items: center;
