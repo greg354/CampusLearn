@@ -1,4 +1,5 @@
 using CampusLearnPlatform.Data;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearnPlatform
@@ -9,21 +10,18 @@ namespace CampusLearnPlatform
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<CampusLearnDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // ========= DB (PostgreSQL via EF Core) =========
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            builder.Services.AddDbContext<CampusLearnDbContext>(o => o.UseNpgsql(connectionString));
+            builder.Services.AddDbContext<MinimalRegistrationDBContext>(o => o.UseNpgsql(connectionString));
 
-            builder.Services.AddDbContext<MinimalRegistrationDBContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-            // Add services to the container.
+            // ========= MVC + Views =========
             builder.Services.AddControllersWithViews(options =>
             {
-                // Add custom model binding and validation
-                options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
-                    _ => "This field is required.");
+                options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "This field is required.");
             });
 
-            // Add session support (for temporary data)
+            // ========= Session =========
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -31,29 +29,25 @@ namespace CampusLearnPlatform
                 options.Cookie.IsEssential = true;
             });
 
-            // Add memory cache
+            // ========= Utilities =========
             builder.Services.AddMemoryCache();
-
-            // Add HTTP client for external APIs
             builder.Services.AddHttpClient();
-
-            // Add logging
             builder.Services.AddLogging(logging =>
             {
                 logging.AddConsole();
                 logging.AddDebug();
             });
 
-            // Configure application settings
+            // ========= Cookie policy (for safer defaults) =========
             builder.Services.Configure<CookiePolicyOptions>(options =>
             {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
+                options.CheckConsentNeeded = _ => true;
+                options.MinimumSameSitePolicy = SameSiteMode.Lax;
             });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // ========= Pipeline =========
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -69,9 +63,10 @@ namespace CampusLearnPlatform
 
             app.UseRouting();
 
-            app.UseSession();
+            app.UseCookiePolicy();
+            app.UseSession();          // <-- ensure session middleware is enabled
 
-            // FIXED: Change default route to Account/Login instead of Home/Index
+            // Default route goes to Account/Login
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
