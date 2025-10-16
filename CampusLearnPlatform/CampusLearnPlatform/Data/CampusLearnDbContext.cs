@@ -1,9 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CampusLearnPlatform.Models.Users;
-using CampusLearnPlatform.Models.Learning;
-using CampusLearnPlatform.Models.Communication;
+﻿using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.AI;
+using CampusLearnPlatform.Controllers;
+using CampusLearnPlatform.Models.Communication;
+using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.System;
+using CampusLearnPlatform.Models.Users;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal;
 
 namespace CampusLearnPlatform.Data
 {
@@ -34,8 +38,26 @@ namespace CampusLearnPlatform.Data
         public DbSet<Subscriptions> Subscriptions { get; set; }
         public DbSet<TutorSubscription> TutorSubscriptions { get; set; }
 
+        // Chatbot entities
+        public DbSet<ChatBot> ChatBots { get; set; }
+        public DbSet<ChatSession> ChatSessions { get; set; }
+        public DbSet<FAQ> FAQs { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<EscalationRequest> EscalationRequests { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+           
+
+            // Configure LearningMaterial FileType to use the enum properly
+            modelBuilder.Entity<LearningMaterial>(entity =>
+            {
+                entity.Property(e => e.FileType)
+                      .HasConversion<string>() // Convert enum to string for PostgreSQL
+                      .HasColumnType("file_kind"); // Use the PostgreSQL enum type
+            });
+
             modelBuilder.Ignore<User>();
             modelBuilder.Ignore<UserProfile>();
 
@@ -211,6 +233,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Title).HasColumnName("title");
                 entity.Property(e => e.FilePath).HasColumnName("file_path");
                 entity.Property(e => e.FileType).HasColumnName("file_type");
+
                 entity.Property(e => e.TopicId).HasColumnName("topic_id");
                 entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at");
                 entity.Property(e => e.StudentPosterId).HasColumnName("student_poster_id");
@@ -298,7 +321,125 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             });
 
+            // ===== CHATBOT CONFIGURATION =====
+            modelBuilder.Entity<ChatBot>(entity =>
+            {
+                entity.ToTable("chatbot");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Version).HasColumnName("version").HasMaxLength(50).IsRequired();
+                entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(e => e.LastUpdated).HasColumnName("last_updated");
+                entity.Property(e => e.ConfidenceThreshold).HasColumnName("confidence_threshold").HasColumnType("decimal(3,2)").HasDefaultValue(0.70);
+                entity.Property(e => e.TotalQueries).HasColumnName("total_queries").HasDefaultValue(0);
+                entity.Property(e => e.SuccessfulQueries).HasColumnName("successful_queries").HasDefaultValue(0);
+            });
+
+            // ===== FAQ CONFIGURATION =====
+            modelBuilder.Entity<FAQ>(entity =>
+            {
+                entity.ToTable("faq");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Question).HasColumnName("question").IsRequired();
+                entity.Property(e => e.Answer).HasColumnName("answer").IsRequired();
+                entity.Property(e => e.Category).HasColumnName("category").HasMaxLength(100);
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+                entity.Property(e => e.ViewCount).HasColumnName("view_count").HasDefaultValue(0);
+                entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(e => e.Keywords).HasColumnName("keywords");
+                entity.Property(e => e.ChatbotId).HasColumnName("chatbot_id");
+
+                // Relationship
+                entity.HasOne(e => e.Chatbot)
+                      .WithMany(c => c.FAQs)
+                      .HasForeignKey(e => e.ChatbotId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ===== CHAT SESSION CONFIGURATION =====
+            modelBuilder.Entity<ChatSession>(entity =>
+            {
+                entity.ToTable("chat_session");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.StartedAt).HasColumnName("started_at");
+                entity.Property(e => e.EndedAt).HasColumnName("ended_at");
+                entity.Property(e => e.IsActive).HasColumnName("is_active").HasDefaultValue(true);
+                entity.Property(e => e.SessionData).HasColumnName("session_data");
+                entity.Property(e => e.MessageCount).HasColumnName("message_count").HasDefaultValue(0);
+                entity.Property(e => e.WasEscalated).HasColumnName("was_escalated").HasDefaultValue(false);
+                entity.Property(e => e.SessionSummary).HasColumnName("session_summary");
+
+                // Both should be nullable
+                entity.Property(e => e.StudentId).HasColumnName("student_id").IsRequired(false);
+                entity.Property(e => e.TutorId).HasColumnName("tutor_id").IsRequired(false);
+
+                entity.Property(e => e.ChatbotId).HasColumnName("chatbot_id");
+
+                // Relationships
+                entity.HasOne(e => e.Student)
+                      .WithMany()
+                      .HasForeignKey(e => e.StudentId)
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Tutor)
+                      .WithMany()
+                      .HasForeignKey(e => e.TutorId)
+                      .OnDelete(DeleteBehavior.Cascade)
+                      .IsRequired(false);
+
+                entity.HasOne(e => e.Chatbot)
+                      .WithMany(c => c.ChatSessions)
+                      .HasForeignKey(e => e.ChatbotId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // check constraint
+            modelBuilder.Entity<ChatSession>()
+                .ToTable(t =>
+                {
+                    t.HasCheckConstraint(
+                        "ck_one_user_only",
+                        "(student_id IS NOT NULL AND tutor_id IS NULL) OR (student_id IS NULL AND tutor_id IS NOT NULL)"
+                    );
+                });
+
+            // ===== CHAT MESSAGE CONFIGURATION =====
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.ToTable("chat_message");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.SessionId).HasColumnName("session_id");
+                entity.Property(e => e.Message).HasColumnName("message").IsRequired();
+                entity.Property(e => e.Response).HasColumnName("response").IsRequired();
+                entity.Property(e => e.IsFromStudent).HasColumnName("is_from_student").HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.RequiresEscalation).HasColumnName("requires_escalation").HasDefaultValue(false);
+            });
+
+            // ===== ESCALATION REQUEST CONFIGURATION =====
+            modelBuilder.Entity<EscalationRequest>(entity =>
+            {
+                entity.ToTable("escalation_request");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.SessionId).HasColumnName("session_id");
+                entity.Property(e => e.StudentId).HasColumnName("student_id");
+                entity.Property(e => e.Query).HasColumnName("query").IsRequired();
+                entity.Property(e => e.Module).HasColumnName("module").HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Priority).HasColumnName("priority").HasMaxLength(50).HasDefaultValue("Medium");
+                entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("Pending");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+            });
+
             base.OnModelCreating(modelBuilder);
+
+
         }
     }
 }

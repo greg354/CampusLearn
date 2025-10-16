@@ -12,10 +12,13 @@ namespace CampusLearnPlatform.Controllers
         private readonly CampusLearnDbContext _context;
         private readonly ILogger<AccountController> _logger;
 
+ Profile_
         // Session keys
         private const string SK_StudentId = "CurrentStudentId";
         private const string SK_StudentName = "CurrentStudentName";
         private const string SK_StudentEmail = "CurrentStudentEmail";
+=======
+ main
 
         public AccountController(CampusLearnDbContext context, ILogger<AccountController> logger)
         {

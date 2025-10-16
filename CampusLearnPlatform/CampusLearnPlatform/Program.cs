@@ -1,5 +1,9 @@
 using CampusLearnPlatform.Data;
+ Profile_
 using Microsoft.AspNetCore.CookiePolicy;
+=======
+using CampusLearnPlatform.Services;
+ main
 using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearnPlatform
@@ -32,6 +36,14 @@ namespace CampusLearnPlatform
             // ========= Utilities =========
             builder.Services.AddMemoryCache();
             builder.Services.AddHttpClient();
+            Profile_
+=======
+
+            // Register Gemini Service
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
+
+            // Add logging
+            main
             builder.Services.AddLogging(logging =>
             {
                 logging.AddConsole();
