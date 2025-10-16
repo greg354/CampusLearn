@@ -93,39 +93,7 @@
                         <div class="replies-list">
                             @foreach (var reply in Model.Replies)
                             {
-                                <div class="reply-card">
-                                    <div class="reply-votes">
-                                        <button class="vote-btn upvote" onclick="votePost('@reply.Id', 'up')">
-                                            <i class="fas fa-chevron-up"></i>
-                                        </button>
-                                        <span class="vote-count" id="votes-@reply.Id">@reply.NetVotes</span>
-                                        <button class="vote-btn downvote" onclick="votePost('@reply.Id', 'down')">
-                                            <i class="fas fa-chevron-down"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="reply-content">
-                                        <div class="reply-meta mb-2">
-                                            <span class="author">
-                                                @if (reply.IsAnonymous)
-                                                {
-                                                    <i class="fas fa-user-secret me-1"></i>
-                                                }
-                                                else
-                                                {
-                                                    <i class="fas fa-user me-1"></i>
-                                                }
-                                                <strong>@reply.AuthorName</strong>
-                                            </span>
-                                            <span class="time text-muted">
-                                                <i class="fas fa-clock me-1"></i>@reply.TimeAgo
-                                            </span>
-                                        </div>
-                                        <div class="reply-text">
-                                            @Html.Raw(reply.Content.Replace("\n", "<br/>"))
-                                        </div>
-                                    </div>
-                                </div>
+                                @await Html.PartialAsync("_ReplyCard", reply)
                             }
                         </div>
                     }
@@ -147,12 +115,16 @@
                             </h5>
                         </div>
                         <div class="card-body">
+                            <div id="replyingTo" style="display: none; margin-bottom: 1rem;"></div>
+
                             <form asp-controller="Forum" asp-action="Reply" method="post" id="replyForm">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="ParentPostId" value="@Model.Id" />
+                                <input type="hidden" id="ParentReplyId" name="ParentReplyId" value="" />
 
                                 <div class="form-group mb-3">
                                     <textarea name="Content"
+                                              id="replyContent"
                                               class="form-control"
                                               rows="5"
                                               placeholder="Share your thoughts..."
@@ -169,11 +141,11 @@
                                                 <input name="IsAnonymous"
                                                        class="form-check-input"
                                                        type="checkbox"
-                                                       id="replyAnonymous"
+                                                       id="IsAnonymous"
                                                        value="true" />
-                                                <input type="hidden" name="IsAnonymous" value="false" />
-                                                <label class="form-check-label" for="replyAnonymous">
-                                                    <i class="fas fa-user-secret me-1"></i>Reply Anonymously
+                                                <label class="form-check-label" for="IsAnonymous">
+                                                    <i class="fas fa-user-secret me-1"></i>
+                                                    <strong>Reply Anonymously</strong>
                                                 </label>
                                             </div>
                                         </div>
@@ -206,10 +178,13 @@
                     : '@Url.Action("Downvote", "Forum")';
 
                 const response = await fetch(url, {
+
                     method: 'POST',
                     headers: {
+
                         'Content-Type': 'application/json',
                         'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+
                     },
                     body: JSON.stringify({ id: postId })
                 });
@@ -217,43 +192,195 @@
                 const data = await response.json();
 
                 if (data.success) {
+
                     const voteElement = document.getElementById('votes-' + postId);
                     voteElement.textContent = data.netVotes;
+
+                    // Update button states
+                    const upvoteBtn = document.querySelector(`button[onclick="votePost('${postId}', 'up')"]`);
+                    const downvoteBtn = document.querySelector(`button[onclick="votePost('${postId}', 'down')"]`);
+
+                    if (data.hasUserUpvoted) {
+
+                        upvoteBtn.classList.add('active', 'upvote');
+                        downvoteBtn.classList.remove('active', 'downvote');
+
+                    } else if (data.hasUserDownvoted) {
+
+                        downvoteBtn.classList.add('active', 'downvote');
+                        upvoteBtn.classList.remove('active', 'upvote');
+
+                    } else {
+
+                        upvoteBtn.classList.remove('active', 'upvote');
+                        downvoteBtn.classList.remove('active', 'downvote');
+
+                    }
 
                     // Visual feedback
                     voteElement.style.transform = 'scale(1.3)';
                     voteElement.style.fontWeight = 'bold';
+
                     setTimeout(() => {
+
                         voteElement.style.transform = 'scale(1)';
                         voteElement.style.fontWeight = 'normal';
+
+                    }, 300);
+                } else {
+                    alert(data.message || 'Unable to vote. Please login first.');
+                }
+
+            } catch (error) {
+
+                console.error('Error voting:', error);
+                alert('An error occurred. Please try again.');
+
+            }
+        }
+
+        async function voteReply(replyId, direction) {
+            try {
+                const url = direction === 'up'
+                    ? '@Url.Action("UpvoteReply", "Forum")'
+                    : '@Url.Action("DownvoteReply", "Forum")';
+
+                const response = await fetch(url, {
+
+                    method: 'POST',
+                    headers: {
+
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+
+                    },
+                    body: JSON.stringify({ id: replyId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+
+                    const voteElement = document.getElementById('votes-' + replyId);
+                    voteElement.textContent = data.netVotes;
+
+                    // Update button states
+                    const upvoteBtn = document.querySelector(`button[onclick="voteReply('${replyId}', 'up')"]`);
+                    const downvoteBtn = document.querySelector(`button[onclick="voteReply('${replyId}', 'down')"]`);
+
+                    if (data.hasUserUpvoted) {
+
+                        upvoteBtn.classList.add('active', 'upvote');
+                        downvoteBtn.classList.remove('active', 'downvote');
+
+                    } else if (data.hasUserDownvoted) {
+
+                        downvoteBtn.classList.add('active', 'downvote');
+                        upvoteBtn.classList.remove('active', 'upvote');
+
+                    } else {
+
+                        upvoteBtn.classList.remove('active', 'upvote');
+                        downvoteBtn.classList.remove('active', 'downvote');
+
+                    }
+
+                    // Visual feedback
+                    voteElement.style.transform = 'scale(1.3)';
+                    voteElement.style.fontWeight = 'bold';
+
+                    setTimeout(() => {
+
+                        voteElement.style.transform = 'scale(1)';
+                        voteElement.style.fontWeight = 'normal';
+
                     }, 300);
                 } else {
                     alert(data.message || 'Unable to vote. Please login first.');
                 }
             } catch (error) {
+
                 console.error('Error voting:', error);
                 alert('An error occurred. Please try again.');
+
             }
         }
 
+        function replyToReply(replyId, authorName) {
+
+            const replyBox = document.getElementById('replyBox');
+            const parentReplyIdInput = document.getElementById('ParentReplyId');
+            const replyContent = document.getElementById('replyContent');
+            const replyingToDiv = document.getElementById('replyingTo');
+
+            // Set the parent reply ID
+            parentReplyIdInput.value = replyId;
+
+            // Show "replying to" indicator
+            replyingToDiv.innerHTML = `
+
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+
+                    <span><i class="fas fa-reply me-2"></i>Replying to <strong>${authorName}</strong></span>
+                    <button type="button" class="btn-close" onclick="cancelReplyToReply()"></button>
+
+                </div>
+
+            `;
+
+            replyingToDiv.style.display = 'block';
+
+            // Focus on textarea and scroll to it
+            replyContent.focus();
+            replyBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        }
+
+        function cancelReplyToReply() {
+
+            const parentReplyIdInput = document.getElementById('ParentReplyId');
+            const replyingToDiv = document.getElementById('replyingTo');
+
+            parentReplyIdInput.value = '';
+            replyingToDiv.style.display = 'none';
+
+        }
+
+        function clearReply() {
+
+            document.getElementById('replyContent').value = '';
+            document.getElementById('IsAnonymous').checked = false;
+            cancelReplyToReply();
+
+        }
+
         function sharePost() {
+
             const url = window.location.href;
+
             if (navigator.share) {
+
                 navigator.share({
+
                     title: '@Model.Title',
                     url: url
-                }).catch(err => console.log('Error sharing:', err));
+
+                }).catch(console.error);
             } else {
                 // Fallback: copy to clipboard
                 navigator.clipboard.writeText(url).then(() => {
+
                     alert('Link copied to clipboard!');
+
                 });
             }
         }
 
         function clearReply() {
+
             document.querySelector('[name="Content"]').value = '';
             document.getElementById('replyAnonymous').checked = false;
+
         }
 
         // Reply form submission
@@ -261,11 +388,14 @@
         const replyBtn = document.getElementById('replyBtn');
 
         replyForm.addEventListener('submit', function(e) {
+
             const content = document.querySelector('[name="Content"]').value.trim();
 
             if (!content) {
+
                 e.preventDefault();
                 alert('Please enter your reply');
+
                 return;
             }
 
@@ -276,22 +406,31 @@
 
         // Auto-grow textarea
         const textarea = document.querySelector('textarea[name="Content"]');
+
         textarea.addEventListener('input', function() {
+
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
 
         // Smooth scroll animations
         const observer = new IntersectionObserver((entries) => {
+
             entries.forEach(entry => {
+
                 if (entry.isIntersecting) {
+
                     entry.target.classList.add('visible');
+
                 }
             });
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.reply-card').forEach(card => {
+
             observer.observe(card);
+
         });
+
     </script>
 }

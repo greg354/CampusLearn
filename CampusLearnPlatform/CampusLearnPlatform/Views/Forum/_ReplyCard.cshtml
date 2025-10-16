@@ -1,0 +1,124 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.ForumReplyViewModel
+
+<div class="reply-card">
+    <div class="reply-votes">
+        <button class="vote-btn upvote @(Model.HasUserUpvoted ? "active" : "")"
+                onclick="voteReply('@Model.Id', 'up')">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+        <span class="vote-count @(Model.NetVotes > 0 ? "positive" : Model.NetVotes < 0 ? "negative" : "")"
+              id="votes-@Model.Id">
+            @Model.NetVotes
+        </span>
+        <button class="vote-btn downvote @(Model.HasUserDownvoted ? "active" : "")"
+                onclick="voteReply('@Model.Id', 'down')">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+
+    <div class="reply-content">
+        <div class="reply-meta mb-2">
+            <span class="author">
+                @if (Model.IsAnonymous)
+                {
+                    <i class="fas fa-user-secret me-1"></i>
+                }
+                else
+                {
+                    <i class="fas fa-user me-1"></i>
+                }
+                <strong>@Model.AuthorName</strong>
+            </span>
+            <span class="time text-muted">
+                <i class="fas fa-clock me-1"></i>@Model.TimeAgo
+            </span>
+        </div>
+
+        <div class="reply-text mb-3">
+            @Html.Raw(Model.Content.Replace("\n", "<br/>"))
+        </div>
+
+        <div class="reply-actions">
+            <button class="btn btn-sm btn-outline-primary"
+                    onclick="replyToReply('@Model.Id', '@Model.AuthorName')">
+                <i class="fas fa-reply me-1"></i>Reply
+            </button>
+        </div>
+
+        @* Display nested replies with improved visual hierarchy *@
+        @if (Model.NestedReplies != null && Model.NestedReplies.Any())
+        {
+            <div class="nested-replies mt-3" id="nested-@Model.Id">
+                @if (Model.NestedReplies.Count > 1)
+                {
+                    <div class="thread-info mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-comments me-1"></i>
+                            @Model.NestedReplies.Count replies in this thread
+                        </small>
+                    </div>
+                }
+                @foreach (var nestedReply in Model.NestedReplies)
+                {
+                    <div class="nested-reply-card">
+                        <div class="reply-votes">
+                            <button class="vote-btn upvote @(nestedReply.HasUserUpvoted ? "active" : "")"
+                                    onclick="voteReply('@nestedReply.Id', 'up')">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                            <span class="vote-count @(nestedReply.NetVotes > 0 ? "positive" : nestedReply.NetVotes < 0 ? "negative" : "")"
+                                  id="votes-@nestedReply.Id">
+                                @nestedReply.NetVotes
+                            </span>
+                            <button class="vote-btn downvote @(nestedReply.HasUserDownvoted ? "active" : "")"
+                                    onclick="voteReply('@nestedReply.Id', 'down')">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+
+                        <div class="reply-content">
+                            <div class="reply-meta mb-2">
+                                <span class="author">
+                                    @if (nestedReply.IsAnonymous)
+                                    {
+                                        <i class="fas fa-user-secret me-1"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user me-1"></i>
+                                    }
+                                    <strong>@nestedReply.AuthorName</strong>
+                                </span>
+                                <span class="time text-muted">
+                                    <i class="fas fa-clock me-1"></i>@nestedReply.TimeAgo
+                                </span>
+                            </div>
+
+                            <div class="reply-text mb-2">
+                                @Html.Raw(nestedReply.Content.Replace("\n", "<br/>"))
+                            </div>
+
+                            <div class="reply-actions">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="replyToReply('@nestedReply.Id', '@nestedReply.AuthorName')">
+                                    <i class="fas fa-reply me-1"></i>Reply
+                                </button>
+                            </div>
+
+                            @* Recursively render deeper nested replies *@
+                            @if (nestedReply.NestedReplies != null && nestedReply.NestedReplies.Any())
+                            {
+                                <div class="nested-replies mt-2">
+                                    @foreach (var deepReply in nestedReply.NestedReplies)
+                                    {
+                                        @await Html.PartialAsync("_ReplyCard", deepReply)
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

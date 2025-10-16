@@ -154,11 +154,14 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // GET: Forum/Details/5
+        // GET: Forum/Details
         public async Task<IActionResult> Details(Guid id, string sortBy = "recent")
         {
             try
             {
+                var userIdString = HttpContext.Session.GetString("UserId");
+                Guid? currentUserId = string.IsNullOrEmpty(userIdString) ? null : Guid.Parse(userIdString);
+
                 var post = await _context.ForumPosts.FindAsync(id);
                 if (post == null)
                 {
@@ -166,10 +169,20 @@ namespace CampusLearnPlatform.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Get replies from forum_post_reply table
+                // Get all replies for this post
                 var replies = await _context.ForumPostReplies
                     .Where(r => r.PostId == id)
                     .ToListAsync();
+
+                // Get user's votes if logged in
+                Dictionary<Guid, string> userVotes = new();
+                if (currentUserId.HasValue)
+                {
+                    var votes = await _context.ForumVotes
+                        .Where(v => v.UserId == currentUserId.Value && v.TargetType == "Reply")
+                        .ToDictionaryAsync(v => v.TargetId, v => v.VoteType);
+                    userVotes = votes;
+                }
 
                 var (title, content) = ExtractTitleAndContent(post.PostContent);
 
@@ -190,32 +203,60 @@ namespace CampusLearnPlatform.Controllers
                     CurrentSort = sortBy
                 };
 
+                // Build ALL reply view models first
+                var allReplyViewModels = new List<ForumReplyViewModel>();
+
                 foreach (var reply in replies)
                 {
                     var replyAuthorId = reply.StudentPosterId ?? reply.TutorPosterId ?? Guid.Empty;
                     var replyAuthorType = reply.StudentPosterId.HasValue ? "Student" : "Tutor";
 
-                    viewModel.Replies.Add(new ForumReplyViewModel
+                    var replyViewModel = new ForumReplyViewModel
                     {
                         Id = reply.ReplyId,
+                        ParentReplyId = reply.ParentReplyId,
                         Content = reply.ReplyContent,
                         AuthorName = reply.IsAnonymous
                             ? GetCodename(replyAuthorId)
                             : GetAuthorName(replyAuthorId, replyAuthorType),
                         IsAnonymous = reply.IsAnonymous,
                         CreatedAt = reply.CreatedAt,
-                        UpvoteCount = 0, // Replies don't have votes in current schema
-                        DownvoteCount = 0,
-                        NetVotes = 0
-                    });
+                        UpvoteCount = reply.UpvoteCount,
+                        DownvoteCount = reply.DownvoteCount,
+                        NetVotes = reply.GetNetVotes(),
+                        HasUserUpvoted = userVotes.ContainsKey(reply.ReplyId) && userVotes[reply.ReplyId] == "Upvote",
+                        HasUserDownvoted = userVotes.ContainsKey(reply.ReplyId) && userVotes[reply.ReplyId] == "Downvote",
+                        NestedReplies = new List<ForumReplyViewModel>()
+                    };
+
+                    allReplyViewModels.Add(replyViewModel);
                 }
 
-                // Apply sorting to replies
-                viewModel.Replies = sortBy.ToLower() switch
+                // Separate top-level replies from nested ones
+                var topLevelReplies = allReplyViewModels.Where(r => r.ParentReplyId == null).ToList();
+                var nestedReplies = allReplyViewModels.Where(r => r.ParentReplyId != null).ToList();
+
+                // Attach nested replies to their parents
+                foreach (var nestedReply in nestedReplies)
                 {
-                    "oldest" => viewModel.Replies.OrderBy(r => r.CreatedAt).ToList(),
-                    _ => viewModel.Replies.OrderByDescending(r => r.CreatedAt).ToList()
+                    var parent = FindReplyById(topLevelReplies, nestedReply.ParentReplyId.Value);
+                    if (parent != null)
+                    {
+                        parent.NestedReplies.Add(nestedReply);
+                    }
+                }
+
+                // Apply sorting ONLY to top-level replies
+                topLevelReplies = sortBy.ToLower() switch
+                {
+                    "upvoted" => topLevelReplies.OrderByDescending(r => r.NetVotes)
+                                               .ThenByDescending(r => r.CreatedAt).ToList(),
+                    "oldest" => topLevelReplies.OrderBy(r => r.CreatedAt).ToList(),
+                    _ => topLevelReplies.OrderByDescending(r => r.CreatedAt).ToList()
                 };
+
+                // IMPORTANT: Only set top-level replies
+                viewModel.Replies = topLevelReplies;
 
                 return View(viewModel);
             }
@@ -227,7 +268,21 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // POST: Forum/Reply
+        private ForumReplyViewModel? FindReplyById(List<ForumReplyViewModel> replies, Guid replyId)
+        {
+            foreach (var reply in replies)
+            {
+                if (reply.Id == replyId)
+                    return reply;
+
+                var found = FindReplyById(reply.NestedReplies, replyId);
+                if (found != null)
+                    return found;
+            }
+            return null;
+        }
+
+        // Updated Reply method to support nested replies
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reply(CreateReplyViewModel model)
@@ -255,6 +310,7 @@ namespace CampusLearnPlatform.Controllers
                 {
                     ReplyId = Guid.NewGuid(),
                     PostId = model.ParentPostId,
+                    ParentReplyId = model.ParentReplyId, // NEW: Support nested replies
                     ReplyContent = model.Content,
                     IsAnonymous = model.IsAnonymous,
                     CreatedAt = DateTime.UtcNow
@@ -295,6 +351,8 @@ namespace CampusLearnPlatform.Controllers
         public async Task<IActionResult> Upvote([FromBody] VoteRequest request)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
             if (string.IsNullOrEmpty(userIdString))
             {
                 return Json(new { success = false, message = "Please login to vote" });
@@ -302,16 +360,65 @@ namespace CampusLearnPlatform.Controllers
 
             try
             {
+                var userId = Guid.Parse(userIdString);
                 var post = await _context.ForumPosts.FindAsync(request.Id);
+
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
                 }
 
-                post.Upvote();
+                // Check for existing vote
+                var existingVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Post");
+
+                if (existingVote != null)
+                {
+                    if (existingVote.VoteType == "Upvote")
+                    {
+                        // Remove upvote
+                        if (post.UpvoteCount > 0) post.UpvoteCount--;
+                        _context.ForumVotes.Remove(existingVote);
+                    }
+                    else
+                    {
+                        // Change downvote to upvote
+                        if (post.DownvoteCount > 0) post.DownvoteCount--;
+                        post.Upvote();
+                        existingVote.VoteType = "Upvote";
+                        existingVote.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    // New upvote
+                    post.Upvote();
+                    _context.ForumVotes.Add(new ForumVote
+                    {
+                        UserId = userId,
+                        UserType = userType ?? "Student",
+                        TargetId = request.Id,
+                        TargetType = "Post",
+                        VoteType = "Upvote"
+                    });
+                }
+
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, netVotes = post.GetNetVotes() });
+                var currentVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Post");
+
+                return Json(new
+                {
+                    success = true,
+                    netVotes = post.GetNetVotes(),
+                    hasUserUpvoted = currentVote?.VoteType == "Upvote",
+                    hasUserDownvoted = currentVote?.VoteType == "Downvote"
+                });
             }
             catch (Exception ex)
             {
@@ -325,6 +432,8 @@ namespace CampusLearnPlatform.Controllers
         public async Task<IActionResult> Downvote([FromBody] VoteRequest request)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
             if (string.IsNullOrEmpty(userIdString))
             {
                 return Json(new { success = false, message = "Please login to vote" });
@@ -332,20 +441,232 @@ namespace CampusLearnPlatform.Controllers
 
             try
             {
+                var userId = Guid.Parse(userIdString);
                 var post = await _context.ForumPosts.FindAsync(request.Id);
+
                 if (post == null)
                 {
                     return Json(new { success = false, message = "Post not found" });
                 }
 
-                post.Downvote();
+                // Check for existing vote
+                var existingVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Post");
+
+                if (existingVote != null)
+                {
+                    if (existingVote.VoteType == "Downvote")
+                    {
+                        // Remove downvote
+                        if (post.DownvoteCount > 0) post.DownvoteCount--;
+                        _context.ForumVotes.Remove(existingVote);
+                    }
+                    else
+                    {
+                        // Change upvote to downvote
+                        if (post.UpvoteCount > 0) post.UpvoteCount--;
+                        post.Downvote();
+                        existingVote.VoteType = "Downvote";
+                        existingVote.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    // New downvote
+                    post.Downvote();
+                    _context.ForumVotes.Add(new ForumVote
+                    {
+                        UserId = userId,
+                        UserType = userType ?? "Student",
+                        TargetId = request.Id,
+                        TargetType = "Post",
+                        VoteType = "Downvote"
+                    });
+                }
+
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, netVotes = post.GetNetVotes() });
+                var currentVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Post");
+
+                return Json(new
+                {
+                    success = true,
+                    netVotes = post.GetNetVotes(),
+                    hasUserUpvoted = currentVote?.VoteType == "Upvote",
+                    hasUserDownvoted = currentVote?.VoteType == "Downvote"
+                });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error downvoting post {PostId}", request.Id);
+                return Json(new { success = false, message = "Unable to downvote" });
+            }
+        }
+
+        // Add new methods for reply voting
+        [HttpPost]
+        public async Task<IActionResult> UpvoteReply([FromBody] VoteRequest request)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Json(new { success = false, message = "Please login to vote" });
+            }
+
+            try
+            {
+                var userId = Guid.Parse(userIdString);
+                var reply = await _context.ForumPostReplies.FindAsync(request.Id);
+
+                if (reply == null)
+                {
+                    return Json(new { success = false, message = "Reply not found" });
+                }
+
+                // Check for existing vote
+                var existingVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Reply");
+
+                if (existingVote != null)
+                {
+                    if (existingVote.VoteType == "Upvote")
+                    {
+                        // Remove upvote
+                        reply.RemoveUpvote();
+                        _context.ForumVotes.Remove(existingVote);
+                    }
+                    else
+                    {
+                        // Change downvote to upvote
+                        reply.RemoveDownvote();
+                        reply.Upvote();
+                        existingVote.VoteType = "Upvote";
+                        existingVote.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    // New upvote
+                    reply.Upvote();
+                    _context.ForumVotes.Add(new ForumVote
+                    {
+                        UserId = userId,
+                        UserType = userType ?? "Student",
+                        TargetId = request.Id,
+                        TargetType = "Reply",
+                        VoteType = "Upvote"
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Check current user's vote status
+                var currentVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Reply");
+
+                return Json(new
+                {
+                    success = true,
+                    netVotes = reply.GetNetVotes(),
+                    hasUserUpvoted = currentVote?.VoteType == "Upvote",
+                    hasUserDownvoted = currentVote?.VoteType == "Downvote"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error upvoting reply {ReplyId}", request.Id);
+                return Json(new { success = false, message = "Unable to upvote" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DownvoteReply([FromBody] VoteRequest request)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Json(new { success = false, message = "Please login to vote" });
+            }
+
+            try
+            {
+                var userId = Guid.Parse(userIdString);
+                var reply = await _context.ForumPostReplies.FindAsync(request.Id);
+
+                if (reply == null)
+                {
+                    return Json(new { success = false, message = "Reply not found" });
+                }
+
+                // Check for existing vote
+                var existingVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Reply");
+
+                if (existingVote != null)
+                {
+                    if (existingVote.VoteType == "Downvote")
+                    {
+                        // Remove downvote
+                        reply.RemoveDownvote();
+                        _context.ForumVotes.Remove(existingVote);
+                    }
+                    else
+                    {
+                        // Change upvote to downvote
+                        reply.RemoveUpvote();
+                        reply.Downvote();
+                        existingVote.VoteType = "Downvote";
+                        existingVote.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+                else
+                {
+                    // New downvote
+                    reply.Downvote();
+                    _context.ForumVotes.Add(new ForumVote
+                    {
+                        UserId = userId,
+                        UserType = userType ?? "Student",
+                        TargetId = request.Id,
+                        TargetType = "Reply",
+                        VoteType = "Downvote"
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Check current user's vote status
+                var currentVote = await _context.ForumVotes
+                    .FirstOrDefaultAsync(v => v.UserId == userId &&
+                                             v.TargetId == request.Id &&
+                                             v.TargetType == "Reply");
+
+                return Json(new
+                {
+                    success = true,
+                    netVotes = reply.GetNetVotes(),
+                    hasUserUpvoted = currentVote?.VoteType == "Upvote",
+                    hasUserDownvoted = currentVote?.VoteType == "Downvote"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downvoting reply {ReplyId}", request.Id);
                 return Json(new { success = false, message = "Unable to downvote" });
             }
         }

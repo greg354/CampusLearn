@@ -165,13 +165,30 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById('votes-' + postId).textContent = data.netVotes;
+                    const voteElement = document.getElementById('votes-' + postId);
+                    voteElement.textContent = data.netVotes;
+
+                    // Update button states
+                    const upvoteBtn = document.querySelector(`button[onclick="votePost('${postId}', 'up')"]`);
+                    const downvoteBtn = document.querySelector(`button[onclick="votePost('${postId}', 'down')"]`);
+
+                    if (upvoteBtn && downvoteBtn) {
+                        if (data.hasUserUpvoted) {
+                            upvoteBtn.classList.add('active', 'upvote');
+                            downvoteBtn.classList.remove('active', 'downvote');
+                        } else if (data.hasUserDownvoted) {
+                            downvoteBtn.classList.add('active', 'downvote');
+                            upvoteBtn.classList.remove('active', 'upvote');
+                        } else {
+                            upvoteBtn.classList.remove('active', 'upvote');
+                            downvoteBtn.classList.remove('active', 'downvote');
+                        }
+                    }
 
                     // Visual feedback
-                    const voteCount = document.getElementById('votes-' + postId);
-                    voteCount.style.transform = 'scale(1.2)';
+                    voteElement.style.transform = 'scale(1.2)';
                     setTimeout(() => {
-                        voteCount.style.transform = 'scale(1)';
+                        voteElement.style.transform = 'scale(1)';
                     }, 200);
                 } else {
                     alert(data.message || 'Unable to vote');

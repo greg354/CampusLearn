@@ -27,6 +27,7 @@ namespace CampusLearnPlatform.Data
 
         // Communication entities
         public DbSet<ForumPosts> ForumPosts { get; set; }
+        public DbSet<ForumVote> ForumVotes { get; set; }
         public DbSet<ForumPostReply> ForumPostReplies { get; set; }
         public DbSet<TopicReply> TopicReplies { get; set; }
         public DbSet<PrivateMessage> Messages { get; set; }
@@ -163,18 +164,40 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0);
             });
 
-            // ===== FORUM POST REPLY CONFIGURATION =====
+            // Added ForumVote configuration
+            modelBuilder.Entity<ForumVote>(entity =>
+            {
+                entity.ToTable("forum_vote");
+                entity.HasKey(e => e.VoteId);
+                entity.Property(e => e.VoteId).HasColumnName("vote_id").HasDefaultValueSql("gen_random_uuid()");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.UserType).HasColumnName("user_type");
+                entity.Property(e => e.TargetId).HasColumnName("target_id");
+                entity.Property(e => e.TargetType).HasColumnName("target_type");
+                entity.Property(e => e.VoteType).HasColumnName("vote_type");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+                // unique constraint
+                entity.HasIndex(e => new { e.UserId, e.TargetId, e.TargetType })
+                      .IsUnique()
+                      .HasDatabaseName("unique_user_vote");
+            });
+
+            // ===== FORUM POST REPLY CONFIGURATION ===== Updated for nested replies and voting
             modelBuilder.Entity<ForumPostReply>(entity =>
             {
                 entity.ToTable("forum_post_reply");
                 entity.HasKey(e => e.ReplyId);
                 entity.Property(e => e.ReplyId).HasColumnName("reply_id").HasDefaultValueSql("gen_random_uuid()");
                 entity.Property(e => e.PostId).HasColumnName("post_id");
+                entity.Property(e => e.ParentReplyId).HasColumnName("parent_reply_id"); // NEW
                 entity.Property(e => e.StudentPosterId).HasColumnName("student_poster_id");
                 entity.Property(e => e.TutorPosterId).HasColumnName("tutor_poster_id");
                 entity.Property(e => e.ReplyContent).HasColumnName("reply_content");
                 entity.Property(e => e.IsAnonymous).HasColumnName("is_anonymous");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpvoteCount).HasColumnName("upvote_count").HasDefaultValue(0); // NEW
+                entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0); // NEW
             });
 
             // ===== TOPIC REPLY CONFIGURATION =====

@@ -84,9 +84,11 @@ namespace CampusLearnPlatform.Models.ViewModels
     }
 
     // Reply to a post
+    // Update ForumReplyViewModel to support nested replies
     public class ForumReplyViewModel
     {
         public Guid Id { get; set; }
+        public Guid? ParentReplyId { get; set; } // NEW: For nested replies
         public string Content { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
         public bool IsAnonymous { get; set; }
@@ -94,6 +96,9 @@ namespace CampusLearnPlatform.Models.ViewModels
         public int UpvoteCount { get; set; }
         public int DownvoteCount { get; set; }
         public int NetVotes { get; set; }
+        public bool HasUserUpvoted { get; set; } // NEW: Track if current user upvoted
+        public bool HasUserDownvoted { get; set; } // NEW: Track if current user downvoted
+        public List<ForumReplyViewModel> NestedReplies { get; set; } = new(); // NEW: For nested replies
 
         public string TimeAgo
         {
@@ -110,11 +115,13 @@ namespace CampusLearnPlatform.Models.ViewModels
         }
     }
 
-    // Create reply
+    // Updated CreateReplyViewModel to support nested replies
     public class CreateReplyViewModel
     {
         [Required]
         public Guid ParentPostId { get; set; }
+
+        public Guid? ParentReplyId { get; set; } // NEW: For replying to replies
 
         [Required(ErrorMessage = "Reply content is required")]
         [MinLength(1, ErrorMessage = "Reply cannot be empty")]
@@ -122,4 +129,5 @@ namespace CampusLearnPlatform.Models.ViewModels
 
         public bool IsAnonymous { get; set; }
     }
+
 }
