@@ -30,6 +30,7 @@
         public string ReplierName { get; set; }  // NEW: Name of person who replied
         public bool IsReply { get; set; }  // NEW: Indicates if this is a reply to user's content
         public string ContentType { get; set; }  // NEW: "ForumPost" or "Topic"
+        public string OriginalPostId { get; set; } = string.Empty;
     }
 
     public class TopicItem

@@ -95,12 +95,14 @@
                                         <span class="text-muted">
                                             <i class="fas fa-clock me-1"></i>@question.TimeAgo
                                         </span>
-                                        <button class="btn btn-sm btn-primary" onclick="showComingSoon('Reply')">
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="navigateToPost('@question.ContentType', '@question.OriginalPostId')">
                                             <i class="fas fa-reply me-1"></i>Reply
                                         </button>
                                     </div>
                                 </div>
                             }
+
                         }
                         else
                         {
@@ -192,15 +194,24 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate stats numbers
-            document.querySelectorAll('.stats-number').forEach((number, index) => {
-                setTimeout(() => {
-                    animateNumber(number, parseInt(number.textContent));
-                }, index * 200);
-            });
-        });
+              function navigateToPost(contentType, postId) {
+                 if (contentType === 'ForumPost') {
+                     // Update this URL to match your Forum controller route
+                     window.location.href = `/Forum/Details/${postId}`;
+                 } else if (contentType === 'Topic') {
+                     // Update this URL to match your Topic controller route
+                     window.location.href = `/Topics/Details/${postId}`;
+                 }
+             }
 
+             document.addEventListener('DOMContentLoaded', function() {
+                 // Animate stats numbers
+                 document.querySelectorAll('.stats-number').forEach((number, index) => {
+                     setTimeout(() => {
+                         animateNumber(number, parseInt(number.textContent));
+                     }, index * 200);
+                 });
+             });
        // function animateNumber(element, target) {
        //      let current = 0;
        //      const increment = Math.ceil(target / 30);

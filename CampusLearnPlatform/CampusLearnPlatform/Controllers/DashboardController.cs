@@ -251,7 +251,8 @@ namespace CampusLearnPlatform.Controllers
                     TimeAgo = GetTimeAgo(reply.CreatedAt),
                     ReplierName = replierName,
                     IsReply = true,
-                    ContentType = "ForumPost"
+                    ContentType = "ForumPost",
+                    OriginalPostId = reply.PostId.ToString()
                 });
             }
 
@@ -299,7 +300,8 @@ namespace CampusLearnPlatform.Controllers
                     TimeAgo = GetTimeAgo(reply.CreatedAt),
                     ReplierName = replierName,
                     IsReply = true,
-                    ContentType = "Topic"
+                    ContentType = "Topic",
+                    OriginalPostId = reply.TopicId.ToString()
                 });
             }
 
@@ -397,6 +399,7 @@ namespace CampusLearnPlatform.Controllers
                     Priority = escalation.Priority ?? "Normal",
                     Type = "Escalation",
                     IsEscalation = true
+                    
                 });
             }
 
@@ -438,7 +441,9 @@ namespace CampusLearnPlatform.Controllers
                     TimeAgo = GetTimeAgo(reply.CreatedAt),
                     Priority = "Normal",
                     Type = "TopicReply",
-                    IsEscalation = false
+                    IsEscalation = false,
+                    OriginalPostId = reply.TopicId.ToString()
+
                 });
             }
 
@@ -477,7 +482,8 @@ namespace CampusLearnPlatform.Controllers
                     TimeAgo = GetTimeAgo(reply.CreatedAt),
                     Priority = "Normal",
                     Type = "ForumReply",
-                    IsEscalation = false
+                    IsEscalation = false,
+                    OriginalPostId = reply.PostId.ToString()
                 });
             }
 

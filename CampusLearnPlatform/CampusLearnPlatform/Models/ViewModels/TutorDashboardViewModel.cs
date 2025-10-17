@@ -31,6 +31,7 @@
         public string Priority { get; set; }
         public string Type { get; set; }  // NEW: "Escalation", "ForumReply", "TopicReply"
         public bool IsEscalation { get; set; }  // NEW: To identify escalations
+        public string OriginalPostId { get; set; } = string.Empty;
     }
 
     public class TutorTopicItem

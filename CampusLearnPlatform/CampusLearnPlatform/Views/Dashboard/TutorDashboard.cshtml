@@ -133,11 +133,19 @@
                                                 <span class="badge bg-secondary">@question.Type</span>
                                             }
                                         </div>
-                                        <button class="btn btn-sm btn-primary"
-                                                onclick="@(question.IsEscalation ? "handleEscalation('" + question.Id + "')" : "showComingSoon('Respond')")">
-                                            <i class="fas fa-reply me-1"></i>
-                                            @(question.IsEscalation ? "Respond to Student" : "Reply")
-                                        </button>
+                                        @if (question.IsEscalation)
+                                        {
+                                            <button class="btn btn-sm btn-primary" onclick="handleEscalation('@question.Id')">
+                                                <i class="fas fa-reply me-1"></i>Respond to Student
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-primary"
+                                                    onclick="navigateToTutorPost('@question.Type', '@question.OriginalPostId')">
+                                                <i class="fas fa-reply me-1"></i>Reply
+                                            </button>
+                                        }
                                     </div>
                                 </div>
                             }
@@ -295,6 +303,47 @@
               // When one-on-one messaging is ready, redirect to:
               // window.location.href = `/Messages/OneOnOne?escalationId=${escalationId}`;
           }
+
+          function navigateToTutorPost(type, postId) {
+            if (type === 'TopicReply') {
+                // Update this URL to match your Topic controller route
+                window.location.href = `/Topics/Details/${postId}`;
+            } else if (type === 'ForumReply') {
+                // Update this URL to match your Forum controller route
+                window.location.href = `/Forum/Details/${postId}`;
+            }
+        }
+
+        function handleEscalation(escalationId) {
+            // TODO: Implement one-on-one messaging when ready
+            alert('One-on-one messaging will be implemented soon. Escalation ID: ' + escalationId);
+
+            // When one-on-one messaging is ready, redirect to:
+            // window.location.href = `/Messages/OneOnOne?escalationId=${escalationId}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stats numbers
+            document.querySelectorAll('.stats-number').forEach((number, index) => {
+                setTimeout(() => {
+                    const text = number.textContent;
+                    const isPercentage = text.includes('%');
+                    const target = parseInt(text.replace('%', ''));
+                    animateNumber(number, target, isPercentage);
+                }, index * 200);
+            });
+
+            // Highlight urgent and escalation items
+            document.querySelectorAll('.urgent').forEach(item => {
+                item.style.borderLeft = '4px solid #dc3545';
+            });
+
+            document.querySelectorAll('.escalation-item').forEach(item => {
+                if (!item.classList.contains('urgent')) {
+                    item.style.borderLeft = '4px solid #ffc107';
+                }
+            });
+        });
     </script>
 
     <style>
