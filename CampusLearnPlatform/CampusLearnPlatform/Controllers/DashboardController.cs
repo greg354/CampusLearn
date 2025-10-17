@@ -205,21 +205,108 @@ namespace CampusLearnPlatform.Controllers
 
         private async Task<List<QuestionItem>> GetStudentQuestions(Guid studentId)
         {
-            var questions = await _context.ForumPosts
+            var questionItems = new List<QuestionItem>();
+
+            // Get student's forum posts
+            var studentPosts = await _context.ForumPosts
                 .Where(fp => fp.StudentAuthorId == studentId)
-                .OrderByDescending(fp => fp.CreatedAt)
-                .Take(3)
+                .Select(fp => fp.Id)
                 .ToListAsync();
 
-            return questions.Select(q => new QuestionItem
+            // Get replies to student's forum posts
+            var forumReplies = await _context.ForumPostReplies
+                .Where(fpr => studentPosts.Contains(fpr.PostId))
+                .OrderByDescending(fpr => fpr.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var reply in forumReplies)
             {
-                Question = q.PostContent?.Length > 50
-                    ? q.PostContent.Substring(0, 50) + "..."
-                    : q.PostContent ?? "No content",
-                Topic = "General",
-                Status = "Pending",
-                TimeAgo = GetTimeAgo(q.CreatedAt)
-            }).ToList();
+                var replierName = "Unknown";
+
+                if (reply.StudentPosterId.HasValue)
+                {
+                    var student = await _context.Students
+                        .FirstOrDefaultAsync(s => s.Id == reply.StudentPosterId.Value);
+                    replierName = student?.Name ?? "Student";
+                }
+                else if (reply.TutorPosterId.HasValue)
+                {
+                    var tutor = await _context.Tutors
+                        .FirstOrDefaultAsync(t => t.Id == reply.TutorPosterId.Value);
+                    replierName = tutor?.Name ?? "Tutor";
+                }
+
+                var originalPost = await _context.ForumPosts
+                    .FirstOrDefaultAsync(fp => fp.Id == reply.PostId);
+
+                questionItems.Add(new QuestionItem
+                {
+                    Id = reply.ReplyId.ToString(),
+                    Question = reply.ReplyContent?.Length > 50
+                        ? reply.ReplyContent.Substring(0, 50) + "..."
+                        : reply.ReplyContent ?? "No content",
+                    Topic = "Forum Post",
+                    Status = "Reply Received",
+                    TimeAgo = GetTimeAgo(reply.CreatedAt),
+                    ReplierName = replierName,
+                    IsReply = true,
+                    ContentType = "ForumPost"
+                });
+            }
+
+            // Get student's topics
+            var studentTopics = await _context.Topics
+                .Where(t => t.StudentCreatorId == studentId)
+                .Select(t => t.Id)
+                .ToListAsync();
+
+            // Get replies to student's topics
+            var topicReplies = await _context.TopicReplies
+                .Where(tr => studentTopics.Contains(tr.TopicId))
+                .OrderByDescending(tr => tr.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            foreach (var reply in topicReplies)
+            {
+                var replierName = "Unknown";
+
+                if (reply.StudentPosterId.HasValue)
+                {
+                    var student = await _context.Students
+                        .FirstOrDefaultAsync(s => s.Id == reply.StudentPosterId.Value);
+                    replierName = student?.Name ?? "Student";
+                }
+                else if (reply.TutorPosterId.HasValue)
+                {
+                    var tutor = await _context.Tutors
+                        .FirstOrDefaultAsync(t => t.Id == reply.TutorPosterId.Value);
+                    replierName = tutor?.Name ?? "Tutor";
+                }
+
+                var topic = await _context.Topics
+                    .FirstOrDefaultAsync(t => t.Id == reply.TopicId);
+
+                questionItems.Add(new QuestionItem
+                {
+                    Id = reply.ReplyId.ToString(),
+                    Question = reply.ReplyContent?.Length > 50
+                        ? reply.ReplyContent.Substring(0, 50) + "..."
+                        : reply.ReplyContent ?? "No content",
+                    Topic = topic?.Title ?? "Topic",
+                    Status = "Reply Received",
+                    TimeAgo = GetTimeAgo(reply.CreatedAt),
+                    ReplierName = replierName,
+                    IsReply = true,
+                    ContentType = "Topic"
+                });
+            }
+
+            return questionItems
+                .OrderByDescending(q => q.TimeAgo)
+                .Take(5)
+                .ToList();
         }
 
         private async Task<List<TopicItem>> GetRecommendedTopics(Guid studentId)
@@ -284,37 +371,122 @@ namespace CampusLearnPlatform.Controllers
 
         private async Task<List<QuestionToAnswerItem>> GetQuestionsRequiringResponse(Guid tutorId)
         {
-            var tutorTopicIds = await _context.Topics
+            var questionItems = new List<QuestionToAnswerItem>();
+
+            // 1. Get all escalation requests
+            var escalations = await _context.EscalationRequests
+                .Where(er => er.Status == "Pending")
+                .OrderByDescending(er => er.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var escalation in escalations)
+            {
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.Id == escalation.StudentId);
+
+                questionItems.Add(new QuestionToAnswerItem
+                {
+                    Id = escalation.Id.ToString(),
+                    Question = escalation.Query?.Length > 60
+                        ? escalation.Query.Substring(0, 60) + "..."
+                        : escalation.Query ?? "No content",
+                    Topic = escalation.Module ?? "General",
+                    StudentName = student?.Name ?? "Unknown Student",
+                    TimeAgo = GetTimeAgo(escalation.CreatedAt),
+                    Priority = escalation.Priority ?? "Normal",
+                    Type = "Escalation",
+                    IsEscalation = true
+                });
+            }
+
+            // 2. Get tutor's topics
+            var tutorTopics = await _context.Topics
                 .Where(t => t.TutorCreatorId == tutorId)
                 .Select(t => t.Id)
                 .ToListAsync();
 
-            var questions = await _context.ForumPosts
-                .Where(fp => fp.StudentAuthorId != null)
-                .OrderByDescending(fp => fp.CreatedAt)
-                .Take(3)
+            // 3. Get replies to tutor's topics
+            var topicReplies = await _context.TopicReplies
+                .Where(tr => tutorTopics.Contains(tr.TopicId))
+                .OrderByDescending(tr => tr.CreatedAt)
+                .Take(5)
                 .ToListAsync();
 
-            var questionItems = new List<QuestionToAnswerItem>();
-
-            foreach (var question in questions)
+            foreach (var reply in topicReplies)
             {
-                var student = await _context.Students
-                    .FirstOrDefaultAsync(s => s.Id == question.StudentAuthorId);
+                var studentName = "Unknown";
+
+                if (reply.StudentPosterId.HasValue)
+                {
+                    var student = await _context.Students
+                        .FirstOrDefaultAsync(s => s.Id == reply.StudentPosterId.Value);
+                    studentName = student?.Name ?? "Student";
+                }
+
+                var topic = await _context.Topics
+                    .FirstOrDefaultAsync(t => t.Id == reply.TopicId);
 
                 questionItems.Add(new QuestionToAnswerItem
                 {
-                    Question = question.PostContent?.Length > 60
-                        ? question.PostContent.Substring(0, 60) + "..."
-                        : question.PostContent ?? "No content",
-                    Topic = "General",
-                    StudentName = student?.Name ?? "Unknown Student",
-                    TimeAgo = GetTimeAgo(question.CreatedAt),
-                    Priority = "Normal"
+                    Id = reply.ReplyId.ToString(),
+                    Question = reply.ReplyContent?.Length > 60
+                        ? reply.ReplyContent.Substring(0, 60) + "..."
+                        : reply.ReplyContent ?? "No content",
+                    Topic = topic?.Title ?? "Topic",
+                    StudentName = studentName,
+                    TimeAgo = GetTimeAgo(reply.CreatedAt),
+                    Priority = "Normal",
+                    Type = "TopicReply",
+                    IsEscalation = false
                 });
             }
 
-            return questionItems;
+            // 4. Get tutor's forum posts
+            var tutorPosts = await _context.ForumPosts
+                .Where(fp => fp.TutorAuthorId == tutorId)
+                .Select(fp => fp.Id)
+                .ToListAsync();
+
+            // 5. Get replies to tutor's forum posts
+            var forumReplies = await _context.ForumPostReplies
+                .Where(fpr => tutorPosts.Contains(fpr.PostId))
+                .OrderByDescending(fpr => fpr.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var reply in forumReplies)
+            {
+                var studentName = "Unknown";
+
+                if (reply.StudentPosterId.HasValue)
+                {
+                    var student = await _context.Students
+                        .FirstOrDefaultAsync(s => s.Id == reply.StudentPosterId.Value);
+                    studentName = student?.Name ?? "Student";
+                }
+
+                questionItems.Add(new QuestionToAnswerItem
+                {
+                    Id = reply.ReplyId.ToString(),
+                    Question = reply.ReplyContent?.Length > 60
+                        ? reply.ReplyContent.Substring(0, 60) + "..."
+                        : reply.ReplyContent ?? "No content",
+                    Topic = "Forum Discussion",
+                    StudentName = studentName,
+                    TimeAgo = GetTimeAgo(reply.CreatedAt),
+                    Priority = "Normal",
+                    Type = "ForumReply",
+                    IsEscalation = false
+                });
+            }
+
+            return questionItems
+                .OrderByDescending(q => q.IsEscalation)
+                .ThenByDescending(q => q.Priority == "Urgent")
+                .ThenByDescending(q => q.TimeAgo)
+                .Take(10)
+                .ToList();
         }
 
         private async Task<List<TutorTopicItem>> GetTutorTopics(Guid tutorId)

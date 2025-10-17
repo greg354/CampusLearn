@@ -68,7 +68,7 @@
                 <!-- My Questions -->
                 <div class="card shadow-custom mb-4 fade-in-up" style="animation-delay: 0.5s;">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>My Questions</h5>
+                        <h5 class="mb-0"><i class="fas fa-reply me-2"></i>Replies to My Posts</h5>
                         <button class="btn btn-sm btn-outline-primary" onclick="showComingSoon('View All')">
                             View All
                         </button>
@@ -80,15 +80,13 @@
                             {
                                 <div class="question-item">
                                     <div class="question-header">
-                                        <h6 class="mb-1">@question.Question</h6>
-                                        @if (question.Status == "Pending")
-                                        {
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-success">Answered</span>
-                                        }
+                                        <div>
+                                            <h6 class="mb-1">@question.Question</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-user me-1"></i>Reply from @question.ReplierName
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-info">@question.Status</span>
                                     </div>
                                     <div class="question-meta">
                                         <span class="text-muted">
@@ -97,9 +95,19 @@
                                         <span class="text-muted">
                                             <i class="fas fa-clock me-1"></i>@question.TimeAgo
                                         </span>
+                                        <button class="btn btn-sm btn-primary" onclick="showComingSoon('Reply')">
+                                            <i class="fas fa-reply me-1"></i>Reply
+                                        </button>
                                     </div>
                                 </div>
                             }
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No replies yet. Post questions to get help from tutors!</p>
+                            </div>
                         }
                     </div>
                 </div>
@@ -206,4 +214,39 @@
        //      }, 50);
        //  }
     </script>
+
+        <style>
+            .question-item {
+                padding: 1rem;
+                border-bottom: 1px solid #e9ecef;
+                transition: background-color 0.2s;
+            }
+
+                .question-item:last-child {
+                    border-bottom: none;
+                }
+
+                .question-item:hover {
+                    background-color: #f8f9fa;
+                }
+
+            .question-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                margin-bottom: 0.75rem;
+            }
+
+            .question-meta {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+                .question-meta .btn {
+                    margin-left: auto;
+                }
+        </style>
+
 }

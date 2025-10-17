@@ -22,10 +22,14 @@
 
     public class QuestionItem
     {
-        public string Question { get; set; } = string.Empty;
-        public string Topic { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty; // Pending, Answered
-        public string TimeAgo { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
+        public string Question { get; set; }
+        public string Topic { get; set; }
+        public string Status { get; set; }
+        public string TimeAgo { get; set; }
+        public string ReplierName { get; set; }  // NEW: Name of person who replied
+        public bool IsReply { get; set; }  // NEW: Indicates if this is a reply to user's content
+        public string ContentType { get; set; }  // NEW: "ForumPost" or "Topic"
     }
 
     public class TopicItem

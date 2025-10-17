@@ -23,11 +23,14 @@
 
     public class QuestionToAnswerItem
     {
-        public string Question { get; set; } = string.Empty;
-        public string Topic { get; set; } = string.Empty;
-        public string StudentName { get; set; } = string.Empty;
-        public string TimeAgo { get; set; } = string.Empty;
-        public string Priority { get; set; } = string.Empty; // Normal, Urgent
+        public string Id { get; set; }
+        public string Question { get; set; }
+        public string Topic { get; set; }
+        public string StudentName { get; set; }
+        public string TimeAgo { get; set; }
+        public string Priority { get; set; }
+        public string Type { get; set; }  // NEW: "Escalation", "ForumReply", "TopicReply"
+        public bool IsEscalation { get; set; }  // NEW: To identify escalations
     }
 
     public class TutorTopicItem

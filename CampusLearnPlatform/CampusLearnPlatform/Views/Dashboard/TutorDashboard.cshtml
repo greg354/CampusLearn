@@ -81,7 +81,7 @@
                 <!-- Questions Requiring Response -->
                 <div class="card shadow-custom mb-4 fade-in-up" style="animation-delay: 0.6s;">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Questions Requiring Response</h5>
+                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Questions & Escalations</h5>
                         <button class="btn btn-sm btn-outline-primary" onclick="showComingSoon('View All')">
                             View All
                         </button>
@@ -91,28 +91,52 @@
                         {
                             @foreach (var question in Model.QuestionsRequiringResponse)
                             {
-                                <div class="tutor-question-item @(question.Priority == "Urgent" ? "urgent" : "")">
+                                <div class="tutor-question-item @(question.Priority == "Urgent" ? "urgent" : "") @(question.IsEscalation ? "escalation-item" : "")">
                                     <div class="question-header">
                                         <div>
-                                            <h6 class="mb-1">@question.Question</h6>
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <h6 class="mb-0">@question.Question</h6>
+                                                @if (question.IsEscalation)
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>Escalation
+                                                    </span>
+                                                }
+                                                @if (question.Priority == "Urgent")
+                                                {
+                                                    <span class="badge bg-danger">Urgent</span>
+                                                }
+                                            </div>
                                             <small class="text-muted">
-                                                <i class="fas fa-user me-1"></i>Asked by @question.StudentName
+                                                <i class="fas fa-user me-1"></i>
+                                                @if (question.IsEscalation)
+                                                {
+                                                    <span>Student needs help: @question.StudentName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Reply from @question.StudentName</span>
+                                                }
                                             </small>
                                         </div>
-                                        @if (question.Priority == "Urgent")
-                                        {
-                                            <span class="badge bg-danger">Urgent</span>
-                                        }
                                     </div>
                                     <div class="question-footer">
-                                        <span class="text-muted">
-                                            <i class="fas fa-tag me-1"></i>@question.Topic
-                                        </span>
-                                        <span class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>@question.TimeAgo
-                                        </span>
-                                        <button class="btn btn-sm btn-primary" onclick="showComingSoon('Respond')">
-                                            <i class="fas fa-reply me-1"></i>Respond
+                                        <div class="d-flex gap-3 align-items-center flex-wrap">
+                                            <span class="text-muted">
+                                                <i class="fas fa-tag me-1"></i>@question.Topic
+                                            </span>
+                                            <span class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>@question.TimeAgo
+                                            </span>
+                                            @if (question.Type != null)
+                                            {
+                                                <span class="badge bg-secondary">@question.Type</span>
+                                            }
+                                        </div>
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="@(question.IsEscalation ? "handleEscalation('" + question.Id + "')" : "showComingSoon('Respond')")">
+                                            <i class="fas fa-reply me-1"></i>
+                                            @(question.IsEscalation ? "Respond to Student" : "Reply")
                                         </button>
                                     </div>
                                 </div>
@@ -122,7 +146,7 @@
                         {
                             <div class="p-4 text-center text-muted">
                                 <i class="fas fa-check-circle fa-3x mb-3"></i>
-                                <p>All caught up! No pending questions at the moment.</p>
+                                <p>All caught up! No pending questions or escalations at the moment.</p>
                             </div>
                         }
                     </div>
@@ -240,17 +264,94 @@
             });
         });
 
-        // function animateNumber(element, target, isPercentage) {
-        //     let current = 0;
-        //     const increment = Math.ceil(target / 30);
-        //     const timer = setInterval(() => {
-        //         current += increment;
-        //         if (current >= target) {
-        //             current = target;
-        //             clearInterval(timer);
-        //         }
-        //         element.textContent = current + (isPercentage ? '%' : '');
-        //     }, 50);
-        // }
+        document.addEventListener('DOMContentLoaded', function() {
+              // Animate stats numbers
+              document.querySelectorAll('.stats-number').forEach((number, index) => {
+                  setTimeout(() => {
+                      const text = number.textContent;
+                      const isPercentage = text.includes('%');
+                      const target = parseInt(text.replace('%', ''));
+                      animateNumber(number, target, isPercentage);
+                  }, index * 200);
+              });
+
+              // Highlight urgent and escalation items
+              document.querySelectorAll('.urgent').forEach(item => {
+                  item.style.borderLeft = '4px solid #dc3545';
+              });
+
+              document.querySelectorAll('.escalation-item').forEach(item => {
+                  if (!item.classList.contains('urgent')) {
+                      item.style.borderLeft = '4px solid #ffc107';
+                  }
+              });
+          });
+
+          function handleEscalation(escalationId) {
+              // TODO: Implement one-on-one messaging when ready
+              // For now, show a placeholder message
+              alert('One-on-one messaging will be implemented soon. Escalation ID: ' + escalationId);
+
+              // When one-on-one messaging is ready, redirect to:
+              // window.location.href = `/Messages/OneOnOne?escalationId=${escalationId}`;
+          }
     </script>
+
+    <style>
+        .tutor-question-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+            .tutor-question-item:last-child {
+                border-bottom: none;
+            }
+
+            .tutor-question-item:hover {
+                background-color: #f8f9fa;
+                transform: translateX(2px);
+            }
+
+            .tutor-question-item.escalation-item {
+                background-color: #fff9e6;
+            }
+
+                .tutor-question-item.escalation-item:hover {
+                    background-color: #fff3cd;
+                }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .question-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .escalation-item .badge {
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100%
+
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
+
+        }
+    </style>
 }
