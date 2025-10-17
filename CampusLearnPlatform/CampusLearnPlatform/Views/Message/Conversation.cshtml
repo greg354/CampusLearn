@@ -1,0 +1,368 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.ConversationViewModel
+@{
+    ViewData["Title"] = $"Conversation with {Model.OtherUserName}";
+    var currentUserId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Conversation Header -->
+            <div class="card mb-4 fade-in-up">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1">@Model.OtherUserName</h5>
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>@(Model.OtherUserRole ?? "User")
+                        </small>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="showComingSoon('User Profile')">
+                                    <i class="fas fa-user me-2"></i>View Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="showComingSoon('Shared Topics')">
+                                    <i class="fas fa-book me-2"></i>Shared Topics
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" onclick="showComingSoon('Block User')">
+                                    <i class="fas fa-ban me-2"></i>Block User
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="card-body conversation-body" style="height: 60vh; overflow-y: auto;">
+                    @if (Model.Messages != null && Model.Messages.Any())
+                    {
+                        @foreach (var message in Model.Messages)
+                        {
+                            var isSentByCurrentUser = message.SenderId == currentUserId;
+
+                            <div class="message-bubble @(isSentByCurrentUser ? "sent" : "received") mb-3">
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        <p class="mb-1">@message.Content</p>
+                                    </div>
+                                    <div class="message-footer d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">
+                                            @message.GetTimestamp()
+                                        </small>
+                                        <div class="message-status">
+                                            @if (isSentByCurrentUser)
+                                            {
+                                                if (message.IsRead)
+                                                {
+                                                    <i class="fas fa-check-double text-primary" title="Read"></i>
+                                                }
+                                                else if (message.Status == CampusLearnPlatform.Enums.MessageStatuses.Delivered)
+                                                {
+                                                    <i class="fas fa-check-double text-muted" title="Delivered"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-check text-muted" title="Sent"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <h5>No messages yet</h5>
+                            <p>Send the first message to start your conversation with @Model.OtherUserName</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer">
+                    <form asp-action="SendMessage" method="post" class="message-form">
+                        <input type="hidden" asp-for="NewMessage.ReceiverId" value="@Model.OtherUserId" />
+                        <div class="input-group">
+                            <textarea asp-for="NewMessage.Content"
+                                      class="form-control message-input"
+                                      rows="1"
+                                      placeholder="Type your message..."
+                                      maxlength="1000"
+                                      required></textarea>
+                            <button type="submit" class="btn btn-primary send-button" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <span class="char-count">0</span>/1000 characters
+                            </small>
+                            <small class="text-info">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Private conversation with @Model.OtherUserName
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card fade-in-up" style="animation-delay: 0.2s;">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Messages</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary w-100 btn-sm" onclick="insertQuickMessage('Hello! How can I help you with your studies?')">
+                                        <i class="fas fa-handshake me-1"></i>Greeting
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary w-100 btn-sm" onclick="insertQuickMessage('Do you have time to discuss this further?')">
+                                        <i class="fas fa-clock me-1"></i>Schedule Talk
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary w-100 btn-sm" onclick="insertQuickMessage('Can you explain this concept in more detail?')">
+                                        <i class="fas fa-question me-1"></i>Need Explanation
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-primary w-100 btn-sm" onclick="insertQuickMessage('Do you have any resources you can share?')">
+                                        <i class="fas fa-book me-1"></i>Request Resources
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card fade-in-up" style="animation-delay: 0.3s;">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Conversation Info</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="conversation-meta">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Status:</small>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted">Messages:</small>
+                                    <small>@(Model.Messages?.Count ?? 0)</small>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">Started:</small>
+                                    <small>@DateTime.Now.AddDays(-1).ToString("MMM dd")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .conversation-body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-left: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            position: relative;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+            .message-bubble.sent {
+                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                color: white;
+                margin-left: auto;
+                border-bottom-right-radius: 0.25rem;
+            }
+
+            .message-bubble.received {
+                background: white;
+                color: #333;
+                margin-right: auto;
+                border-bottom-left-radius: 0.25rem;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+        .message-text p {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message-footer {
+            font-size: 0.75rem;
+        }
+
+        .message-input {
+            border-radius: 1.5rem;
+            resize: none;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+            .message-input:focus {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            }
+
+        .send-button {
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+            .send-button:not(:disabled):hover {
+                transform: scale(1.05);
+            }
+
+            .send-button:disabled {
+                background-color: #9ca3af;
+                border-color: #9ca3af;
+                cursor: not-allowed;
+            }
+
+        .char-count {
+            font-weight: 600;
+        }
+
+        .conversation-meta {
+            font-size: 0.9rem;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .conversation-body {
+                height: 50vh !important;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const conversationBody = document.querySelector('.conversation-body');
+            const messageInput = document.querySelector('.message-input');
+            const sendButton = document.querySelector('.send-button');
+            const charCount = document.querySelector('.char-count');
+            const form = document.querySelector('.message-form');
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            // Auto-focus message input
+            messageInput.focus();
+
+            // Character count and send button state
+            messageInput.addEventListener('input', function () {
+                const length = this.value.length;
+                charCount.textContent = length;
+                sendButton.disabled = length === 0 || length > 1000;
+
+                // Auto-expand textarea
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Form submission
+            form.addEventListener('submit', function (e) {
+                const content = messageInput.value.trim();
+                if (content === '' || content.length > 1000) {
+                    e.preventDefault();
+                    return false;
+                }
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    form.dispatchEvent(new Event('submit'));
+                }
+                if (e.key === 'Escape') {
+                    messageInput.value = '';
+                    messageInput.dispatchEvent(new Event('input'));
+                }
+            });
+
+            function scrollToBottom() {
+                conversationBody.scrollTop = conversationBody.scrollHeight;
+            }
+        });
+
+        function insertQuickMessage(message) {
+            const messageInput = document.querySelector('.message-input');
+            messageInput.value = message;
+            messageInput.dispatchEvent(new Event('input'));
+            messageInput.focus();
+        }
+    </script>
+}

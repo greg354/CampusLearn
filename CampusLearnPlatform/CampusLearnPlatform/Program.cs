@@ -24,6 +24,8 @@ namespace CampusLearnPlatform
                     _ => "This field is required.");
             });
 
+            builder.Services.AddScoped<IMessageService, MessageService>();
+
             // Add session support (for temporary data)
             builder.Services.AddSession(options =>
             {
