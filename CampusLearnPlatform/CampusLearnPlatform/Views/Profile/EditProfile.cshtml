@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Edit Profile";
 }
-
 <div class="container dashboard-container">
     <div class="row justify-content-center">
         <div class="col-12 col-lg-8">
@@ -11,12 +10,12 @@
                     <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Edit Profile</h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Edit" asp-controller="Profile" method="post" novalidate>
+                    <!-- IMPORTANT: enctype for file upload -->
+                    <form asp-controller="Profile" asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
 
-                        @* Summary (Bootstrap look; uses your alert styles) *@
-                        @Html.ValidationSummary(excludePropertyErrors: true, message: null, htmlAttributes: new { @class = "alert alert-danger" })
+                        @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
 
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Full Name</label>
@@ -36,6 +35,22 @@
                             <span asp-validation-for="ProfileInfo" class="invalid-feedback d-block"></span>
                         </div>
 
+                        <!-- NEW: pick image from file explorer -->
+                        <div class="mb-3">
+                            <label class="form-label">Profile picture</label>
+                            <input asp-for="ProfileImage" type="file" accept="image/*" class="form-control" />
+                            <small class="text-secondary d-block mt-1">Accepted: .jpg, .jpeg, .png, .gif, .webp (max 2MB)</small>
+                            <span asp-validation-for="ProfileImage" class="invalid-feedback d-block"></span>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ProfilePictureUrl))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.ProfilePictureUrl" alt="Current picture"
+                                         style="width:100px;height:100px;object-fit:cover;border-radius:50%;border:1px solid var(--border-color);" />
+                                </div>
+                            }
+                        </div>
+
                         <div class="d-flex gap-2">
                             <a asp-controller="Profile" asp-action="My" class="btn btn-light">
                                 <i class="fas fa-arrow-left me-2"></i>Cancel
@@ -47,11 +62,6 @@
                     </form>
                 </div>
             </div>
-
-            @if (TempData["Error"] is string err)
-            {
-                <div class="alert alert-danger mt-3">@err</div>
-            }
         </div>
     </div>
 </div>
