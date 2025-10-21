@@ -1,18 +1,8 @@
 ﻿@model CampusLearnPlatform.Models.ViewModels.ConversationViewModel
 @{
     ViewData["Title"] = $"Conversation with {Model.OtherUserName}";
-
-    // Safe GUID parsing
-    var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    Guid currentUserId;
-    if (!Guid.TryParse(userIdClaim, out currentUserId))
-    {
-        // Handle error - you might want to redirect to login
-        throw new UnauthorizedAccessException("User is not properly authenticated.");
-    }
 }
 
-@@section Styles {
 <style>
     /* CSS Variables for Theming */
     :root {
@@ -223,65 +213,138 @@
         }
     }
 </style>
-}
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const conversationBody = document.querySelector('.conversation-body');
-            const messageInput = document.querySelector('.message-input');
-            const sendButton = document.querySelector('.send-button');
-            const charCount = document.querySelector('.char-count');
-            const form = document.querySelector('.message-form');
 
-            // Scroll to bottom
-            scrollToBottom();
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-0">Conversation with @Model.OtherUserName</h5>
+                        <small class="text-muted">@Model.OtherUserRole</small>
+                    </div>
+                </div>
 
-            // Auto-focus message input
-            messageInput.focus();
+                <!-- Messages Container -->
+                <div class="card-body conversation-body" style="height: 60vh; overflow-y: auto;">
+                    @if (Model.Messages.Any())
+                    {
+                        foreach (var message in Model.Messages)
+                        {
+                            <div class="message-bubble @(message.IsSentByCurrentUser ? "sent" : "received") mb-3">
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        <p class="mb-1">@message.Content</p>
+                                    </div>
+                                    <div class="message-footer d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">@message.GetTimestamp()</small>
+                                        @if (message.IsSentByCurrentUser)
+                                        {
+                                            <div class="message-status">
+                                                @if (message.IsRead)
+                                                {
+                                                    <i class="fas fa-check-double text-primary" title="Read"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fas fa-check text-muted" title="Sent"></i>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <h5>No messages yet</h5>
+                            <p>Send the first message to start your conversation</p>
+                        </div>
+                    }
+                </div>
 
-            // Character count and send button state
-            messageInput.addEventListener('input', function () {
-                const length = this.value.length;
-                charCount.textContent = length;
-                sendButton.disabled = length === 0 || length > 1000;
+                <!-- Message Input -->
+                <div class="card-footer">
+                    <form asp-action="SendMessage" method="post" class="message-form">
+                        <input type="hidden" asp-for="NewMessage.ReceiverId" value="@Model.OtherUserId" />
+                        <div class="input-group">
+                            <textarea asp-for="NewMessage.Content"
+                                      class="form-control message-input"
+                                      rows="2"
+                                      placeholder="Type your message..."
+                                      maxlength="1000"
+                                      required></textarea>
+                            <button type="submit" class="btn btn-primary send-button" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <span class="char-count">0</span>/1000 characters
+                            </small>
+                            <small class="text-info">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Private conversation
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                // Auto-expand textarea
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const conversationBody = document.querySelector('.conversation-body');
+        const messageInput = document.querySelector('.message-input');
+        const sendButton = document.querySelector('.send-button');
+        const charCount = document.querySelector('.char-count');
+        const form = document.querySelector('.message-form');
 
-            // Form submission
-            form.addEventListener('submit', function (e) {
-                const content = messageInput.value.trim();
-                if (content === '' || content.length > 1000) {
-                    e.preventDefault();
-                    return false;
-                }
-                sendButton.disabled = true;
-                sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            });
+        // Scroll to bottom
+        scrollToBottom();
 
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    form.dispatchEvent(new Event('submit'));
-                }
-                if (e.key === 'Escape') {
-                    messageInput.value = '';
-                    messageInput.dispatchEvent(new Event('input'));
-                }
-            });
+        // Auto-focus message input
+        messageInput.focus();
 
-            function scrollToBottom() {
-                conversationBody.scrollTop = conversationBody.scrollHeight;
+        // Character count and send button state
+        messageInput.addEventListener('input', function () {
+            const length = this.value.length;
+            charCount.textContent = length;
+            sendButton.disabled = length === 0 || length > 1000;
+
+            // Auto-expand textarea
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+            const content = messageInput.value.trim();
+            if (content === '' || content.length > 1000) {
+                e.preventDefault();
+                return false;
+            }
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                form.dispatchEvent(new Event('submit'));
             }
         });
 
-        function insertQuickMessage(message) {
-            const messageInput = document.querySelector('.message-input');
-            messageInput.value = message;
-            messageInput.dispatchEvent(new Event('input'));
-            messageInput.focus();
+        function scrollToBottom() {
+            conversationBody.scrollTop = conversationBody.scrollHeight;
         }
-    </script>
-}
+    });
+</script>

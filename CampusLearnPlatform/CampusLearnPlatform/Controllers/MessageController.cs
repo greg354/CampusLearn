@@ -2,14 +2,11 @@
 using CampusLearnPlatform.Models.Communication;
 using CampusLearnPlatform.Models.ViewModels;
 using CampusLearnPlatform.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace CampusLearnPlatform.Controllers
 {
-    [Authorize]
     public class MessageController : Controller
     {
         private readonly IMessageService _messageService;
@@ -23,37 +20,62 @@ namespace CampusLearnPlatform.Controllers
 
         private Guid GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
+            // Use session like ForumController instead of User.Identity
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                throw new InvalidOperationException("User is not authenticated.");
+                throw new InvalidOperationException("User is not authenticated. Please log in.");
             }
 
-            if (Guid.TryParse(userIdClaim, out Guid userId))
+            if (Guid.TryParse(userIdString, out Guid userId))
             {
                 return userId;
             }
-            throw new InvalidOperationException("Invalid user ID format.");
+            throw new InvalidOperationException("Invalid user ID format in session.");
         }
 
         public async Task<IActionResult> Index()
         {
-            var currentUserId = GetCurrentUserId();
-            var conversations = await _messageService.GetRecentConversationsAsync(currentUserId);
-            var unreadCount = await _messageService.GetUnreadCountAsync(currentUserId);
-
-            var viewModel = new MessageIndexViewModel
+            // Check if user is logged in using session (like ForumController)
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                RecentConversations = conversations,
-                UnreadCount = unreadCount
-            };
+                TempData["ErrorMessage"] = "Please login to view messages.";
+                return RedirectToAction("Index", "Login");
+            }
 
-            return View(viewModel);
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var conversations = await _messageService.GetRecentConversationsAsync(currentUserId);
+                var unreadCount = await _messageService.GetUnreadCountAsync(currentUserId);
+
+                var viewModel = new MessageIndexViewModel
+                {
+                    RecentConversations = conversations,
+                    UnreadCount = unreadCount
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error loading messages. Please try again.";
+                return RedirectToAction("Index", "Dashboard");
+            }
         }
 
         // New Compose Action
         public IActionResult Compose()
         {
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                TempData["ErrorMessage"] = "Please login to send messages.";
+                return RedirectToAction("Index", "Login");
+            }
+
             var model = new ComposeMessageViewModel();
             return View(model);
         }
@@ -61,103 +83,143 @@ namespace CampusLearnPlatform.Controllers
         [HttpGet]
         public async Task<IActionResult> Conversation(Guid otherUserId)
         {
-            var currentUserId = GetCurrentUserId();
-            var messages = await _messageService.GetConversationAsync(currentUserId, otherUserId);
-
-            string otherUserName = "Unknown User";
-            string otherUserRole = "User";
-
-            var student = await _context.Students.FindAsync(otherUserId);
-            var tutor = await _context.Tutors.FindAsync(otherUserId);
-
-            if (student != null)
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                otherUserName = student.Name;
-                otherUserRole = "Student";
-            }
-            else if (tutor != null)
-            {
-                otherUserName = tutor.Name;
-                otherUserRole = "Tutor";
+                TempData["ErrorMessage"] = "Please login to view conversations.";
+                return RedirectToAction("Index", "Login");
             }
 
-            // Mark messages as read
-            foreach (var message in messages.Where(m =>
-                (m.StudentReceiverId == currentUserId || m.TutorReceiverId == currentUserId) && !m.IsRead))
+            try
             {
-                await _messageService.MarkAsReadAsync(message.Id, currentUserId);
-            }
+                var currentUserId = GetCurrentUserId();
+                Console.WriteLine($"Loading conversation between {currentUserId} and {otherUserId}");
 
-            // Convert to MessageViewModel - Handle nullable GUIDs safely
-            var messageViewModels = messages.Select(m => new MessageViewModel
-            {
-                Id = m.Id,
-                Content = m.Content,
-                SenderId = m.SenderId,
-                // Safely handle nullable GUIDs with proper casting
-                ReceiverId = m.StudentReceiverId != currentUserId ?
-                    (m.StudentReceiverId ?? Guid.Empty) :
-                    (m.TutorReceiverId ?? Guid.Empty),
-                Timestamp = GetMessageTimestamp(m),
-                IsRead = m.IsRead,
-                IsSentByCurrentUser = m.SenderId == currentUserId,
-                Status = m.IsRead ? "Read" : "Delivered"
-            }).ToList();
+                var messages = await _messageService.GetConversationAsync(currentUserId, otherUserId);
+                Console.WriteLine($"Found {messages?.Count ?? 0} messages");
 
-            var viewModel = new ConversationViewModel
-            {
-                OtherUserId = otherUserId,
-                OtherUserName = otherUserName,
-                OtherUserRole = otherUserRole,
-                Messages = messageViewModels,
-                NewMessage = new NewMessageViewModel { ReceiverId = otherUserId }
-            };
+                string otherUserName = "Unknown User";
+                string otherUserRole = "User";
 
-            return View(viewModel);
-        }
-
-        // Helper method to safely get timestamp from PrivateMessage
-        private DateTime GetMessageTimestamp(PrivateMessage message)
-        {
-            if (message == null) return DateTime.Now;
-
-            // Try to get timestamp using reflection for common property names
-            var type = message.GetType();
-            var timestampProperties = new[] { "CreatedAt", "Timestamp", "SentAt", "CreatedDate", "DateSent" };
-
-            foreach (var propName in timestampProperties)
-            {
-                var property = type.GetProperty(propName);
-                if (property != null && property.PropertyType == typeof(DateTime))
+                // Try to get the other user's details
+                try
                 {
-                    var value = property.GetValue(message);
-                    if (value is DateTime dateTimeValue)
+                    var student = await _context.Students.FindAsync(otherUserId);
+                    var tutor = await _context.Tutors.FindAsync(otherUserId);
+
+                    if (student != null)
                     {
-                        return dateTimeValue;
+                        otherUserName = student.Name;
+                        otherUserRole = "Student";
+                        Console.WriteLine($"Other user is student: {otherUserName}");
+                    }
+                    else if (tutor != null)
+                    {
+                        otherUserName = tutor.Name;
+                        otherUserRole = "Tutor";
+                        Console.WriteLine($"Other user is tutor: {otherUserName}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No user found with ID: {otherUserId}");
                     }
                 }
-            }
+                catch (Exception userEx)
+                {
+                    Console.WriteLine($"Error getting user details: {userEx.Message}");
+                    // Continue with default values
+                }
 
-            // Fallback to current time
-            return DateTime.Now;
+                // Mark messages as read
+                try
+                {
+                    foreach (var message in messages.Where(m =>
+                        (m.StudentReceiverId == currentUserId || m.TutorReceiverId == currentUserId) && !m.IsRead))
+                    {
+                        await _messageService.MarkAsReadAsync(message.Id, currentUserId);
+                    }
+                }
+                catch (Exception readEx)
+                {
+                    Console.WriteLine($"Error marking messages as read: {readEx.Message}");
+                    // Continue anyway
+                }
+
+                // Convert to MessageViewModel
+                var messageViewModels = messages.Select(m => new MessageViewModel
+                {
+                    Id = m.Id,
+                    Content = m.MessageContent,
+                    SenderId = m.StudentSenderId ?? m.TutorSenderId ?? Guid.Empty,
+                    ReceiverId = m.StudentReceiverId ?? m.TutorReceiverId ?? Guid.Empty,
+                    Timestamp = m.Timestamp,
+                    IsRead = m.IsRead,
+                    IsSentByCurrentUser = (m.StudentSenderId == currentUserId || m.TutorSenderId == currentUserId),
+                    Status = m.IsRead ? "Read" : "Delivered"
+                }).ToList();
+
+                var viewModel = new ConversationViewModel
+                {
+                    OtherUserId = otherUserId,
+                    OtherUserName = otherUserName,
+                    OtherUserRole = otherUserRole,
+                    Messages = messageViewModels,
+                    NewMessage = new NewMessageViewModel { ReceiverId = otherUserId }
+                };
+
+                Console.WriteLine("Successfully loaded conversation view model");
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in Conversation action: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                TempData["ErrorMessage"] = "Error loading conversation. Please try again.";
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendMessage(NewMessageViewModel model)
         {
-            if (ModelState.IsValid)
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                var currentUserId = GetCurrentUserId();
-                var message = await _messageService.SendMessageAsync(currentUserId, model.ReceiverId, model.Content);
-
-                // If AJAX request, return JSON
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 {
-                    return Json(new { success = true, messageId = message.Id });
+                    return Json(new { success = false, error = "Please login to send messages." });
                 }
+                TempData["ErrorMessage"] = "Please login to send messages.";
+                return RedirectToAction("Index", "Login");
+            }
 
-                return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var currentUserId = GetCurrentUserId();
+                    var message = await _messageService.SendMessageAsync(currentUserId, model.ReceiverId, model.Content);
+
+                    // If AJAX request, return JSON
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = true, messageId = message.Id });
+                    }
+
+                    return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+                }
+                catch (Exception ex)
+                {
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new { success = false, error = "Error sending message." });
+                    }
+                    TempData["ErrorMessage"] = "Error sending message. Please try again.";
+                    return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+                }
             }
 
             // If AJAX request with errors, return JSON
@@ -176,66 +238,106 @@ namespace CampusLearnPlatform.Controllers
         [HttpPost]
         public async Task<IActionResult> MarkAsRead(Guid messageId)
         {
-            var currentUserId = GetCurrentUserId();
-            var success = await _messageService.MarkAsReadAsync(messageId, currentUserId);
-            return Json(new { success });
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Json(new { success = false, error = "Please login." });
+            }
+
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var success = await _messageService.MarkAsReadAsync(messageId, currentUserId);
+                return Json(new { success });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = "Error marking message as read." });
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> SearchUsers(string query)
         {
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Json(new List<object>());
+            }
+
             if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
                 return Json(new List<object>());
 
-            var users = await _messageService.SearchUsersAsync(query);
-            var currentUserId = GetCurrentUserId();
+            try
+            {
+                var users = await _messageService.SearchUsersAsync(query);
+                var currentUserId = GetCurrentUserId();
 
-            var result = users
-                .Select(u => {
-                    var id = u.GetType().GetProperty("Id")?.GetValue(u);
-                    var name = u.GetType().GetProperty("Name")?.GetValue(u)?.ToString() ?? "Unknown";
-                    var email = u.GetType().GetProperty("Email")?.GetValue(u)?.ToString() ?? "";
-                    var type = u.GetType().GetProperty("Type")?.GetValue(u)?.ToString() ?? "User";
+                var result = users
+                    .Select(u => {
+                        var id = u.GetType().GetProperty("Id")?.GetValue(u);
+                        var name = u.GetType().GetProperty("Name")?.GetValue(u)?.ToString() ?? "Unknown";
+                        var email = u.GetType().GetProperty("Email")?.GetValue(u)?.ToString() ?? "";
+                        var type = u.GetType().GetProperty("Type")?.GetValue(u)?.ToString() ?? "User";
 
-                    // Safely handle nullable GUID
-                    if (id is Guid userId && userId != currentUserId)
-                    {
-                        return new
+                        // Safely handle nullable GUID
+                        if (id is Guid userId && userId != currentUserId)
                         {
-                            id = userId,
-                            text = $"{name} ({email})",
-                            role = type
-                        };
-                    }
-                    return null;
-                })
-                .Where(x => x != null)
-                .ToList();
+                            return new
+                            {
+                                id = userId,
+                                text = $"{name} ({email})",
+                                role = type
+                            };
+                        }
+                        return null;
+                    })
+                    .Where(x => x != null)
+                    .ToList();
 
-            return Json(result);
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return Json(new List<object>());
+            }
         }
 
         [HttpGet]
         public async Task<JsonResult> GetConversation(Guid otherUserId)
         {
-            var currentUserId = GetCurrentUserId();
-            var messages = await _messageService.GetConversationAsync(currentUserId, otherUserId);
-
-            var messageViewModels = messages.Select(m => new MessageViewModel
+            // Check if user is logged in
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString))
             {
-                Id = m.Id,
-                Content = m.Content,
-                SenderId = m.SenderId,
-                // Safely handle nullable GUIDs
-                ReceiverId = m.StudentReceiverId != currentUserId ?
-                    (m.StudentReceiverId ?? Guid.Empty) :
-                    (m.TutorReceiverId ?? Guid.Empty),
-                Timestamp = GetMessageTimestamp(m),
-                IsRead = m.IsRead,
-                IsSentByCurrentUser = m.SenderId == currentUserId
-            }).ToList();
+                return Json(new { messages = new List<MessageViewModel>() });
+            }
 
-            return Json(new { messages = messageViewModels });
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var messages = await _messageService.GetConversationAsync(currentUserId, otherUserId);
+
+                // FIXED: Use correct property names and direct timestamp access
+                var messageViewModels = messages.Select(m => new MessageViewModel
+                {
+                    Id = m.Id,
+                    Content = m.MessageContent, // Fixed property name
+                    SenderId = m.StudentSenderId ?? m.TutorSenderId ?? Guid.Empty,
+                    ReceiverId = m.StudentReceiverId ?? m.TutorReceiverId ?? Guid.Empty,
+                    Timestamp = m.Timestamp, // Fixed: use direct property
+                    IsRead = m.IsRead,
+                    IsSentByCurrentUser = (m.StudentSenderId == currentUserId || m.TutorSenderId == currentUserId)
+                }).ToList();
+
+                return Json(new { messages = messageViewModels });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { messages = new List<MessageViewModel>() });
+            }
         }
     }
 }

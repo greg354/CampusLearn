@@ -3,6 +3,121 @@
     ViewData["Title"] = "Messages";
 }
 
+<style>
+    /* CSS Variables for Theming */
+    :root {
+        --card-bg: white;
+        --card-header-bg: #f8f9fa;
+        --card-text: #333;
+        --card-border: #e2e8f0;
+        --list-item-bg: white;
+        --list-item-hover: #f8f9fa;
+        --list-item-text: #333;
+        --list-item-muted: #6b7280;
+        --modal-bg: white;
+        --modal-text: #333;
+        --input-bg: white;
+        --input-border: #e2e8f0;
+        --input-text: #333;
+    }
+
+    [data-theme="dark"] {
+        --card-bg: #2d3748;
+        --card-header-bg: #4a5568;
+        --card-text: #e2e8f0;
+        --card-border: #4a5568;
+        --list-item-bg: #2d3748;
+        --list-item-hover: #4a5568;
+        --list-item-text: #e2e8f0;
+        --list-item-muted: #a0aec0;
+        --modal-bg: #2d3748;
+        --modal-text: #e2e8f0;
+        --input-bg: #4a5568;
+        --input-border: #4a5568;
+        --input-text: #e2e8f0;
+    }
+
+    .card {
+        background: var(--card-bg);
+        color: var(--card-text);
+        border: 1px solid var(--card-border);
+    }
+
+    .card-header {
+        background: var(--card-header-bg) !important;
+        color: var(--card-text);
+        border-bottom: 1px solid var(--card-border);
+    }
+
+    .list-group-item {
+        background: var(--list-item-bg);
+        color: var(--list-item-text);
+        border-color: var(--card-border);
+    }
+
+        .list-group-item:hover {
+            background: var(--list-item-hover);
+            color: var(--list-item-text);
+        }
+
+    .text-muted {
+        color: var(--list-item-muted) !important;
+    }
+
+    /* Modal styling for dark mode */
+    .modal-content {
+        background: var(--modal-bg);
+        color: var(--modal-text);
+    }
+
+    .modal-header {
+        border-bottom-color: var(--card-border);
+    }
+
+    .modal-footer {
+        border-top-color: var(--card-border);
+    }
+
+    .form-control {
+        background: var(--input-bg);
+        color: var(--input-text);
+        border: 1px solid var(--input-border);
+    }
+
+        .form-control:focus {
+            background: var(--input-bg);
+            color: var(--input-text);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        }
+
+    /* Select2 dark mode support */
+    .select2-container--default .select2-selection--single {
+        background: var(--input-bg);
+        color: var(--input-text);
+        border: 1px solid var(--input-border);
+    }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--input-text);
+        }
+
+    .select2-dropdown {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+    }
+
+    .select2-container--default .select2-results__option {
+        background: var(--card-bg);
+        color: var(--card-text);
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background: var(--list-item-hover);
+        color: var(--card-text);
+    }
+</style>
+
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
@@ -25,7 +140,7 @@
                         <div class="list-group list-group-flush">
                             @foreach (var conversation in Model.RecentConversations)
                             {
-                                <a href="@Url.Action("Conversation", new { otherUserId = conversation.OtherUserId })"
+                                <a href="@Url.Action("Conversation", "Message", new { otherUserId = conversation.OtherUserId })"
                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
                                     <div class="d-flex w-100 justify-content-between">
                                         <div>
@@ -92,170 +207,51 @@
     </div>
 </div>
 
-@section Styles {
-    <style>
-        /* CSS Variables for Theming */
-        :root {
-            --card-bg: white;
-            --card-header-bg: #f8f9fa;
-            --card-text: #333;
-            --card-border: #e2e8f0;
-            --list-item-bg: white;
-            --list-item-hover: #f8f9fa;
-            --list-item-text: #333;
-            --list-item-muted: #6b7280;
-            --modal-bg: white;
-            --modal-text: #333;
-            --input-bg: white;
-            --input-border: #e2e8f0;
-            --input-text: #333;
-        }
-
-        [data-theme="dark"] {
-            --card-bg: #2d3748;
-            --card-header-bg: #4a5568;
-            --card-text: #e2e8f0;
-            --card-border: #4a5568;
-            --list-item-bg: #2d3748;
-            --list-item-hover: #4a5568;
-            --list-item-text: #e2e8f0;
-            --list-item-muted: #a0aec0;
-            --modal-bg: #2d3748;
-            --modal-text: #e2e8f0;
-            --input-bg: #4a5568;
-            --input-border: #4a5568;
-            --input-text: #e2e8f0;
-        }
-
-        .card {
-            background: var(--card-bg);
-            color: var(--card-text);
-            border: 1px solid var(--card-border);
-        }
-
-        .card-header {
-            background: var(--card-header-bg) !important;
-            color: var(--card-text);
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .list-group-item {
-            background: var(--list-item-bg);
-            color: var(--list-item-text);
-            border-color: var(--card-border);
-        }
-
-            .list-group-item:hover {
-                background: var(--list-item-hover);
-                color: var(--list-item-text);
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        $('#userSearch').select2({
+            placeholder: "Search for a user...",
+            minimumInputLength: 2,
+            ajax: {
+                url: '@Url.Action("SearchUsers", "Message")',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        query: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
             }
+        });
 
-        .text-muted {
-            color: var(--list-item-muted) !important;
+        // Update Select2 when theme changes
+        function updateSelect2Theme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            $('.select2-container').toggleClass('select2-dark', isDark);
         }
 
-        /* Modal styling for dark mode */
-        .modal-content {
-            background: var(--modal-bg);
-            color: var(--modal-text);
-        }
-
-        .modal-header {
-            border-bottom-color: var(--card-border);
-        }
-
-        .modal-footer {
-            border-top-color: var(--card-border);
-        }
-
-        .form-control {
-            background: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--input-border);
-        }
-
-            .form-control:focus {
-                background: var(--input-bg);
-                color: var(--input-text);
-                border-color: #6366f1;
-                box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-            }
-
-        /* Select2 dark mode support */
-        .select2-container--default .select2-selection--single {
-            background: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--input-border);
-        }
-
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                color: var(--input-text);
-            }
-
-        .select2-dropdown {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-        }
-
-        .select2-container--default .select2-results__option {
-            background: var(--card-bg);
-            color: var(--card-text);
-        }
-
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background: var(--list-item-hover);
-            color: var(--card-text);
-        }
-    </style>
-}
-
-@section Scripts {
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#userSearch').select2({
-                placeholder: "Search for a user...",
-                minimumInputLength: 2,
-                ajax: {
-                    url: '@Url.Action("SearchUsers", "Message")',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            query: params.term
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
+        // Listen for theme changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'data-theme') {
+                    updateSelect2Theme();
                 }
             });
-
-            // Update Select2 when theme changes
-            function updateSelect2Theme() {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                $('.select2-container').toggleClass('select2-dark', isDark);
-            }
-
-            // Listen for theme changes
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.attributeName === 'data-theme') {
-                        updateSelect2Theme();
-                    }
-                });
-            });
-
-            observer.observe(document.documentElement, {
-                attributes: true
-            });
-
-            // Initial theme update
-            updateSelect2Theme();
         });
-    </script>
-}
+
+        observer.observe(document.documentElement, {
+            attributes: true
+        });
+
+        // Initial theme update
+        updateSelect2Theme();
+    });
+</script>
