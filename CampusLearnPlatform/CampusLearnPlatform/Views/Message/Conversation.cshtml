@@ -82,47 +82,66 @@
         color: var(--message-footer-text);
     }
 
-    .message-input {
-        border-radius: 1.5rem;
-        resize: none;
-        border: 2px solid var(--input-border);
+    /* Ultra Thin Elongated Pill */
+    .input-group {
+        border-radius: 1.25rem !important;
+        border: 1px solid var(--input-border);
         background: var(--input-bg);
-        color: var(--input-text);
-        transition: all 0.3s ease;
+        padding: 0.05rem 0.5rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        min-height: 32px;
     }
 
-        .message-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-            background: var(--input-bg);
-            color: var(--input-text);
-        }
+    .input-group:focus-within {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.1rem rgba(99, 102, 241, 0.15);
+    }
+
+    .message-input {
+        border: none !important;
+        background: transparent !important;
+        resize: none;
+        color: var(--input-text);
+        padding: 0.4rem 0.3rem; 
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        font-size: 0.875rem;
+        line-height: 1.3;
+        flex-grow: 1;
+        min-height: 35px; 
+        max-height: 120px;
+        margin: 0;
+        overflow-y: auto; 
+    }
 
     .send-button {
-        border-radius: 50%;
-        width: 45px;
-        height: 45px;
+        border-radius: 50% !important;
+        width: 35px !important;
+        height: 35px !important;
+        margin: 0 !important;
+        margin-left: 0.3rem !important;
+        font-size: 0.7rem;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: 0.5rem;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        align-self: center;
+        border: none;
     }
 
         .send-button:not(:disabled):hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
 
         .send-button:disabled {
-            background-color: #9ca3af;
-            border-color: #9ca3af;
+            background-color: #9ca3af !important;
+            border-color: #9ca3af !important;
             cursor: not-allowed;
+            transform: none;
         }
-
-    .char-count {
-        font-weight: 600;
-        color: var(--message-footer-text);
-    }
 
     .conversation-meta {
         font-size: 0.9rem;
@@ -270,7 +289,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="card-footer">
+                <div class="card-footer" style="padding-top: 0.25rem; padding-bottom: 0.25rem;">
                     <form asp-action="SendMessage" method="post" class="message-form">
                         <input type="hidden" asp-for="NewMessage.ReceiverId" value="@Model.OtherUserId" />
                         <div class="input-group">
@@ -284,7 +303,7 @@
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
-                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <div class="mt-2 d-flex justify-content-between align-items-center" style="margin-top: 0.25rem !important;">
                             <small class="text-muted">
                                 <span class="char-count">0</span>/1000 characters
                             </small>
@@ -302,49 +321,96 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOMContentLoaded event fired');
+
         const conversationBody = document.querySelector('.conversation-body');
         const messageInput = document.querySelector('.message-input');
         const sendButton = document.querySelector('.send-button');
         const charCount = document.querySelector('.char-count');
         const form = document.querySelector('.message-form');
 
+         console.log('Elements found:', {
+            conversationBody: !!conversationBody,
+            messageInput: !!messageInput,
+            sendButton: !!sendButton,
+            charCount: !!charCount,
+            form: !!form
+        });
+
+        if (!messageInput) {
+            console.error('messageInput element not found!');
+            return;
+        }
+
         // Scroll to bottom
-        scrollToBottom();
+        if (conversationBody) {
+            conversationBody.scrollTop = conversationBody.scrollHeight;
+        }
 
         // Auto-focus message input
         messageInput.focus();
 
-        // Character count and send button state
-        messageInput.addEventListener('input', function () {
-            const length = this.value.length;
-            charCount.textContent = length;
-            sendButton.disabled = length === 0 || length > 1000;
+        // Set initial height
+        messageInput.style.height = '35px';
+        console.log('Initial height set to 35px');
 
-            // Auto-expand textarea
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+        messageInput.addEventListener('input', function () {
+            console.log('Input event triggered');
+            const length = this.value.length;
+
+            if (charCount) {
+                charCount.textContent = length;
+            }
+
+            if (sendButton) {
+                sendButton.disabled = length === 0 || length > 1000;
+            }
+
+            // Better auto-expand logic
+            // First reset to a small height to get accurate scrollHeight
+            this.style.height = '35px';
+
+            // Now calculate the actual needed height
+            const neededHeight = this.scrollHeight;
+            console.log('Needed height:', neededHeight);
+
+            // Only expand if we actually need more than 35px
+            if (neededHeight > 35) {
+                const newHeight = Math.min(neededHeight, 120);
+                this.style.height = newHeight + 'px';
+                console.log('Textarea expanded to:', newHeight + 'px');
+            } else {
+                this.style.height = '35px';
+                console.log('Textarea kept at minimum 35px');
+            }
         });
 
         // Form submission
-        form.addEventListener('submit', function (e) {
-            const content = messageInput.value.trim();
-            if (content === '' || content.length > 1000) {
-                e.preventDefault();
-                return false;
-            }
-            sendButton.disabled = true;
-            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        });
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                console.log('Form submit event');
+                const content = messageInput.value.trim();
+                if (content === '' || content.length > 1000) {
+                    e.preventDefault();
+                    return false;
+                }
+                if (sendButton) {
+                    sendButton.disabled = true;
+                    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                }
+            });
+        }
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                form.dispatchEvent(new Event('submit'));
+            if (e.ctrlKey && e.key === 'Enter' && messageInput) {
+                console.log('Ctrl+Enter pressed');
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
             }
         });
 
-        function scrollToBottom() {
-            conversationBody.scrollTop = conversationBody.scrollHeight;
-        }
+        console.log('All event listeners attached successfully');
     });
 </script>

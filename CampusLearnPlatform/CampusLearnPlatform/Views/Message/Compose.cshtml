@@ -1,4 +1,4 @@
-﻿@@model CampusLearnPlatform.Models.ViewModels.ComposeMessageViewModel
+﻿@model CampusLearnPlatform.Models.ViewModels.ComposeMessageViewModel
 @{
     ViewData["Title"] = "New Message";
 }
@@ -91,40 +91,66 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-    .message-input {
-        border-radius: 1rem;
-        resize: none;
-        border: 2px solid var(--input-border);
+    /* Ultra Thin Elongated Pill  */
+    .input-group {
+        border-radius: 1.25rem !important;
+        border: 1px solid var(--input-border);
         background: var(--input-bg);
-        color: var(--input-text);
-        transition: all 0.3s ease;
+        padding: 0.05rem 0.5rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        min-height: 32px; 
     }
 
-        .message-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-        }
+    .input-group:focus-within {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 0.1rem rgba(99, 102, 241, 0.15);
+    }
+
+    .message-input {
+        border: none !important;
+        background: transparent !important;
+        resize: none;
+        color: var(--input-text);
+        padding: 0.4rem 0.3rem; 
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        font-size: 0.875rem;
+        line-height: 1.3;
+        flex-grow: 1;
+        min-height: 35px; 
+        max-height: 120px; 
+        margin: 0;
+        overflow-y: auto; 
+    }
 
     .send-button {
-        border-radius: 50%;
-        width: 45px;
-        height: 45px;
+        border-radius: 50% !important;
+        width: 35px !important;
+        height: 35px !important;
+        margin: 0 !important;
+        margin-left: 0.3rem !important;
+        font-size: 0.7rem;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: 0.5rem;
-        transition: all 0.3s ease;
+        flex-shrink: 0;
+        align-self: center;
+        border: none;
     }
 
-        .send-button:not(:disabled):hover {
-            transform: scale(1.05);
-        }
+    .send-button:not(:disabled):hover {
+        transform: scale(1.03);
+    }
 
-        .send-button:disabled {
-            background-color: #9ca3af;
-            border-color: #9ca3af;
-            cursor: not-allowed;
-        }
+    .send-button:disabled {
+        background-color: #9ca3af !important;
+        border-color: #9ca3af !important;
+        cursor: not-allowed;
+        transform: none;
+    }
 
     @@keyframes fadeIn {
         from {
@@ -164,7 +190,7 @@
                                    autocomplete="off">
                             <div class="search-results position-absolute w-100 bg-white shadow-lg rounded mt-1"
                                  style="display: none; z-index: 1000; max-height: 300px; overflow-y: auto;">
-                                <!-- Search results will appear here -->
+                                <!-- Search results appear here -->
                             </div>
                         </div>
                     </div>
@@ -191,7 +217,7 @@
                     </div>
 
                     <!-- Message Input -->
-                    <div class="card-footer">
+                    <div class="card-footer" style="padding-top: 0.25rem; padding-bottom: 0.25rem;">
                         <form id="messageForm" asp-action="SendMessage" method="post" class="message-form">
                             @Html.AntiForgeryToken()
                             <input type="hidden" id="receiverId" name="ReceiverId" />
@@ -207,7 +233,7 @@
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
-                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                            <div class="mt-2 d-flex justify-content-between align-items-center" style="margin-top: 0.25rem !important;">
                                 <small class="text-muted">
                                     <span class="char-count">0</span>/1000 characters
                                 </small>
@@ -233,6 +259,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('Compose DOMContentLoaded event fired');
+
         const recipientSearch = document.getElementById('recipientSearch');
         const searchResults = document.querySelector('.search-results');
         const selectedRecipient = document.getElementById('selectedRecipient');
@@ -247,45 +275,93 @@
         const selectedUserRole = document.getElementById('selectedUserRole');
         const clearSelection = document.getElementById('clearSelection');
 
+        console.log('Compose elements found:', {
+            messageContent: !!messageContent,
+            sendButton: !!sendButton,
+            charCount: !!charCount
+        });
+
+        if (!messageContent) {
+            console.error('messageContent element not found!');
+            return;
+        }
+
         let searchTimeout;
 
         // Search functionality
-        recipientSearch.addEventListener('input', function () {
-            const query = this.value.trim();
+        if (recipientSearch) {
+            recipientSearch.addEventListener('input', function () {
+                const query = this.value.trim();
+                clearTimeout(searchTimeout);
 
-            clearTimeout(searchTimeout);
+                if (query.length < 2) {
+                    if (searchResults) searchResults.style.display = 'none';
+                    return;
+                }
 
-            if (query.length < 2) {
-                searchResults.style.display = 'none';
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                searchUsers(query);
-            }, 300);
-        });
+                searchTimeout = setTimeout(() => {
+                    searchUsers(query);
+                }, 300);
+            });
+        }
 
         // Clear selection
-        clearSelection.addEventListener('click', function () {
-            clearRecipientSelection();
-        });
+        if (clearSelection) {
+            clearSelection.addEventListener('click', function () {
+                clearRecipientSelection();
+            });
+        }
 
-        // Message input handling
+        // Set initial height
+        messageContent.style.height = '35px';
+        console.log('Compose initial height set to 35px');
+
         messageContent.addEventListener('input', function () {
+            console.log('Compose input event triggered');
             const length = this.value.length;
-            charCount.textContent = length;
-            sendButton.disabled = length === 0 || length > 1000;
 
-            // Auto-expand textarea
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+            if (charCount) {
+                charCount.textContent = length;
+            }
+
+            if (sendButton) {
+                sendButton.disabled = length === 0 || length > 1000;
+            }
+
+            // Better auto-expand logic
+            // First reset to a small height to get accurate scrollHeight
+            this.style.height = '35px';
+
+            // Now calculate the actual needed height
+            const neededHeight = this.scrollHeight;
+            console.log('Compose needed height:', neededHeight);
+
+            // Only expand if we actually need more than 35px
+            let newHeight;
+            if (neededHeight > 35) {
+                newHeight = Math.min(neededHeight, 120);
+                this.style.height = newHeight + 'px';
+                console.log('Compose textarea expanded to:', newHeight + 'px');
+            } else {
+                newHeight = 35;
+                this.style.height = '35px';
+                console.log('Compose textarea kept at minimum 35px');
+            }
+
+            // Adjust container height if needed
+            const inputGroup = this.closest('.input-group');
+            if (inputGroup) {
+                inputGroup.style.minHeight = Math.max(32, newHeight + 8) + 'px';
+            }
         });
 
         // Form submission
-        messageForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            sendMessage();
-        });
+        if (messageForm) {
+            messageForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                sendMessage();
+            });
+        }
 
         function searchUsers(query) {
             fetch(`@Url.Action("SearchUsers", "Message")?query=${encodeURIComponent(query)}`)
@@ -299,6 +375,8 @@
         }
 
         function displaySearchResults(users) {
+            if (!searchResults) return;
+
             searchResults.innerHTML = '';
 
             if (users.length === 0) {
@@ -323,32 +401,34 @@
 
         function selectRecipient(user) {
             // Update UI
-            selectedUserName.textContent = user.text;
-            selectedUserRole.textContent = user.role ? `(${user.role})` : '';
-            receiverId.value = user.id;
+            if (selectedUserName) selectedUserName.textContent = user.text;
+            if (selectedUserRole) selectedUserRole.textContent = user.role ? `(${user.role})` : '';
+            if (receiverId) receiverId.value = user.id;
 
             // Show/hide sections
-            selectedRecipient.style.display = 'block';
-            conversationArea.style.display = 'block';
-            emptyState.style.display = 'none';
-            searchResults.style.display = 'none';
-            recipientSearch.value = '';
+            if (selectedRecipient) selectedRecipient.style.display = 'block';
+            if (conversationArea) conversationArea.style.display = 'block';
+            if (emptyState) emptyState.style.display = 'none';
+            if (searchResults) searchResults.style.display = 'none';
+            if (recipientSearch) recipientSearch.value = '';
 
             // Load conversation history
             loadConversationHistory(user.id);
 
             // Focus message input
-            messageContent.focus();
+            if (messageContent) messageContent.focus();
         }
 
         function clearRecipientSelection() {
-            selectedRecipient.style.display = 'none';
-            conversationArea.style.display = 'none';
-            emptyState.style.display = 'block';
-            receiverId.value = '';
-            messageContent.value = '';
-            messageContent.dispatchEvent(new Event('input'));
-            recipientSearch.focus();
+            if (selectedRecipient) selectedRecipient.style.display = 'none';
+            if (conversationArea) conversationArea.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'block';
+            if (receiverId) receiverId.value = '';
+            if (messageContent) {
+                messageContent.value = '';
+                messageContent.dispatchEvent(new Event('input'));
+            }
+            if (recipientSearch) recipientSearch.focus();
         }
 
         function loadConversationHistory(userId) {
@@ -365,6 +445,7 @@
 
         function displayMessages(messages) {
             const messagesContainer = document.getElementById('messagesContainer');
+            if (!messagesContainer) return;
 
             if (messages.length === 0) {
                 messagesContainer.innerHTML = `
@@ -398,19 +479,33 @@
 
                 // Scroll to bottom
                 const conversationBody = document.querySelector('.conversation-body');
-                conversationBody.scrollTop = conversationBody.scrollHeight;
+                if (conversationBody) {
+                    conversationBody.scrollTop = conversationBody.scrollHeight;
+                }
             }
         }
 
     function sendMessage() {
         const content = messageContent.value.trim();
         if (content === '' || content.length > 1000) return;
+        function sendMessage() {
+            if (!messageContent || !receiverId) return;
+
+            const content = messageContent.value.trim();
+            if (content === '' || content.length > 1000) {
+                return;
+            }
 
         const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
         const token = tokenInput ? tokenInput.value : '';
 
         sendButton.disabled = true;
         sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            // Disable send button and show loading
+            if (sendButton) {
+                sendButton.disabled = true;
+                sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
 
         fetch(messageForm.action, {
             method: 'POST',
@@ -442,20 +537,52 @@
             sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
         });
     }
+            fetch(messageForm.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(new FormData(messageForm))
+            })
+            .then(response => {
+                if (response.ok) {
+                    messageContent.value = '';
+                    messageContent.dispatchEvent(new Event('input'));
+                    loadConversationHistory(receiverId.value);
+                } else {
+                    throw new Error('Failed to send message');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            })
+            .finally(() => {
+                if (sendButton) {
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                }
+            });
+        }
 
 
         // Close search results when clicking outside
         document.addEventListener('click', function (e) {
-            if (!recipientSearch.contains(e.target) && !searchResults.contains(e.target)) {
+            if (recipientSearch && searchResults &&
+                !recipientSearch.contains(e.target) && !searchResults.contains(e.target)) {
                 searchResults.style.display = 'none';
             }
         });
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.key === 'Enter' && receiverId.value) {
-                messageForm.dispatchEvent(new Event('submit'));
+            if (e.ctrlKey && e.key === 'Enter' && receiverId && receiverId.value) {
+                if (messageForm) {
+                    messageForm.dispatchEvent(new Event('submit'));
+                }
             }
         });
+
+        console.log('Compose all event listeners attached successfully');
     });
 </script>
