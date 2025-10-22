@@ -44,6 +44,14 @@ namespace CampusLearnPlatform.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<EscalationRequest> EscalationRequests { get; set; }
 
+        public DbSet<MessageAttachment> MessageAttachments { get; set; } = default!;
+        public DbSet<MessageReaction> MessageReactions { get; set; } = default!;
+        public DbSet<MessageEdit> MessageEdits { get; set; } = default!;
+        public DbSet<MessageDelivery> MessageDeliveries { get; set; } = default!;
+        public DbSet<MessageDelete> MessageDeletes { get; set; } = default!;
+        public DbSet<MessageReply> MessageReplies { get; set; } = default!;
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // enums-as-string example
@@ -417,6 +425,11 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Status).HasColumnName("status").HasMaxLength(50).HasDefaultValue("Pending");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             });
+
+            modelBuilder.Entity<MessageDelivery>().HasKey(x => new { x.MessageId, x.RecipientId });
+            modelBuilder.Entity<MessageDelete>().HasKey(x => new { x.MessageId, x.UserId });
+
+
 
             base.OnModelCreating(modelBuilder);
         }

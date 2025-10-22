@@ -3,6 +3,7 @@ using CampusLearnPlatform.Models.ViewModels;
 using CampusLearnPlatform.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CampusLearnPlatform.Controllers
 {
@@ -10,11 +11,13 @@ namespace CampusLearnPlatform.Controllers
     {
         private readonly IMessageService _messageService;
         private readonly CampusLearnDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public MessageController(IMessageService messageService, CampusLearnDbContext context)
+        public MessageController(IMessageService messageService, CampusLearnDbContext context, IWebHostEnvironment env)
         {
             _messageService = messageService;
             _context = context;
+            _env = env;
         }
 
         private Guid GetCurrentUserId()
@@ -140,6 +143,98 @@ namespace CampusLearnPlatform.Controllers
         // Accepts ?term=, ?q=, or ?query= and returns { results: [ { id, text, role } ] }
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+
+        // ----- Upload attachment (files/images/voice notes) -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadAttachment(Guid messageId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { success = false, error = "No file." });
+
+            // size limit example: 25 MB
+            if (file.Length > 25 * 1024 * 1024)
+                return Json(new { success = false, error = "File too large (25MB max)." });
+
+            var uploads = Path.Combine(_env.WebRootPath, "uploads", "messages", messageId.ToString());
+            Directory.CreateDirectory(uploads);
+            var savedName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var fullPath = Path.Combine(uploads, savedName);
+
+            using (var fs = new FileStream(fullPath, FileMode.Create))
+                await file.CopyToAsync(fs);
+
+            var relPath = $"/uploads/messages/{messageId}/{savedName}";
+            var att = await _messageService.AddAttachmentAsync(
+                messageId,
+                file.FileName,
+                file.ContentType ?? "application/octet-stream",
+                file.Length,
+                relPath
+            );
+
+            return Json(new { success = true, attachmentId = att.Id, url = relPath, contentType = att.ContentType, fileName = att.FileName });
+        }
+
+        // ----- Edit message -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMessage(Guid messageId, string newContent)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            var ok = await _messageService.EditMessageAsync(messageId, userId, newContent);
+            return Json(new { success = ok });
+        }
+
+        // ----- React / Unreact (emoji) -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> React(Guid messageId, string emoji)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            var ok = await _messageService.AddReactionAsync(messageId, userId, emoji);
+            return Json(new { success = ok });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unreact(Guid messageId, string emoji)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            var ok = await _messageService.RemoveReactionAsync(messageId, userId, emoji);
+            return Json(new { success = ok });
+        }
+
+        // ----- Mark read (seen) -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkRead(Guid messageId)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            await _messageService.MarkReadAsync(messageId, userId);
+            return Json(new { success = true });
+        }
+
+        // ----- Delete (for me) -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteForMe(Guid messageId)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            var ok = await _messageService.DeleteForUserAsync(messageId, userId);
+            return Json(new { success = ok });
+        }
+
+        // ----- Reply (send message that references a parent) -----
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reply(Guid receiverId, string content, Guid parentMessageId)
+        {
+            var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+            var msg = await _messageService.SendMessageAsync(userId, receiverId, content, parentMessageId);
+            return Json(new { success = true, messageId = msg.Id });
+        }
+
         public async Task<IActionResult> SearchUsers(string term, string q, string query)
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))

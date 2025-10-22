@@ -76,8 +76,10 @@ namespace CampusLearnPlatform
             app.UseRouting();
 
             app.UseSession();
-            
+
             // FIXED: Change default route to Account/Login instead of Home/Index
+            app.UseStaticFiles();  // so /uploads/... is served
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
