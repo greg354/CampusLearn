@@ -329,7 +329,7 @@
         const charCount = document.querySelector('.char-count');
         const form = document.querySelector('.message-form');
 
-        console.log('Elements found:', {
+         console.log('Elements found:', {
             conversationBody: !!conversationBody,
             messageInput: !!messageInput,
             sendButton: !!sendButton,
@@ -337,7 +337,6 @@
             form: !!form
         });
 
-        // Check if elements exist before using them
         if (!messageInput) {
             console.error('messageInput element not found!');
             return;
@@ -367,11 +366,23 @@
                 sendButton.disabled = length === 0 || length > 1000;
             }
 
-            // Auto-expand textarea
-            this.style.height = 'auto';
-            const newHeight = Math.min(this.scrollHeight, 120);
-            this.style.height = newHeight + 'px';
-            console.log('Textarea resized to:', newHeight + 'px');
+            // Better auto-expand logic
+            // First reset to a small height to get accurate scrollHeight
+            this.style.height = '35px';
+
+            // Now calculate the actual needed height
+            const neededHeight = this.scrollHeight;
+            console.log('Needed height:', neededHeight);
+
+            // Only expand if we actually need more than 35px
+            if (neededHeight > 35) {
+                const newHeight = Math.min(neededHeight, 120);
+                this.style.height = newHeight + 'px';
+                console.log('Textarea expanded to:', newHeight + 'px');
+            } else {
+                this.style.height = '35px';
+                console.log('Textarea kept at minimum 35px');
+            }
         });
 
         // Form submission

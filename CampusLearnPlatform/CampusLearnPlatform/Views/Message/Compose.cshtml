@@ -280,7 +280,6 @@
             charCount: !!charCount
         });
 
-        // Check if messageContent exists before using it
         if (!messageContent) {
             console.error('messageContent element not found!');
             return;
@@ -312,7 +311,10 @@
             });
         }
 
-        // Textarea input event
+        // Set initial height
+        messageContent.style.height = '35px';
+        console.log('Compose initial height set to 35px');
+
         messageContent.addEventListener('input', function () {
             console.log('Compose input event triggered');
             const length = this.value.length;
@@ -325,10 +327,25 @@
                 sendButton.disabled = length === 0 || length > 1000;
             }
 
-            // Auto-expand textarea
-            this.style.height = 'auto';
-            const newHeight = Math.min(this.scrollHeight, 120);
-            this.style.height = newHeight + 'px';
+            // Better auto-expand logic
+            // First reset to a small height to get accurate scrollHeight
+            this.style.height = '35px';
+
+            // Now calculate the actual needed height
+            const neededHeight = this.scrollHeight;
+            console.log('Compose needed height:', neededHeight);
+
+            // Only expand if we actually need more than 35px
+            let newHeight;
+            if (neededHeight > 35) {
+                newHeight = Math.min(neededHeight, 120);
+                this.style.height = newHeight + 'px';
+                console.log('Compose textarea expanded to:', newHeight + 'px');
+            } else {
+                newHeight = 35;
+                this.style.height = '35px';
+                console.log('Compose textarea kept at minimum 35px');
+            }
 
             // Adjust container height if needed
             const inputGroup = this.closest('.input-group');
@@ -336,10 +353,6 @@
                 inputGroup.style.minHeight = Math.max(32, newHeight + 8) + 'px';
             }
         });
-
-        // Set initial height
-        messageContent.style.height = '35px';
-        console.log('Compose initial height set to 35px');
 
         // Form submission
         if (messageForm) {
@@ -496,7 +509,7 @@
                 if (response.ok) {
                     messageContent.value = '';
                     messageContent.dispatchEvent(new Event('input'));
-                    loadConversationHistory(receiverId.value); // Reload messages
+                    loadConversationHistory(receiverId.value);
                 } else {
                     throw new Error('Failed to send message');
                 }
