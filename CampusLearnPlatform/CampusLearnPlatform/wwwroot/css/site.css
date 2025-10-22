@@ -771,6 +771,10 @@ body {
         transform: translateX(5px);
     }
 
+[data-theme="dark"] .question-item:hover {
+    background: var(--bg-tertiary);
+}
+
 .question-header {
     display: flex;
     justify-content: space-between;

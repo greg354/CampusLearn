@@ -15,8 +15,6 @@
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
 
-                        @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
-
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">Full Name</label>
                             <input asp-for="Name" class="form-control" />
