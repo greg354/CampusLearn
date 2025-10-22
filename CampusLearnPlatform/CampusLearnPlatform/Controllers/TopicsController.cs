@@ -2,6 +2,7 @@
 using CampusLearnPlatform.Enums;
 using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.ViewModels;
+using CampusLearnPlatform.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -13,11 +14,13 @@ namespace CampusLearnPlatform.Controllers
     {
         private readonly CampusLearnDbContext _context;
         private readonly ILogger<TopicsController> _logger;
+        private readonly IEmailService _emailService;
 
-        public TopicsController(CampusLearnDbContext context, ILogger<TopicsController> logger)
+        public TopicsController(CampusLearnDbContext context, ILogger<TopicsController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: Topics/Browse
@@ -80,7 +83,6 @@ namespace CampusLearnPlatform.Controllers
                     var topicCard = await BuildTopicCardItem(topic, subscribedTopicIds, userGuid, userType);
 
                     allTopics.Add(topicCard);
-
 
                     if ((userType == "Student" && topic.StudentCreatorId == userGuid) ||
                         (userType == "Tutor" && topic.TutorCreatorId == userGuid))
@@ -224,19 +226,6 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // GET: Topics/Create
-        /*  public IActionResult Create()
-          {
-              var userId = HttpContext.Session.GetString("UserId");
-              if (string.IsNullOrEmpty(userId))
-              {
-                  TempData["ErrorMessage"] = "Please login to create a topic.";
-                  return RedirectToAction("Login", "Account");
-              }
-
-              return View();
-          } */
-
         // POST: Topics/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -253,7 +242,6 @@ namespace CampusLearnPlatform.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Instead of returning a view, redirect back to Browse with error message
                 TempData["ErrorMessage"] = "Please fill in all required fields correctly.";
                 return RedirectToAction("Browse");
             }
@@ -341,7 +329,7 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // POST: Topics/Subscribe
+        // POST: Topics/Subscribe - WITH EMAIL NOTIFICATION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Subscribe(Guid topicId)
@@ -382,8 +370,64 @@ namespace CampusLearnPlatform.Controllers
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("User {UserId} subscribed to topic {TopicId}", userId, topicId);
-                TempData["SuccessMessage"] = "Successfully subscribed to topic!";
 
+                // ===== SEND EMAIL NOTIFICATION TO TOPIC CREATOR =====
+                try
+                {
+                    var topic = await _context.Topics.FindAsync(topicId);
+                    if (topic != null)
+                    {
+                        // Get topic creator's details
+                        string creatorEmail = null;
+                        string creatorName = null;
+
+                        if (topic.StudentCreatorId.HasValue && topic.StudentCreatorId.Value != userId)
+                        {
+                            var creator = await _context.Students.FindAsync(topic.StudentCreatorId.Value);
+                            if (creator != null)
+                            {
+                                creatorEmail = creator.Email;
+                                creatorName = creator.Name;
+                            }
+                        }
+                        else if (topic.TutorCreatorId.HasValue)
+                        {
+                            var creator = await _context.Tutors.FindAsync(topic.TutorCreatorId.Value);
+                            if (creator != null)
+                            {
+                                creatorEmail = creator.Email;
+                                creatorName = creator.Name;
+                            }
+                        }
+
+                        // Get subscriber's name
+                        var subscriber = await _context.Students.FindAsync(userId);
+                        var subscriberName = subscriber?.Name ?? "A student";
+
+                        // Send email if we have the creator's email
+                        if (!string.IsNullOrEmpty(creatorEmail))
+                        {
+                            var topicUrl = Url.Action("Details", "Topics", new { id = topicId }, Request.Scheme);
+
+                            await _emailService.SendTopicSubscriptionNotificationAsync(
+                                creatorEmail,
+                                creatorName,
+                                topic.Title,
+                                subscriberName,
+                                topicUrl
+                            );
+
+                            _logger.LogInformation("Subscription notification sent to {Email} for topic {TopicId}",
+                                creatorEmail, topicId);
+                        }
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Failed to send subscription notification for topic {TopicId}", topicId);
+                }
+
+                TempData["SuccessMessage"] = "Successfully subscribed to topic!";
                 return RedirectToAction("Details", new { id = topicId });
             }
             catch (Exception ex)
@@ -436,7 +480,7 @@ namespace CampusLearnPlatform.Controllers
             }
         }
 
-        // POST: Topics/Reply
+        // POST: Topics/Reply - WITH EMAIL NOTIFICATION
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reply(Guid topicId, string content, bool isAnonymous = false)
@@ -480,15 +524,89 @@ namespace CampusLearnPlatform.Controllers
                 }
                 else
                 {
-                    reply.StudentPosterId = userId; // Default to student
+                    reply.StudentPosterId = userId;
                 }
 
                 _context.TopicReplies.Add(reply);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Reply created: {ReplyId} to topic {TopicId}", reply.ReplyId, topicId);
-                TempData["SuccessMessage"] = "Your reply has been posted!";
 
+                // ===== SEND EMAIL NOTIFICATION TO TOPIC CREATOR =====
+                try
+                {
+                    var topic = await _context.Topics.FindAsync(topicId);
+                    if (topic != null)
+                    {
+                        // Get topic creator's details
+                        string creatorEmail = null;
+                        string creatorName = null;
+
+                        if (topic.StudentCreatorId.HasValue && topic.StudentCreatorId.Value != userId)
+                        {
+                            var creator = await _context.Students.FindAsync(topic.StudentCreatorId.Value);
+                            if (creator != null)
+                            {
+                                creatorEmail = creator.Email;
+                                creatorName = creator.Name;
+                            }
+                        }
+                        else if (topic.TutorCreatorId.HasValue && topic.TutorCreatorId.Value != userId)
+                        {
+                            var creator = await _context.Tutors.FindAsync(topic.TutorCreatorId.Value);
+                            if (creator != null)
+                            {
+                                creatorEmail = creator.Email;
+                                creatorName = creator.Name;
+                            }
+                        }
+
+                        // Get replier's name
+                        string replierName = "Anonymous User";
+                        if (!isAnonymous)
+                        {
+                            if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                var student = await _context.Students.FindAsync(userId);
+                                replierName = student?.Name ?? "A Student";
+                            }
+                            else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                var tutor = await _context.Tutors.FindAsync(userId);
+                                replierName = tutor?.Name ?? "A Tutor";
+                            }
+                        }
+
+                        // Send email if we have the creator's email
+                        if (!string.IsNullOrEmpty(creatorEmail))
+                        {
+                            var topicUrl = Url.Action("Details", "Topics", new { id = topicId }, Request.Scheme);
+
+                            // Truncate content for email (first 200 characters)
+                            var contentPreview = content.Length > 200
+                                ? content.Substring(0, 200) + "..."
+                                : content;
+
+                            await _emailService.SendTopicReplyNotificationAsync(
+                                creatorEmail,
+                                creatorName,
+                                topic.Title,
+                                replierName,
+                                contentPreview,
+                                topicUrl
+                            );
+
+                            _logger.LogInformation("Reply notification sent to {Email} for topic {TopicId}",
+                                creatorEmail, topicId);
+                        }
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Failed to send reply notification for topic {TopicId}", topicId);
+                }
+
+                TempData["SuccessMessage"] = "Your reply has been posted!";
                 return RedirectToAction("Details", new { id = topicId });
             }
             catch (Exception ex)
@@ -496,6 +614,368 @@ namespace CampusLearnPlatform.Controllers
                 _logger.LogError(ex, "Error creating reply to topic {TopicId}", topicId);
                 TempData["ErrorMessage"] = "Unable to post reply. Please try again.";
                 return RedirectToAction("Details", new { id = topicId });
+            }
+        }
+
+        // POST: Topics/Update - WITH EMAIL NOTIFICATION TO SUBSCRIBERS
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(Guid id, string title, string description, string module, string priority)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "Please login to edit topics.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
+            {
+                TempData["ErrorMessage"] = "Title and description are required.";
+                return RedirectToAction("Details", new { id = id });
+            }
+
+            try
+            {
+                Guid userGuid = Guid.Parse(userId);
+                var topic = await _context.Topics.FindAsync(id);
+
+                if (topic == null)
+                {
+                    TempData["ErrorMessage"] = "Topic not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
+
+                if (!isCreator)
+                {
+                    TempData["ErrorMessage"] = "Only the topic creator can edit this topic.";
+                    return RedirectToAction("Details", new { id = id });
+                }
+
+                // Find or create module if it changed
+                var moduleEntity = await _context.Modules
+                    .FirstOrDefaultAsync(m => m.ModuleName == module);
+
+                if (moduleEntity == null)
+                {
+                    moduleEntity = new Module
+                    {
+                        Id = Guid.NewGuid(),
+                        ModuleName = module,
+                        Description = $"Module for {module}"
+                    };
+                    _context.Modules.Add(moduleEntity);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Update topic
+                topic.Title = title;
+                topic.Description = description;
+                topic.ModuleId = moduleEntity.Id;
+
+                if (Enum.TryParse<Priorities>(priority, out var priorityEnum))
+                {
+                    topic.Priority = priorityEnum;
+                }
+
+                _context.Topics.Update(topic);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Topic {TopicId} updated by user {UserId}", topic.Id, userGuid);
+
+                // ===== SEND EMAIL NOTIFICATIONS TO ALL SUBSCRIBERS =====
+                try
+                {
+                    // Get all subscribers (excluding the topic creator)
+                    var subscribers = await _context.Subscriptions
+                        .Where(s => s.TopicId == id && s.StudentId != userGuid)
+                        .Select(s => s.StudentId)
+                        .ToListAsync();
+
+                    if (subscribers.Any())
+                    {
+                        var topicUrl = Url.Action("Details", "Topics", new { id = id }, Request.Scheme);
+
+                        foreach (var subscriberId in subscribers)
+                        {
+                            var subscriber = await _context.Students.FindAsync(subscriberId);
+                            if (subscriber != null && !string.IsNullOrEmpty(subscriber.Email))
+                            {
+                                // Send email notification asynchronously
+                                _ = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await _emailService.SendTopicUpdateNotificationAsync(
+                                            subscriber.Email,
+                                            subscriber.Name,
+                                            topic.Title,
+                                            topicUrl
+                                        );
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Failed to send update notification to {Email}", subscriber.Email);
+                                    }
+                                });
+                            }
+                        }
+
+                        _logger.LogInformation("Topic update notifications queued for {Count} subscribers of topic {TopicId}",
+                            subscribers.Count, id);
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogError(emailEx, "Error sending topic update notifications for topic {TopicId}", id);
+                }
+
+                TempData["SuccessMessage"] = "Topic updated successfully! Notifications sent to subscribers.";
+                return RedirectToAction("Details", new { id = topic.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating topic {TopicId}", id);
+                TempData["ErrorMessage"] = "Unable to update topic. Please try again.";
+                return RedirectToAction("Details", new { id = id });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMaterial(UploadMaterialViewModel model)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                TempData["ErrorMessage"] = "Please login to upload materials.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please provide all required information.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+
+            if (model.File == null || model.File.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select a file to upload.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+
+            try
+            {
+                var userId = Guid.Parse(userIdString);
+
+                var topic = await _context.Topics.FindAsync(model.TopicId);
+
+                if (topic == null)
+                {
+                    TempData["ErrorMessage"] = "Topic not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userId) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userId);
+
+                if (!isCreator)
+                {
+                    TempData["ErrorMessage"] = "Only the topic creator can upload materials.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Validate file size (max 50MB)
+                const long maxFileSize = 50 * 1024 * 1024;
+                if (model.File.Length > maxFileSize)
+                {
+                    TempData["ErrorMessage"] = "File size cannot exceed 50MB.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".ppt", ".pptx",
+            ".xls", ".xlsx", ".txt", ".zip", ".rar", ".7z",
+            ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov",
+            ".mp3", ".wav", ".cs", ".java", ".py", ".js", ".html", ".css" };
+
+                var fileExtension = Path.GetExtension(model.File.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    TempData["ErrorMessage"] = "File type not supported. Please upload a valid file.";
+                    return RedirectToAction("Details", new { id = model.TopicId });
+                }
+
+                // Create uploads directory if it doesn't exist
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "materials");
+                if (!Directory.Exists(uploadsPath))
+                {
+                    Directory.CreateDirectory(uploadsPath);
+                }
+
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.File.FileName)}";
+                var filePath = Path.Combine(uploadsPath, uniqueFileName);
+
+                // Save file to disk
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.File.CopyToAsync(stream);
+                }
+
+                var fileExtensions = Path.GetExtension(model.File.FileName).ToLower();
+                var fileKind = GetFileKindFromExtension(fileExtensions);
+
+                var material = new LearningMaterial
+                {
+                    Id = Guid.NewGuid(),
+                    Title = model.Title,
+                    FilePath = $"/uploads/materials/{uniqueFileName}",
+                    FileType = fileKind.ToString().ToLower(),
+                    TopicId = model.TopicId,
+                    UploadedAt = DateTime.UtcNow
+                };
+
+                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.StudentPosterId = userId;
+                }
+                else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.TutorPosterId = userId;
+                }
+                else if (userType?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    material.AdminPosterId = userId;
+                }
+                else
+                {
+                    material.StudentPosterId = userId;
+                }
+
+                _context.LearningMaterials.Add(material);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Material uploaded: {MaterialId} to topic {TopicId} by user {UserId}",
+                    material.Id, model.TopicId, userId);
+
+                TempData["SuccessMessage"] = "Material uploaded successfully!";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading material to topic {TopicId}", model.TopicId);
+                TempData["ErrorMessage"] = "Unable to upload material. Please try again.";
+                return RedirectToAction("Details", new { id = model.TopicId });
+            }
+        }
+
+        // GET: Topics/DownloadMaterial/5
+        public async Task<IActionResult> DownloadMaterial(Guid id)
+        {
+            try
+            {
+                var material = await _context.LearningMaterials.FindAsync(id);
+
+                if (material == null)
+                {
+                    _logger.LogWarning("Material not found: {MaterialId}", id);
+                    TempData["ErrorMessage"] = "Material not found.";
+                    return RedirectToAction("Browse");
+                }
+
+                // Get file path
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", material.FilePath.TrimStart('/'));
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    _logger.LogWarning("File not found on disk: {FilePath}", filePath);
+                    TempData["ErrorMessage"] = "File not found.";
+                    return RedirectToAction("Details", new { id = material.TopicId });
+                }
+
+                // Get original filename from the stored path
+                var fileName = Path.GetFileName(material.FilePath);
+                // Remove the GUID prefix for a cleaner download name
+                var displayName = fileName.Contains('_') ? fileName.Substring(fileName.IndexOf('_') + 1) : fileName;
+
+                var memory = new MemoryStream();
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                {
+                    await stream.CopyToAsync(memory);
+                }
+                memory.Position = 0;
+
+                var contentType = GetContentType(material.FileType.ToString());
+                return File(memory, contentType, displayName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading material {MaterialId}", id);
+                TempData["ErrorMessage"] = "Unable to download material. Please try again.";
+                return RedirectToAction("Browse");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTopicForEdit(Guid id)
+        {
+            var userId = HttpContext.Session.GetString("UserId");
+            var userType = HttpContext.Session.GetString("UserType");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Please login to edit topics." });
+            }
+
+            try
+            {
+                Guid userGuid = Guid.Parse(userId);
+                var topic = await _context.Topics.FindAsync(id);
+
+                if (topic == null)
+                {
+                    return Json(new { success = false, message = "Topic not found." });
+                }
+
+                // Verify user is the creator
+                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
+                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
+
+                if (!isCreator)
+                {
+                    return Json(new { success = false, message = "Only the topic creator can edit this topic." });
+                }
+
+                // Get module name
+                var module = await _context.Modules.FindAsync(topic.ModuleId);
+                var moduleName = module?.ModuleName ?? "Unknown Module";
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        id = topic.Id,
+                        title = topic.Title,
+                        description = topic.Description,
+                        module = moduleName,
+                        priority = topic.Priority.ToString()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading topic for edit {TopicId}", id);
+                return Json(new { success = false, message = "Unable to load topic data." });
             }
         }
 
@@ -553,7 +1033,7 @@ namespace CampusLearnPlatform.Controllers
             // Check if subscribed
             var isSubscribed = subscribedTopicIds.Contains(topic.Id);
 
-            // Check for unread messages (simplified - just check if there are new messages)
+            // Check for unread messages
             var hasUnreadMessages = messageCount > 0;
 
             return new TopicCardItem
@@ -613,7 +1093,7 @@ namespace CampusLearnPlatform.Controllers
                     fileName = fileName.Substring(fileName.IndexOf('_') + 1);
                 }
 
-                // Calculate file size from actual file on disk (not stored in DB)
+                // Calculate file size from actual file on disk
                 string fileSize = "Unknown size";
                 try
                 {
@@ -626,7 +1106,6 @@ namespace CampusLearnPlatform.Controllers
                 }
                 catch
                 {
-                    // If file doesn't exist or can't be accessed, show unknown
                     fileSize = "Unknown size";
                 }
 
@@ -690,7 +1169,7 @@ namespace CampusLearnPlatform.Controllers
                     SenderType = senderType,
                     SentAt = reply.CreatedAt,
                     TimeAgo = GetTimeAgo(reply.CreatedAt),
-                    IsRead = true // Simplified for now
+                    IsRead = true
                 });
             }
 
@@ -771,186 +1250,6 @@ namespace CampusLearnPlatform.Controllers
             return $"{len:0.##} {sizes[order]}";
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadMaterial(UploadMaterialViewModel model)
-        {
-            var userIdString = HttpContext.Session.GetString("UserId");
-            var userType = HttpContext.Session.GetString("UserType");
-
-            if (string.IsNullOrEmpty(userIdString))
-            {
-                TempData["ErrorMessage"] = "Please login to upload materials.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "Please provide all required information.";
-                return RedirectToAction("Details", new { id = model.TopicId });
-            }
-
-            if (model.File == null || model.File.Length == 0)
-            {
-                TempData["ErrorMessage"] = "Please select a file to upload.";
-                return RedirectToAction("Details", new { id = model.TopicId });
-            }
-
-            try
-            {
-                var userId = Guid.Parse(userIdString);
-
-                var topic = await _context.Topics.FindAsync(model.TopicId);
-
-                if (topic == null)
-                {
-                    TempData["ErrorMessage"] = "Topic not found.";
-                    return RedirectToAction("Browse");
-                }
-
-                // Verify user is the creator
-                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userId) ||
-                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userId);
-
-                if (!isCreator)
-                {
-                    TempData["ErrorMessage"] = "Only the topic creator can upload materials.";
-                    return RedirectToAction("Details", new { id = model.TopicId });
-                }
-
-                // Validate file size (max 50MB)
-                const long maxFileSize = 50 * 1024 * 1024; // 50MB
-                if (model.File.Length > maxFileSize)
-                {
-                    TempData["ErrorMessage"] = "File size cannot exceed 50MB.";
-                    return RedirectToAction("Details", new { id = model.TopicId });
-                }
-
-                // Validate file type
-                var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".ppt", ".pptx",
-            ".xls", ".xlsx", ".txt", ".zip", ".rar", ".7z",
-            ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".avi", ".mov",
-            ".mp3", ".wav", ".cs", ".java", ".py", ".js", ".html", ".css" };
-
-                var fileExtension = Path.GetExtension(model.File.FileName).ToLower();
-                if (!allowedExtensions.Contains(fileExtension))
-                {
-                    TempData["ErrorMessage"] = "File type not supported. Please upload a valid file.";
-                    return RedirectToAction("Details", new { id = model.TopicId });
-                }
-
-                // Create uploads directory if it doesn't exist
-                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "materials");
-                if (!Directory.Exists(uploadsPath))
-                {
-                    Directory.CreateDirectory(uploadsPath);
-                }
-
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.File.FileName)}";
-                var filePath = Path.Combine(uploadsPath, uniqueFileName);
-
-                // Save file to disk
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.File.CopyToAsync(stream);
-                }
-
-
-                var fileExtensions = Path.GetExtension(model.File.FileName).ToLower();
-                var fileKind = GetFileKindFromExtension(fileExtensions);
-
-                var material = new LearningMaterial
-                {
-                    Id = Guid.NewGuid(),
-                    Title = model.Title,
-                    FilePath = $"/uploads/materials/{uniqueFileName}",
-                    FileType = fileKind.ToString().ToLower(),
-                    TopicId = model.TopicId,
-                    UploadedAt = DateTime.UtcNow
-                };
-
-                if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    material.StudentPosterId = userId;
-                }
-                else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    material.TutorPosterId = userId;
-                }
-                else if (userType?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    material.AdminPosterId = userId;
-                }
-                else
-                {
-                    material.StudentPosterId = userId; // Default to student
-                }
-
-                _context.LearningMaterials.Add(material);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Material uploaded: {MaterialId} to topic {TopicId} by user {UserId}",
-                    material.Id, model.TopicId, userId);
-
-                TempData["SuccessMessage"] = "Material uploaded successfully!";
-                return RedirectToAction("Details", new { id = model.TopicId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error uploading material to topic {TopicId}", model.TopicId);
-                TempData["ErrorMessage"] = "Unable to upload material. Please try again.";
-                return RedirectToAction("Details", new { id = model.TopicId });
-            }
-        }
-
-        // GET: Topics/DownloadMaterial/5
-        public async Task<IActionResult> DownloadMaterial(Guid id)
-        {
-            try
-            {
-                var material = await _context.LearningMaterials.FindAsync(id);
-
-                if (material == null)
-                {
-                    _logger.LogWarning("Material not found: {MaterialId}", id);
-                    TempData["ErrorMessage"] = "Material not found.";
-                    return RedirectToAction("Browse");
-                }
-
-                // Get file path
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", material.FilePath.TrimStart('/'));
-
-                if (!System.IO.File.Exists(filePath))
-                {
-                    _logger.LogWarning("File not found on disk: {FilePath}", filePath);
-                    TempData["ErrorMessage"] = "File not found.";
-                    return RedirectToAction("Details", new { id = material.TopicId });
-                }
-
-                // Get original filename from the stored path
-                var fileName = Path.GetFileName(material.FilePath);
-                // Remove the GUID prefix for a cleaner download name
-                var displayName = fileName.Contains('_') ? fileName.Substring(fileName.IndexOf('_') + 1) : fileName;
-
-                var memory = new MemoryStream();
-                using (var stream = new FileStream(filePath, FileMode.Open))
-                {
-                    await stream.CopyToAsync(memory);
-                }
-                memory.Position = 0;
-
-                var contentType = GetContentType(material.FileType.ToString());
-                return File(memory, contentType, displayName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error downloading material {MaterialId}", id);
-                TempData["ErrorMessage"] = "Unable to download material. Please try again.";
-                return RedirectToAction("Browse");
-            }
-        }
-
-        // Helper method to get content type
         private string GetContentType(string fileType)
         {
             return fileType?.ToLower() switch
@@ -980,145 +1279,6 @@ namespace CampusLearnPlatform.Controllers
                 ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".svg" or ".webp" => FileKind.image,
                 _ => FileKind.other
             };
-        }
-
-
-
-        [HttpGet]
-        public async Task<IActionResult> GetTopicForEdit(Guid id)
-        {
-            var userId = HttpContext.Session.GetString("UserId");
-            var userType = HttpContext.Session.GetString("UserType");
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                return Json(new { success = false, message = "Please login to edit topics." });
-            }
-
-            try
-            {
-                Guid userGuid = Guid.Parse(userId);
-                var topic = await _context.Topics.FindAsync(id);
-
-                if (topic == null)
-                {
-                    return Json(new { success = false, message = "Topic not found." });
-                }
-
-                // Verify user is the creator
-                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
-                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
-
-                if (!isCreator)
-                {
-                    return Json(new { success = false, message = "Only the topic creator can edit this topic." });
-                }
-
-                // Get module name
-                var module = await _context.Modules.FindAsync(topic.ModuleId);
-                var moduleName = module?.ModuleName ?? "Unknown Module";
-
-                return Json(new
-                {
-                    success = true,
-                    data = new
-                    {
-                        id = topic.Id,
-                        title = topic.Title,
-                        description = topic.Description,
-                        module = moduleName,
-                        priority = topic.Priority.ToString()
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading topic for edit {TopicId}", id);
-                return Json(new { success = false, message = "Unable to load topic data." });
-            }
-        }
-
-        // POST: Topics/Update
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(Guid id, string title, string description, string module, string priority)
-        {
-            var userId = HttpContext.Session.GetString("UserId");
-            var userType = HttpContext.Session.GetString("UserType");
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["ErrorMessage"] = "Please login to edit topics.";
-                return RedirectToAction("Login", "Account");
-            }
-
-            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
-            {
-                TempData["ErrorMessage"] = "Title and description are required.";
-                return RedirectToAction("Details", new { id = id });
-            }
-
-            try
-            {
-                Guid userGuid = Guid.Parse(userId);
-                var topic = await _context.Topics.FindAsync(id);
-
-                if (topic == null)
-                {
-                    TempData["ErrorMessage"] = "Topic not found.";
-                    return RedirectToAction("Browse");
-                }
-
-                // Verify user is the creator
-                bool isCreator = (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true && topic.StudentCreatorId == userGuid) ||
-                                (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true && topic.TutorCreatorId == userGuid);
-
-                if (!isCreator)
-                {
-                    TempData["ErrorMessage"] = "Only the topic creator can edit this topic.";
-                    return RedirectToAction("Details", new { id = id });
-                }
-
-                // Find or create module if it changed
-                var moduleEntity = await _context.Modules
-                    .FirstOrDefaultAsync(m => m.ModuleName == module);
-
-                if (moduleEntity == null)
-                {
-                    moduleEntity = new Module
-                    {
-                        Id = Guid.NewGuid(),
-                        ModuleName = module,
-                        Description = $"Module for {module}"
-                    };
-                    _context.Modules.Add(moduleEntity);
-                    await _context.SaveChangesAsync();
-                }
-
-                // Update topic
-                topic.Title = title;
-                topic.Description = description;
-                topic.ModuleId = moduleEntity.Id;
-
-                if (Enum.TryParse<Priorities>(priority, out var priorityEnum))
-                {
-                    topic.Priority = priorityEnum;
-                }
-
-                _context.Topics.Update(topic);
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Topic {TopicId} updated by user {UserId}", topic.Id, userGuid);
-                TempData["SuccessMessage"] = "Topic updated successfully!";
-
-                return RedirectToAction("Details", new { id = topic.Id });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating topic {TopicId}", id);
-                TempData["ErrorMessage"] = "Unable to update topic. Please try again.";
-                return RedirectToAction("Details", new { id = id });
-            }
         }
     }
 

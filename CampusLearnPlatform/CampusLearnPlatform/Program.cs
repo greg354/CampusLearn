@@ -41,6 +41,8 @@ namespace CampusLearnPlatform
             // Register Gemini Service
             builder.Services.AddScoped<IGeminiService, GeminiService>();
 
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
             // Add logging
             builder.Services.AddLogging(logging =>
             {
