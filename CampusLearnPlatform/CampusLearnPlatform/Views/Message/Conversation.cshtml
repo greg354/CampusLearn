@@ -402,10 +402,13 @@
         }
 
         // Keyboard shortcuts
-        document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.key === 'Enter' && messageInput) {
-                console.log('Ctrl+Enter pressed');
-                if (form) {
+         messageInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                console.log('Enter pressed - sending message');
+
+                const content = messageInput.value.trim();
+                if (content !== '' && content.length <= 1000) {
                     form.dispatchEvent(new Event('submit'));
                 }
             }
