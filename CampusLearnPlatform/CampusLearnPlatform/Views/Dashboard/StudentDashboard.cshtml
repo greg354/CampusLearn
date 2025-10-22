@@ -17,6 +17,13 @@
                         <button class="btn btn-primary" onclick="showComingSoon('Ask Question')">
                             <i class="fas fa-question-circle me-2"></i>Ask Question
                         </button>
+
+                        <!-- ADDED: Profile shortcuts -->
+                        <a asp-controller="Profile" asp-action="My" class="btn btn-light">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a>
+                        
+                        <!-- /ADDED -->
                     </div>
                 </div>
             </div>
@@ -190,41 +197,41 @@
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
 @section Scripts {
-    <script>
-              function navigateToPost(contentType, postId) {
-                 if (contentType === 'ForumPost') {
-                     // Update this URL to match your Forum controller route
-                     window.location.href = `/Forum/Details/${postId}`;
-                 } else if (contentType === 'Topic') {
-                     // Update this URL to match your Topic controller route
-                     window.location.href = `/Topics/Details/${postId}`;
-                 }
-             }
+        <script>
+                   function navigateToPost(contentType, postId) {
+                      if (contentType === 'ForumPost') {
+                          // Update this URL to match your Forum controller route
+                          window.location.href = `/Forum/Details/${postId}`;
+                      } else if (contentType === 'Topic') {
+                          // Update this URL to match your Topic controller route
+                          window.location.href = `/Topics/Details/${postId}`;
+                      }
+                  }
 
-             document.addEventListener('DOMContentLoaded', function() {
-                 // Animate stats numbers
-                 document.querySelectorAll('.stats-number').forEach((number, index) => {
-                     setTimeout(() => {
-                         animateNumber(number, parseInt(number.textContent));
-                     }, index * 200);
-                 });
-             });
-       // function animateNumber(element, target) {
-       //      let current = 0;
-       //      const increment = Math.ceil(target / 30);
-       //      const timer = setInterval(() => {
-       //          current += increment;
-       //          if (current >= target) {
-       //              current = target;
-       //              clearInterval(timer);
-       //          }
-       //          element.textContent = current;
-       //      }, 50);
-       //  }
-    </script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      // Animate stats numbers
+                      document.querySelectorAll('.stats-number').forEach((number, index) => {
+                          setTimeout(() => {
+                              animateNumber(number, parseInt(number.textContent));
+                          }, index * 200);
+                      });
+                  });
+            // function animateNumber(element, target) {
+            //      let current = 0;
+            //      const increment = Math.ceil(target / 30);
+            //      const timer = setInterval(() => {
+            //          current += increment;
+            //          if (current >= target) {
+            //              current = target;
+            //              clearInterval(timer);
+            //          }
+            //          element.textContent = current;
+            //      }, 50);
+            //  }
+        </script>
 
         <style>
             .question-item {
