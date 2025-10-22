@@ -321,57 +321,85 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOMContentLoaded event fired');
+
         const conversationBody = document.querySelector('.conversation-body');
         const messageInput = document.querySelector('.message-input');
         const sendButton = document.querySelector('.send-button');
         const charCount = document.querySelector('.char-count');
         const form = document.querySelector('.message-form');
 
+        console.log('Elements found:', {
+            conversationBody: !!conversationBody,
+            messageInput: !!messageInput,
+            sendButton: !!sendButton,
+            charCount: !!charCount,
+            form: !!form
+        });
+
+        // Check if elements exist before using them
+        if (!messageInput) {
+            console.error('messageInput element not found!');
+            return;
+        }
+
         // Scroll to bottom
-        scrollToBottom();
+        if (conversationBody) {
+            conversationBody.scrollTop = conversationBody.scrollHeight;
+        }
 
         // Auto-focus message input
         messageInput.focus();
 
+        // Set initial height
+        messageInput.style.height = '35px';
+        console.log('Initial height set to 35px');
+
         messageInput.addEventListener('input', function () {
+            console.log('Input event triggered');
             const length = this.value.length;
-            charCount.textContent = length;
-            sendButton.disabled = length === 0 || length > 1000;
 
-             this.style.height = 'auto';
+            if (charCount) {
+                charCount.textContent = length;
+            }
 
-            // Calculate new height properly
+            if (sendButton) {
+                sendButton.disabled = length === 0 || length > 1000;
+            }
+
+            // Auto-expand textarea
+            this.style.height = 'auto';
             const newHeight = Math.min(this.scrollHeight, 120);
             this.style.height = newHeight + 'px';
             console.log('Textarea resized to:', newHeight + 'px');
-
         });
-
-        setTimeout(() => {
-            messageInput.style.height = '30px';
-        }, 100);
-    
 
         // Form submission
-        form.addEventListener('submit', function (e) {
-            const content = messageInput.value.trim();
-            if (content === '' || content.length > 1000) {
-                e.preventDefault();
-                return false;
-            }
-            sendButton.disabled = true;
-            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        });
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                console.log('Form submit event');
+                const content = messageInput.value.trim();
+                if (content === '' || content.length > 1000) {
+                    e.preventDefault();
+                    return false;
+                }
+                if (sendButton) {
+                    sendButton.disabled = true;
+                    sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                }
+            });
+        }
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                form.dispatchEvent(new Event('submit'));
+            if (e.ctrlKey && e.key === 'Enter' && messageInput) {
+                console.log('Ctrl+Enter pressed');
+                if (form) {
+                    form.dispatchEvent(new Event('submit'));
+                }
             }
         });
 
-        function scrollToBottom() {
-            conversationBody.scrollTop = conversationBody.scrollHeight;
-        }
+        console.log('All event listeners attached successfully');
     });
 </script>
