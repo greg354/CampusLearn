@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearnPlatform.Services
 {
-    public class MessageService: IMessageService
+    public class MessageService : IMessageService
     {
         private readonly CampusLearnDbContext _context;
 
@@ -16,260 +16,163 @@ namespace CampusLearnPlatform.Services
 
         public async Task<List<PrivateMessage>> GetConversationAsync(Guid currentUserId, Guid otherUserId)
         {
-            // TEMPORARY: Return mock data if database is not connected
             try
             {
-                Console.WriteLine($"Attempting to get conversation from database: {currentUserId} -> {otherUserId}");
-
-                // Try to get real data first
                 var messages = await _context.Messages
                     .Where(m =>
+                        // current -> other
                         (m.StudentSenderId == currentUserId && m.TutorReceiverId == otherUserId) ||
                         (m.TutorSenderId == currentUserId && m.StudentReceiverId == otherUserId) ||
+                        // other -> current
                         (m.StudentReceiverId == currentUserId && m.TutorSenderId == otherUserId) ||
                         (m.TutorReceiverId == currentUserId && m.StudentSenderId == otherUserId)
                     )
-                    .Where(m => !m.IsDeleted)
                     .OrderBy(m => m.Timestamp)
                     .ToListAsync();
 
-                Console.WriteLine($"Database returned {messages.Count} messages");
                 return messages;
             }
-            catch (Exception ex)
+            catch
             {
-                // Fallback to mock data for development
-                Console.WriteLine($"Database error in GetConversationAsync: {ex.Message}. Using mock data.");
-                return GetMockMessages(currentUserId, otherUserId);
+                return new List<PrivateMessage>();
             }
-        }
-
-        private List<PrivateMessage> GetMockMessages(Guid currentUserId, Guid otherUserId)
-        {
-            Console.WriteLine($"Creating mock messages between {currentUserId} and {otherUserId}");
-
-            return new List<PrivateMessage>
-            {
-                new PrivateMessage
-                {
-                    Id = Guid.NewGuid(),
-                    MessageContent = "Hello! This is a test message.",
-                    StudentSenderId = currentUserId,
-                    TutorReceiverId = otherUserId,
-                    Timestamp = DateTime.Now.AddMinutes(-30),
-                    IsRead = true
-                },
-                new PrivateMessage
-                {
-                    Id = Guid.NewGuid(),
-                    MessageContent = "Hi! Thanks for your message. How can I help you today?",
-                    TutorSenderId = otherUserId,
-                    StudentReceiverId = currentUserId,
-                    Timestamp = DateTime.Now.AddMinutes(-25),
-                    IsRead = true
-                },
-                new PrivateMessage
-                {
-                    Id = Guid.NewGuid(),
-                    MessageContent = "I need help with the programming assignment.",
-                    StudentSenderId = currentUserId,
-                    TutorReceiverId = otherUserId,
-                    Timestamp = DateTime.Now.AddMinutes(-20),
-                    IsRead = true
-                },
-                new PrivateMessage
-                {
-                    Id = Guid.NewGuid(),
-                    MessageContent = "Sure, I can help with that. Which part are you struggling with?",
-                    TutorSenderId = otherUserId,
-                    StudentReceiverId = currentUserId,
-                    Timestamp = DateTime.Now.AddMinutes(-15),
-                    IsRead = false
-                }
-            };
         }
 
         public async Task<PrivateMessage> SendMessageAsync(Guid senderId, Guid receiverId, string content)
         {
-            var isStudentSender = await _context.Students.AnyAsync(s => s.Id == senderId);
-            var isTutorReceiver = await _context.Tutors.AnyAsync(t => t.Id == receiverId);
+            if (string.IsNullOrWhiteSpace(content))
+                throw new ArgumentException("Message content cannot be empty.");
 
-            var message = new PrivateMessage();
+            // detect roles by presence in tables
+            var senderIsStudent = await _context.Students.AnyAsync(s => s.Id == senderId);
+            var receiverIsTutor = await _context.Tutors.AnyAsync(t => t.Id == receiverId);
+            var senderIsTutor = await _context.Tutors.AnyAsync(t => t.Id == senderId);
+            var receiverIsStudent = await _context.Students.AnyAsync(s => s.Id == receiverId);
 
-            if (isStudentSender && isTutorReceiver)
+            var msg = new PrivateMessage
             {
-                message = new PrivateMessage
-                {
-                    StudentSenderId = senderId,
-                    TutorReceiverId = receiverId,
-                    MessageContent = content,
-                    Timestamp = DateTime.Now,
-                    IsRead = false,
-                    Status = Enums.MessageStatuses.Sent
-                };
+                MessageContent = content.Trim(),
+                Timestamp = DateTime.UtcNow
+            };
+
+            if (senderIsStudent && receiverIsTutor)
+            {
+                msg.StudentSenderId = senderId;
+                msg.TutorReceiverId = receiverId;
+            }
+            else if (senderIsTutor && receiverIsStudent)
+            {
+                msg.TutorSenderId = senderId;
+                msg.StudentReceiverId = receiverId;
             }
             else
             {
-                message = new PrivateMessage
-                {
-                    TutorSenderId = senderId,
-                    StudentReceiverId = receiverId,
-                    MessageContent = content,
-                    Timestamp = DateTime.Now,
-                    IsRead = false,
-                    Status = Enums.MessageStatuses.Sent
-                };
+                // fallback — store something to avoid losing messages
+                msg.StudentSenderId = senderId;
+                msg.TutorReceiverId = receiverId;
             }
 
-            _context.Messages.Add(message);
+            _context.Messages.Add(msg);
             await _context.SaveChangesAsync();
-            return message;
+            return msg;
         }
 
         public async Task<bool> MarkAsReadAsync(Guid messageId, Guid userId)
         {
-            var message = await _context.Messages
-                .FirstOrDefaultAsync(m => m.Id == messageId &&
-                    (m.StudentReceiverId == userId || m.TutorReceiverId == userId));
-
-            if (message != null && !message.IsRead)
-            {
-                message.MarkAsRead();
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+            // flags are NotMapped without columns; keep method no-op/true for compatibility
+            var exists = await _context.Messages
+                .AnyAsync(m => m.Id == messageId &&
+                               (m.StudentReceiverId == userId || m.TutorReceiverId == userId));
+            return exists;
         }
 
         public async Task<List<ConversationPreview>> GetRecentConversationsAsync(Guid userId)
         {
-            try
+            var userMessages = await _context.Messages
+                .Where(m => (m.StudentSenderId == userId || m.TutorSenderId == userId ||
+                             m.StudentReceiverId == userId || m.TutorReceiverId == userId))
+                .OrderByDescending(m => m.Timestamp)
+                .Take(50)
+                .ToListAsync();
+
+            var conversations = new Dictionary<Guid, ConversationPreview>();
+
+            foreach (var m in userMessages)
             {
-                var userMessages = await _context.Messages
-                    .Where(m => (m.StudentSenderId == userId || m.TutorSenderId == userId ||
-                               m.StudentReceiverId == userId || m.TutorReceiverId == userId) &&
-                               !m.IsDeleted)
-                    .OrderByDescending(m => m.Timestamp)
-                    .Take(50)
-                    .ToListAsync();
+                Guid otherUserId = Guid.Empty;
+                string otherUserName = "User";
 
-                var conversations = new Dictionary<Guid, ConversationPreview>();
-
-                foreach (var message in userMessages)
+                if (m.StudentSenderId == userId)
                 {
-                    Guid otherUserId = Guid.Empty;
-                    string otherUserName = "Unknown User";
-
-                    if (message.StudentSenderId == userId)
-                    {
-                        otherUserId = message.TutorReceiverId ?? Guid.Empty;
-                        var tutor = await _context.Tutors.FindAsync(otherUserId);
-                        otherUserName = tutor?.Name ?? "Tutor";
-                    }
-                    else if (message.TutorSenderId == userId)
-                    {
-                        otherUserId = message.StudentReceiverId ?? Guid.Empty;
-                        var student = await _context.Students.FindAsync(otherUserId);
-                        otherUserName = student?.Name ?? "Student";
-                    }
-                    else if (message.StudentReceiverId == userId)
-                    {
-                        otherUserId = message.TutorSenderId ?? Guid.Empty;
-                        var tutor = await _context.Tutors.FindAsync(otherUserId);
-                        otherUserName = tutor?.Name ?? "Tutor";
-                    }
-                    else if (message.TutorReceiverId == userId)
-                    {
-                        otherUserId = message.StudentSenderId ?? Guid.Empty;
-                        var student = await _context.Students.FindAsync(otherUserId);
-                        otherUserName = student?.Name ?? "Student";
-                    }
-
-                    if (otherUserId == Guid.Empty) continue;
-
-                    if (!conversations.ContainsKey(otherUserId))
-                    {
-                        conversations[otherUserId] = new ConversationPreview
-                        {
-                            OtherUserId = otherUserId,
-                            OtherUserName = otherUserName,
-                            LastMessage = message.MessageContent,
-                            LastMessageTime = message.Timestamp,
-                            UnreadCount = 0
-                        };
-                    }
-
-                    if ((message.StudentReceiverId == userId || message.TutorReceiverId == userId) && !message.IsRead)
-                    {
-                        conversations[otherUserId].UnreadCount++;
-                    }
+                    otherUserId = m.TutorReceiverId ?? Guid.Empty;
+                    var tutor = await _context.Tutors.FindAsync(otherUserId);
+                    otherUserName = tutor?.Name ?? "Tutor";
+                }
+                else if (m.TutorSenderId == userId)
+                {
+                    otherUserId = m.StudentReceiverId ?? Guid.Empty;
+                    var student = await _context.Students.FindAsync(otherUserId);
+                    otherUserName = student?.Name ?? "Student";
+                }
+                else if (m.StudentReceiverId == userId)
+                {
+                    otherUserId = m.TutorSenderId ?? Guid.Empty;
+                    var tutor = await _context.Tutors.FindAsync(otherUserId);
+                    otherUserName = tutor?.Name ?? "Tutor";
+                }
+                else if (m.TutorReceiverId == userId)
+                {
+                    otherUserId = m.StudentSenderId ?? Guid.Empty;
+                    var student = await _context.Students.FindAsync(otherUserId);
+                    otherUserName = student?.Name ?? "Student";
                 }
 
-                return conversations.Values
-                    .OrderByDescending(c => c.LastMessageTime)
-                    .Take(20)
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Database error in GetRecentConversationsAsync: {ex.Message}. Using mock data.");
-                return GetMockConversations(userId);
-            }
-        }
+                if (otherUserId == Guid.Empty) continue;
 
-        private List<ConversationPreview> GetMockConversations(Guid userId)
-        {
-            return new List<ConversationPreview>
-            {
-                new ConversationPreview
+                if (!conversations.ContainsKey(otherUserId))
                 {
-                    OtherUserId = Guid.NewGuid(),
-                    OtherUserName = "John Tutor",
-                    LastMessage = "I can help you with that topic",
-                    LastMessageTime = DateTime.Now.AddHours(-1),
-                    UnreadCount = 1
-                },
-                new ConversationPreview
-                {
-                    OtherUserId = Guid.NewGuid(),
-                    OtherUserName = "Sarah Student",
-                    LastMessage = "Thanks for the help!",
-                    LastMessageTime = DateTime.Now.AddDays(-1),
-                    UnreadCount = 0
+                    conversations[otherUserId] = new ConversationPreview
+                    {
+                        OtherUserId = otherUserId,
+                        OtherUserName = otherUserName,
+                        LastMessage = m.MessageContent,
+                        LastMessageTime = m.Timestamp,
+                        UnreadCount = 0 // without is_read column we keep this 0
+                    };
                 }
-            };
+            }
+
+            return conversations.Values
+                .OrderByDescending(c => c.LastMessageTime)
+                .Take(20)
+                .ToList();
         }
 
         public async Task<int> GetUnreadCountAsync(Guid userId)
         {
-            try
-            {
-                return await _context.Messages
-                    .Where(m => (m.StudentReceiverId == userId || m.TutorReceiverId == userId) &&
-                               !m.IsRead && !m.IsDeleted)
-                    .CountAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Database error in GetUnreadCountAsync: {ex.Message}. Using mock count.");
-                return 1; // Mock unread count
-            }
+            // no is_read column → always 0 (keeps UI from breaking)
+            return 0;
         }
 
         public async Task<List<object>> SearchUsersAsync(string query)
         {
+            var q = (query ?? string.Empty).Trim();
+            if (q.Length < 2) return new List<object>();
+
+            // CASE-INSENSITIVE search using Postgres ILIKE
             var students = await _context.Students
-                .Where(s => s.Name.Contains(query) || s.Email.Contains(query))
+                .Where(s => EF.Functions.ILike(s.Name, $"%{q}%") || EF.Functions.ILike(s.Email, $"%{q}%"))
                 .Select(s => new { Id = s.Id, Name = s.Name, Email = s.Email, Type = "Student" })
+                .Take(10)
                 .ToListAsync();
 
             var tutors = await _context.Tutors
-                .Where(t => t.Name.Contains(query) || t.Email.Contains(query))
+                .Where(t => EF.Functions.ILike(t.Name, $"%{q}%") || EF.Functions.ILike(t.Email, $"%{q}%"))
                 .Select(t => new { Id = t.Id, Name = t.Name, Email = t.Email, Type = "Tutor" })
+                .Take(10)
                 .ToListAsync();
 
-            var results = students.Cast<object>().Concat(tutors.Cast<object>()).ToList();
-            return results;
+            return students.Cast<object>().Concat(tutors.Cast<object>()).ToList();
         }
     }
 }

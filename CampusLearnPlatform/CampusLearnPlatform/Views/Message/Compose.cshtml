@@ -193,6 +193,7 @@
                     <!-- Message Input -->
                     <div class="card-footer">
                         <form id="messageForm" asp-action="SendMessage" method="post" class="message-form">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" id="receiverId" name="ReceiverId" />
                             <div class="input-group">
                                 <textarea id="messageContent"
@@ -401,41 +402,47 @@
             }
         }
 
-        function sendMessage() {
-            const content = messageContent.value.trim();
-            if (content === '' || content.length > 1000) {
-                return;
+    function sendMessage() {
+        const content = messageContent.value.trim();
+        if (content === '' || content.length > 1000) return;
+
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : '';
+
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(messageForm.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'RequestVerificationToken': token // for extra safety
+            },
+            body: new URLSearchParams(new FormData(messageForm))
+        })
+        .then(async (response) => {
+            // Our controller returns JSON on AJAX
+            const data = await response.json().catch(() => ({}));
+            if (response.ok && data.success) {
+                messageContent.value = '';
+                messageContent.dispatchEvent(new Event('input'));
+                loadConversationHistory(receiverId.value);
+            } else {
+                const msg = data.error || 'Failed to send message. Please try again.';
+                throw new Error(msg);
             }
+        })
+        .catch(err => {
+            console.error('Error sending message:', err);
+            alert(err.message);
+        })
+        .finally(() => {
+            sendButton.disabled = false;
+            sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
+    }
 
-            // Disable send button and show loading
-            sendButton.disabled = true;
-            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-            fetch(messageForm.action, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(new FormData(messageForm))
-            })
-            .then(response => {
-                if (response.ok) {
-                    messageContent.value = '';
-                    messageContent.dispatchEvent(new Event('input'));
-                    loadConversationHistory(receiverId.value); // Reload messages
-                } else {
-                    throw new Error('Failed to send message');
-                }
-            })
-            .catch(error => {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-            })
-            .finally(() => {
-                sendButton.disabled = false;
-                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-            });
-        }
 
         // Close search results when clicking outside
         document.addEventListener('click', function (e) {
