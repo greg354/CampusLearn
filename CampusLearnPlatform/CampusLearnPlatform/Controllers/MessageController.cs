@@ -130,19 +130,67 @@ namespace CampusLearnPlatform.Controllers
                 return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
             }
 
-            var currentUserId = GetCurrentUserId();
-            var msg = await _messageService.SendMessageAsync(currentUserId, model.ReceiverId, model.Content);
+            try
+            {
+                var currentUserId = GetCurrentUserId();
+                var msg = await _messageService.SendMessageAsync(currentUserId, model.ReceiverId, model.Content);
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return Json(new { success = true, messageId = msg.Id });
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = true, messageId = msg.Id });
 
-            return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+                return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine($"Error sending message: {ex.Message}");
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, error = "Failed to send message." });
+
+                TempData["ErrorMessage"] = "Failed to send message. Please try again.";
+                return RedirectToAction("Conversation", new { otherUserId = model.ReceiverId });
+            }
         }
 
         // ---------- SEARCH ENDPOINT ----------
         // Accepts ?term=, ?q=, or ?query= and returns { results: [ { id, text, role } ] }
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> SearchUsers(string term, string q, string query)
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
+                return Json(Array.Empty<object>());
+
+            var raw = term ?? q ?? query ?? "";
+            var results = await _messageService.SearchUsersAsync(raw);
+
+            var currentUserId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
+
+            var items = results
+                .Select(u =>
+                {
+                    var id = (Guid)u.GetType().GetProperty("Id")!.GetValue(u)!;
+                    if (id == currentUserId) return null; // don't return self
+
+                    var name = u.GetType().GetProperty("Name")!.GetValue(u)!.ToString();
+                    var email = u.GetType().GetProperty("Email")!.GetValue(u)!.ToString();
+                    var type = u.GetType().GetProperty("Type")!.GetValue(u)!.ToString();
+
+                    return new
+                    {
+                        id,
+                        text = $"{name} ({email})",
+                        role = type
+                    };
+                })
+                .Where(x => x != null)
+                .Take(20)
+                .ToList();
+
+            // IMPORTANT: return a plain array to match Compose.cshtml
+            return Json(items);
+        }
 
         // ----- Upload attachment (files/images/voice notes) -----
         [HttpPost]
@@ -233,41 +281,6 @@ namespace CampusLearnPlatform.Controllers
             var userId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
             var msg = await _messageService.SendMessageAsync(userId, receiverId, content, parentMessageId);
             return Json(new { success = true, messageId = msg.Id });
-        }
-
-        public async Task<IActionResult> SearchUsers(string term, string q, string query)
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserId")))
-                return Json(Array.Empty<object>());
-
-            var raw = term ?? q ?? query ?? "";
-            var results = await _messageService.SearchUsersAsync(raw);
-
-            var currentUserId = Guid.Parse(HttpContext.Session.GetString("UserId")!);
-
-            var items = results
-                .Select(u =>
-                {
-                    var id = (Guid)u.GetType().GetProperty("Id")!.GetValue(u)!;
-                    if (id == currentUserId) return null; // don't return self
-
-                    var name = u.GetType().GetProperty("Name")!.GetValue(u)!.ToString();
-                    var email = u.GetType().GetProperty("Email")!.GetValue(u)!.ToString();
-                    var type = u.GetType().GetProperty("Type")!.GetValue(u)!.ToString();
-
-                    return new
-                    {
-                        id,
-                        text = $"{name} ({email})",
-                        role = type
-                    };
-                })
-                .Where(x => x != null)
-                .Take(20)
-                .ToList();
-
-            // IMPORTANT: return a plain array to match Compose.cshtml
-            return Json(items);
         }
 
         public async Task<JsonResult> GetConversation(Guid otherUserId)

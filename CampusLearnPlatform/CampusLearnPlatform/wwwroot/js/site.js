@@ -317,6 +317,7 @@ function showPasswordStrength(e) {
 
     // Show feedback (you can customize this)
     console.log('Password strength:', feedback);
+}
 
 
 
