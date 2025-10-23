@@ -391,7 +391,7 @@ function initializeAlerts() {
     setTimeout(() => {
         const alerts = document.querySelectorAll('.alert:not([data-persistent])');
         alerts.forEach(alert => {
-            fadeOut(alert, 300);
+            fadeOut(alert, 200);
         });
     }, 5000);
 }

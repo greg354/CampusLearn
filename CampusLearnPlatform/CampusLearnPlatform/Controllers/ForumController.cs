@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CampusLearnPlatform.Data;
-using CampusLearnPlatform.Models.ViewModels;
+﻿using CampusLearnPlatform.Data;
 using CampusLearnPlatform.Models.Communication;
+using CampusLearnPlatform.Models.ViewModels;
+using CampusLearnPlatform.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -12,11 +13,13 @@ namespace CampusLearnPlatform.Controllers
     {
         private readonly CampusLearnDbContext _context;
         private readonly ILogger<ForumController> _logger;
+        private readonly IEmailService _emailService;
 
-        public ForumController(CampusLearnDbContext context, ILogger<ForumController> logger)
+        public ForumController(CampusLearnDbContext context, ILogger<ForumController> logger, IEmailService emailService)
         {
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: Forum
@@ -282,7 +285,7 @@ namespace CampusLearnPlatform.Controllers
             return null;
         }
 
-        // Updated Reply method to support nested replies
+        // Updated Reply method to support nested replies and EMAIL NOTIFICATIONS
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reply(CreateReplyViewModel model)
@@ -310,7 +313,7 @@ namespace CampusLearnPlatform.Controllers
                 {
                     ReplyId = Guid.NewGuid(),
                     PostId = model.ParentPostId,
-                    ParentReplyId = model.ParentReplyId, // NEW: Support nested replies
+                    ParentReplyId = model.ParentReplyId,
                     ReplyContent = model.Content,
                     IsAnonymous = model.IsAnonymous,
                     CreatedAt = DateTime.UtcNow
@@ -327,15 +330,92 @@ namespace CampusLearnPlatform.Controllers
                 }
                 else
                 {
-                    reply.StudentPosterId = userId; // Default to student
+                    reply.StudentPosterId = userId;
                 }
 
                 _context.ForumPostReplies.Add(reply);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Reply created: {ReplyId} to post {PostId}", reply.ReplyId, model.ParentPostId);
-                TempData["SuccessMessage"] = "Your reply has been posted!";
 
+                // ===== SEND EMAIL NOTIFICATION =====
+                try
+                {
+                    // Get the original post
+                    var post = await _context.ForumPosts.FindAsync(model.ParentPostId);
+                    if (post != null)
+                    {
+                        // Get the post author's details
+                        string authorEmail = null;
+                        string authorName = null;
+
+                        if (post.StudentAuthorId.HasValue)
+                        {
+                            var author = await _context.Students.FindAsync(post.StudentAuthorId.Value);
+                            if (author != null && author.Id != userId) // Don't send email to yourself
+                            {
+                                authorEmail = author.Email;
+                                authorName = author.Name;
+                            }
+                        }
+                        else if (post.TutorAuthorId.HasValue)
+                        {
+                            var author = await _context.Tutors.FindAsync(post.TutorAuthorId.Value);
+                            if (author != null && author.Id != userId)
+                            {
+                                authorEmail = author.Email;
+                                authorName = author.Name;
+                            }
+                        }
+
+                        // Get replier's name
+                        string replierName = "Anonymous User";
+                        if (!model.IsAnonymous)
+                        {
+                            if (userType?.Equals("Student", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                var student = await _context.Students.FindAsync(userId);
+                                replierName = student?.Name ?? "A Student";
+                            }
+                            else if (userType?.Equals("Tutor", StringComparison.OrdinalIgnoreCase) == true)
+                            {
+                                var tutor = await _context.Tutors.FindAsync(userId);
+                                replierName = tutor?.Name ?? "A Tutor";
+                            }
+                        }
+
+                        // Send email if we have the author's email
+                        if (!string.IsNullOrEmpty(authorEmail))
+                        {
+                            var (postTitle, _) = ExtractTitleAndContent(post.PostContent);
+                            var postUrl = Url.Action("Details", "Forum", new { id = post.Id }, Request.Scheme);
+
+                            // Truncate reply content for email (first 200 characters)
+                            var replyPreview = model.Content.Length > 200
+                                ? model.Content.Substring(0, 200) + "..."
+                                : model.Content;
+
+                            await _emailService.SendForumReplyNotificationAsync(
+                                authorEmail,
+                                authorName,
+                                postTitle,
+                                replierName,
+                                replyPreview,
+                                postUrl
+                            );
+
+                            _logger.LogInformation("Email notification sent to {Email} for reply on post {PostId}",
+                                authorEmail, post.Id);
+                        }
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    // Log email error but don't fail the reply operation
+                    _logger.LogError(emailEx, "Failed to send email notification for forum reply {ReplyId}", reply.ReplyId);
+                }
+
+                TempData["SuccessMessage"] = "Your reply has been posted!";
                 return RedirectToAction("Details", new { id = model.ParentPostId });
             }
             catch (Exception ex)

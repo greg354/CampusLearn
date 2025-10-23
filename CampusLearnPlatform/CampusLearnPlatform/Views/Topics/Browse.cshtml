@@ -51,26 +51,6 @@
                             </select>
                         </div>
                     </div>
-
-                    <!-- Quick Filter Tags -->
-                    <div class="mt-3 d-flex flex-wrap gap-2">
-                        <span class="text-muted small me-2">Quick Filters:</span>
-                        <button class="btn btn-sm btn-outline-primary filter-tag active" data-filter="All">
-                            <i class="fas fa-th me-1"></i>All
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger filter-tag" data-filter="Urgent">
-                            <i class="fas fa-exclamation-circle me-1"></i>Urgent
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning filter-tag" data-filter="High">
-                            <i class="fas fa-arrow-up me-1"></i>High Priority
-                        </button>
-                        <button class="btn btn-sm btn-outline-success filter-tag" data-filter="Open">
-                            <i class="fas fa-folder-open me-1"></i>Open
-                        </button>
-                        <button class="btn btn-sm btn-outline-info filter-tag" data-filter="HasMaterials">
-                            <i class="fas fa-file-alt me-1"></i>Has Materials
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -409,7 +389,6 @@
 
         function subscribeTopic(topicId) {
             // In real implementation, this would make an AJAX call
-            alert('Subscribe functionality - would redirect to topic details');
             window.location.href = '/Topics/Details/' + topicId;
         }
 

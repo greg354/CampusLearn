@@ -56,8 +56,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showComingSoon('Materials')">
-                                <i class="fas fa-folder me-1"></i>Materials
+                            <a class="nav-link" href="#" onclick="showComingSoon('Messages')">
+                                <i class="fas fa-message me-1"></i>Messages
                             </a>
                         </li>
                     </ul>
@@ -87,16 +87,32 @@
                             </button>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>Account
+                            <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i> Account
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Profile')"><i class="fas fa-user me-2"></i>My Profile</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="showComingSoon('Settings')"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Profile" asp-action="My">
+                                        <i class="fas fa-user me-2"></i>My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Edit">
+                                        <i class="fas fa-cog me-2"></i>Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
                             </ul>
                         </li>
+
+
+
                     </ul>
                 </div>
             </div>

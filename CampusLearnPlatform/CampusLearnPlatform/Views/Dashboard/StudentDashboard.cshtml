@@ -12,13 +12,6 @@
                     <h1>Welcome back, @Model.UserName! 👋</h1>
                     <p>Ready to continue your learning journey? Check out what's new and get help from tutors.</p>
                 </div>
-                <div class="col-md-4 text-md-end">
-                    <div class="d-flex gap-2 justify-content-md-end justify-content-start mt-3 mt-md-0">
-                        <button class="btn btn-primary" onclick="showComingSoon('Ask Question')">
-                            <i class="fas fa-question-circle me-2"></i>Ask Question
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -69,9 +62,6 @@
                 <div class="card shadow-custom mb-4 fade-in-up" style="animation-delay: 0.5s;">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fas fa-reply me-2"></i>Replies to My Posts</h5>
-                        <button class="btn btn-sm btn-outline-primary" onclick="showComingSoon('View All')">
-                            View All
-                        </button>
                     </div>
                     <div class="card-body p-0">
                         @if (Model.MyQuestions != null && Model.MyQuestions.Any())
@@ -190,41 +180,41 @@
                 </div>
             </div>
         </div>
-</div>
+    </div>
 
 @section Scripts {
-    <script>
-              function navigateToPost(contentType, postId) {
-                 if (contentType === 'ForumPost') {
-                     // Update this URL to match your Forum controller route
-                     window.location.href = `/Forum/Details/${postId}`;
-                 } else if (contentType === 'Topic') {
-                     // Update this URL to match your Topic controller route
-                     window.location.href = `/Topics/Details/${postId}`;
-                 }
-             }
+        <script>
+                   function navigateToPost(contentType, postId) {
+                      if (contentType === 'ForumPost') {
+                          // Update this URL to match your Forum controller route
+                          window.location.href = `/Forum/Details/${postId}`;
+                      } else if (contentType === 'Topic') {
+                          // Update this URL to match your Topic controller route
+                          window.location.href = `/Topics/Details/${postId}`;
+                      }
+                  }
 
-             document.addEventListener('DOMContentLoaded', function() {
-                 // Animate stats numbers
-                 document.querySelectorAll('.stats-number').forEach((number, index) => {
-                     setTimeout(() => {
-                         animateNumber(number, parseInt(number.textContent));
-                     }, index * 200);
-                 });
-             });
-       // function animateNumber(element, target) {
-       //      let current = 0;
-       //      const increment = Math.ceil(target / 30);
-       //      const timer = setInterval(() => {
-       //          current += increment;
-       //          if (current >= target) {
-       //              current = target;
-       //              clearInterval(timer);
-       //          }
-       //          element.textContent = current;
-       //      }, 50);
-       //  }
-    </script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      // Animate stats numbers
+                      document.querySelectorAll('.stats-number').forEach((number, index) => {
+                          setTimeout(() => {
+                              animateNumber(number, parseInt(number.textContent));
+                          }, index * 200);
+                      });
+                  });
+            // function animateNumber(element, target) {
+            //      let current = 0;
+            //      const increment = Math.ceil(target / 30);
+            //      const timer = setInterval(() => {
+            //          current += increment;
+            //          if (current >= target) {
+            //              current = target;
+            //              clearInterval(timer);
+            //          }
+            //          element.textContent = current;
+            //      }, 50);
+            //  }
+        </script>
 
         <style>
             .question-item {

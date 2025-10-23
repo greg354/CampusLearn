@@ -12,6 +12,8 @@ namespace CampusLearnPlatform.Models.Users
     [Table("student")]
     public class Student
     {
+        internal string ProfilePictureUrl;
+
         [Key]
         [Column("student_id")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
