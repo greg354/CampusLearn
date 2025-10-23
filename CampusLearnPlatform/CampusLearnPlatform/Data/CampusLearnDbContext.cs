@@ -6,8 +6,6 @@ using CampusLearnPlatform.Models.Learning;
 using CampusLearnPlatform.Models.System;
 using CampusLearnPlatform.Models.Users;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal;
 
 namespace CampusLearnPlatform.Data
 {
@@ -33,7 +31,7 @@ namespace CampusLearnPlatform.Data
         public DbSet<PrivateMessage> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
-        // Junction tables
+        // Junction / subscriptions
         public DbSet<StudentModule> StudentModules { get; set; }
         public DbSet<TutorModule> TutorModules { get; set; }
         public DbSet<Subscriptions> Subscriptions { get; set; }
@@ -46,23 +44,29 @@ namespace CampusLearnPlatform.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<EscalationRequest> EscalationRequests { get; set; }
 
+        public DbSet<MessageAttachment> MessageAttachments { get; set; } = default!;
+        public DbSet<MessageReaction> MessageReactions { get; set; } = default!;
+        public DbSet<MessageEdit> MessageEdits { get; set; } = default!;
+        public DbSet<MessageDelivery> MessageDeliveries { get; set; } = default!;
+        public DbSet<MessageDelete> MessageDeletes { get; set; } = default!;
+        public DbSet<MessageReply> MessageReplies { get; set; } = default!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-           
-
-            // Configure LearningMaterial FileType to use the enum properly
+            // enums-as-string example
             modelBuilder.Entity<LearningMaterial>(entity =>
             {
                 entity.Property(e => e.FileType)
-                      .HasConversion<string>() // Convert enum to string for PostgreSQL
-                      .HasColumnType("file_kind"); // Use the PostgreSQL enum type
+                      .HasConversion<string>()
+                      .HasColumnType("file_kind");
             });
 
+            // ignore abstract base types
             modelBuilder.Ignore<User>();
             modelBuilder.Ignore<UserProfile>();
 
-            // ===== STUDENT CONFIGURATION =====
+            // STUDENT
             modelBuilder.Entity<Student>(entity =>
             {
                 entity.ToTable("student");
@@ -74,7 +78,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.ProfileInfo).HasColumnName("profile_info");
             });
 
-            // ===== TUTOR CONFIGURATION =====
+            // TUTOR
             modelBuilder.Entity<Tutor>(entity =>
             {
                 entity.ToTable("tutor");
@@ -93,7 +97,7 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.CreatedMaterials);
             });
 
-            // ===== ADMINISTRATOR CONFIGURATION =====
+            // ADMIN
             modelBuilder.Entity<Administrator>(entity =>
             {
                 entity.ToTable("admin");
@@ -104,7 +108,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Password).HasColumnName("password");
             });
 
-            // ===== MODULE CONFIGURATION =====
+            // MODULE
             modelBuilder.Entity<Module>(entity =>
             {
                 entity.ToTable("module");
@@ -123,7 +127,7 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.Students);
             });
 
-            // ===== TOPIC CONFIGURATION =====
+            // TOPIC
             modelBuilder.Entity<Topic>(entity =>
             {
                 entity.ToTable("topic");
@@ -149,7 +153,7 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.Messages);
             });
 
-            // ===== FORUM POSTS CONFIGURATION =====
+            // FORUM POSTS
             modelBuilder.Entity<ForumPosts>(entity =>
             {
                 entity.ToTable("forum_post");
@@ -164,7 +168,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0);
             });
 
-            // Added ForumVote configuration
+            // FORUM VOTE
             modelBuilder.Entity<ForumVote>(entity =>
             {
                 entity.ToTable("forum_vote");
@@ -177,30 +181,29 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.VoteType).HasColumnName("vote_type");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
-                // unique constraint
                 entity.HasIndex(e => new { e.UserId, e.TargetId, e.TargetType })
                       .IsUnique()
                       .HasDatabaseName("unique_user_vote");
             });
 
-            // ===== FORUM POST REPLY CONFIGURATION ===== Updated for nested replies and voting
+            // FORUM POST REPLY
             modelBuilder.Entity<ForumPostReply>(entity =>
             {
                 entity.ToTable("forum_post_reply");
                 entity.HasKey(e => e.ReplyId);
                 entity.Property(e => e.ReplyId).HasColumnName("reply_id").HasDefaultValueSql("gen_random_uuid()");
                 entity.Property(e => e.PostId).HasColumnName("post_id");
-                entity.Property(e => e.ParentReplyId).HasColumnName("parent_reply_id"); // NEW
+                entity.Property(e => e.ParentReplyId).HasColumnName("parent_reply_id");
                 entity.Property(e => e.StudentPosterId).HasColumnName("student_poster_id");
                 entity.Property(e => e.TutorPosterId).HasColumnName("tutor_poster_id");
                 entity.Property(e => e.ReplyContent).HasColumnName("reply_content");
                 entity.Property(e => e.IsAnonymous).HasColumnName("is_anonymous");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-                entity.Property(e => e.UpvoteCount).HasColumnName("upvote_count").HasDefaultValue(0); // NEW
-                entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0); // NEW
+                entity.Property(e => e.UpvoteCount).HasColumnName("upvote_count").HasDefaultValue(0);
+                entity.Property(e => e.DownvoteCount).HasColumnName("downvote_count").HasDefaultValue(0);
             });
 
-            // ===== TOPIC REPLY CONFIGURATION =====
+            // TOPIC REPLY
             modelBuilder.Entity<TopicReply>(entity =>
             {
                 entity.ToTable("topic_reply");
@@ -214,14 +217,16 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             });
 
-            // ===== PRIVATE MESSAGE CONFIGURATION =====
+            // >>> PRIVATE MESSAGE (message) — exact column names + ignore non-existent columns
             modelBuilder.Entity<PrivateMessage>(entity =>
             {
                 entity.ToTable("message");
                 entity.HasKey(e => e.Id);
+
                 entity.Property(e => e.Id).HasColumnName("message_id").HasDefaultValueSql("gen_random_uuid()");
                 entity.Property(e => e.MessageContent).HasColumnName("message_content");
                 entity.Property(e => e.Timestamp).HasColumnName("sent_at");
+
                 entity.Property(e => e.StudentSenderId).HasColumnName("student_sender_id");
                 entity.Property(e => e.TutorSenderId).HasColumnName("tutor_sender_id");
                 entity.Property(e => e.AdminSenderId).HasColumnName("admin_sender_id");
@@ -229,25 +234,14 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.TutorReceiverId).HasColumnName("tutor_receiver_id");
                 entity.Property(e => e.AdminReceiverId).HasColumnName("admin_receiver_id");
 
-                entity.Ignore(e => e.Content);
-                entity.Ignore(e => e.SentAt);
-                entity.Ignore(e => e.IsRead);
-                entity.Ignore(e => e.Status);
-                entity.Ignore(e => e.ReadAt);
+                // IMPORTANT: your DB does not have these columns — ignore them so EF won't SELECT them
                 entity.Ignore(e => e.IsDeleted);
-                entity.Ignore(e => e.TopicId);
-                entity.Ignore(e => e.ParentMessageId);
-                entity.Ignore(e => e.SenderId);
-                entity.Ignore(e => e.SenderType);
-                entity.Ignore(e => e.ReceiverId);
-                entity.Ignore(e => e.ReceiverType);
-                entity.Ignore(e => e.Sender);
-                entity.Ignore(e => e.Receiver);
-                entity.Ignore(e => e.Topic);
-                entity.Ignore(e => e.ParentMessage);
+                entity.Ignore(e => e.IsRead);
+                entity.Ignore(e => e.ReadAt);
+                entity.Ignore(e => e.Status);
             });
 
-            // ===== LEARNING MATERIAL CONFIGURATION =====
+            // LEARNING MATERIAL
             modelBuilder.Entity<LearningMaterial>(entity =>
             {
                 entity.ToTable("learning_material");
@@ -256,13 +250,13 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Title).HasColumnName("title");
                 entity.Property(e => e.FilePath).HasColumnName("file_path");
                 entity.Property(e => e.FileType).HasColumnName("file_type");
-
                 entity.Property(e => e.TopicId).HasColumnName("topic_id");
                 entity.Property(e => e.UploadedAt).HasColumnName("uploaded_at");
                 entity.Property(e => e.StudentPosterId).HasColumnName("student_poster_id");
                 entity.Property(e => e.TutorPosterId).HasColumnName("tutor_poster_id");
                 entity.Property(e => e.AdminPosterId).HasColumnName("admin_poster_id");
 
+                // ignore members not present as columns
                 entity.Ignore(e => e.Description);
                 entity.Ignore(e => e.FileName);
                 entity.Ignore(e => e.FileSize);
@@ -276,7 +270,7 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.UploadedBy);
             });
 
-            // ===== NOTIFICATION CONFIGURATION =====
+            // NOTIFICATION
             modelBuilder.Entity<Notification>(entity =>
             {
                 entity.ToTable("notification");
@@ -302,7 +296,7 @@ namespace CampusLearnPlatform.Data
                 entity.Ignore(e => e.User);
             });
 
-            // ===== JUNCTION TABLES =====
+            // STUDENT_MODULE
             modelBuilder.Entity<StudentModule>(entity =>
             {
                 entity.ToTable("student_module");
@@ -312,6 +306,7 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Grade).HasColumnName("grade");
             });
 
+            // TUTOR_MODULE
             modelBuilder.Entity<TutorModule>(entity =>
             {
                 entity.ToTable("tutor_module");
@@ -320,31 +315,25 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.ModuleId).HasColumnName("module_id");
             });
 
+            // SUBSCRIPTION (student)
             modelBuilder.Entity<Subscriptions>(entity =>
             {
                 entity.ToTable("subscription");
+                entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("subscription_id").HasDefaultValueSql("gen_random_uuid()");
                 entity.Property(e => e.StudentId).HasColumnName("student_id");
                 entity.Property(e => e.TopicId).HasColumnName("topic_id");
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
-                entity.Ignore(e => e.SubscribedAt);
+                // not in DB — ignore
                 entity.Ignore(e => e.IsActive);
                 entity.Ignore(e => e.ReceiveNotifications);
-                entity.Ignore(e => e.Student);
-                entity.Ignore(e => e.Topic);
+                entity.Ignore(e => e.SubscribedAt);
             });
 
-            modelBuilder.Entity<TutorSubscription>(entity =>
-            {
-                entity.ToTable("tutor_subscription");
-                entity.Property(e => e.Id).HasColumnName("subscription_id").HasDefaultValueSql("gen_random_uuid()");
-                entity.Property(e => e.StudentId).HasColumnName("student_id");
-                entity.Property(e => e.TutorId).HasColumnName("tutor_id");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-            });
+            // (no explicit TutorSubscription mapping to avoid referencing members that don't exist)
 
-            // ===== CHATBOT CONFIGURATION =====
+            // CHATBOT family (unchanged)
             modelBuilder.Entity<ChatBot>(entity =>
             {
                 entity.ToTable("chatbot");
@@ -359,7 +348,6 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.SuccessfulQueries).HasColumnName("successful_queries").HasDefaultValue(0);
             });
 
-            // ===== FAQ CONFIGURATION =====
             modelBuilder.Entity<FAQ>(entity =>
             {
                 entity.ToTable("faq");
@@ -375,14 +363,12 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.Keywords).HasColumnName("keywords");
                 entity.Property(e => e.ChatbotId).HasColumnName("chatbot_id");
 
-                // Relationship
                 entity.HasOne(e => e.Chatbot)
                       .WithMany(c => c.FAQs)
                       .HasForeignKey(e => e.ChatbotId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ===== CHAT SESSION CONFIGURATION =====
             modelBuilder.Entity<ChatSession>(entity =>
             {
                 entity.ToTable("chat_session");
@@ -395,33 +381,15 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.MessageCount).HasColumnName("message_count").HasDefaultValue(0);
                 entity.Property(e => e.WasEscalated).HasColumnName("was_escalated").HasDefaultValue(false);
                 entity.Property(e => e.SessionSummary).HasColumnName("session_summary");
-
-                // Both should be nullable
                 entity.Property(e => e.StudentId).HasColumnName("student_id").IsRequired(false);
                 entity.Property(e => e.TutorId).HasColumnName("tutor_id").IsRequired(false);
-
                 entity.Property(e => e.ChatbotId).HasColumnName("chatbot_id");
 
-                // Relationships
-                entity.HasOne(e => e.Student)
-                      .WithMany()
-                      .HasForeignKey(e => e.StudentId)
-                      .OnDelete(DeleteBehavior.Cascade)
-                      .IsRequired(false);
-
-                entity.HasOne(e => e.Tutor)
-                      .WithMany()
-                      .HasForeignKey(e => e.TutorId)
-                      .OnDelete(DeleteBehavior.Cascade)
-                      .IsRequired(false);
-
-                entity.HasOne(e => e.Chatbot)
-                      .WithMany(c => c.ChatSessions)
-                      .HasForeignKey(e => e.ChatbotId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Student).WithMany().HasForeignKey(e => e.StudentId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
+                entity.HasOne(e => e.Tutor).WithMany().HasForeignKey(e => e.TutorId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
+                entity.HasOne(e => e.Chatbot).WithMany(c => c.ChatSessions).HasForeignKey(e => e.ChatbotId).OnDelete(DeleteBehavior.Cascade);
             });
 
-            // check constraint
             modelBuilder.Entity<ChatSession>()
                 .ToTable(t =>
                 {
@@ -431,7 +399,6 @@ namespace CampusLearnPlatform.Data
                     );
                 });
 
-            // ===== CHAT MESSAGE CONFIGURATION =====
             modelBuilder.Entity<ChatMessage>(entity =>
             {
                 entity.ToTable("chat_message");
@@ -445,7 +412,6 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.RequiresEscalation).HasColumnName("requires_escalation").HasDefaultValue(false);
             });
 
-            // ===== ESCALATION REQUEST CONFIGURATION =====
             modelBuilder.Entity<EscalationRequest>(entity =>
             {
                 entity.ToTable("escalation_request");
@@ -460,9 +426,12 @@ namespace CampusLearnPlatform.Data
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
             });
 
+            modelBuilder.Entity<MessageDelivery>().HasKey(x => new { x.MessageId, x.RecipientId });
+            modelBuilder.Entity<MessageDelete>().HasKey(x => new { x.MessageId, x.UserId });
+
+
+
             base.OnModelCreating(modelBuilder);
-
-
         }
     }
 }
