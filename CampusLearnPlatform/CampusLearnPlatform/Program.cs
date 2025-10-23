@@ -24,6 +24,8 @@ namespace CampusLearnPlatform
                     _ => "This field is required.");
             });
 
+            builder.Services.AddScoped<IMessageService, MessageService>();
+
             // Add session support (for temporary data)
             builder.Services.AddSession(options =>
             {
@@ -40,6 +42,8 @@ namespace CampusLearnPlatform
 
             // Register Gemini Service
             builder.Services.AddScoped<IGeminiService, GeminiService>();
+
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             // Add logging
             builder.Services.AddLogging(logging =>
@@ -76,10 +80,11 @@ namespace CampusLearnPlatform
             app.UseSession();
 
             // FIXED: Change default route to Account/Login instead of Home/Index
+            app.UseStaticFiles();  // so /uploads/... is served
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
-
             app.Run();
         }
     }

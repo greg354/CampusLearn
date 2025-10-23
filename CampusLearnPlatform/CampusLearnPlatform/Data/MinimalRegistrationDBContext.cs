@@ -3,16 +3,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CampusLearnPlatform.Data
 {
-    public class MinimalRegistrationDBContext: DbContext
+    public class MinimalRegistrationDBContext : DbContext
     {
         public MinimalRegistrationDBContext(DbContextOptions<MinimalRegistrationDBContext> options) : base(options) { }
 
-        // Only Student - no other entities to cause relationship problems
         public DbSet<Student> Students { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure Student entity explicitly with exact database mapping
             modelBuilder.Entity<Student>(entity =>
             {
                 entity.ToTable("student");

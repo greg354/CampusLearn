@@ -1,0 +1,431 @@
+﻿@model CampusLearnPlatform.Models.ViewModels.ConversationViewModel
+@{
+    ViewData["Title"] = $"Conversation with {Model.OtherUserName}";
+}
+
+<style>
+    /* CSS Variables for Theming */
+    :root {
+        --conversation-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        --message-sent-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --message-received-bg: white;
+        --message-text: #333;
+        --message-footer-text: #6b7280;
+        --card-bg: white;
+        --card-header-bg: #f8f9fa;
+        --card-text: #333;
+        --card-border: #e2e8f0;
+        --input-bg: white;
+        --input-border: #e2e8f0;
+        --input-text: #333;
+        --quick-action-bg: white;
+        --quick-action-text: #333;
+        --quick-action-border: #dee2e6;
+    }
+
+    [data-theme="dark"] {
+        --conversation-bg: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+        --message-sent-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --message-received-bg: #4a5568;
+        --message-text: #e2e8f0;
+        --message-footer-text: #a0aec0;
+        --card-bg: #2d3748;
+        --card-header-bg: #4a5568;
+        --card-text: #e2e8f0;
+        --card-border: #4a5568;
+        --input-bg: #4a5568;
+        --input-border: #4a5568;
+        --input-text: #e2e8f0;
+        --quick-action-bg: #4a5568;
+        --quick-action-text: #e2e8f0;
+        --quick-action-border: #718096;
+    }
+
+    .conversation-body {
+        background: var(--conversation-bg);
+        border-left: 1px solid var(--card-border);
+        border-right: 1px solid var(--card-border);
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        position: relative;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+        .message-bubble.sent {
+            background: var(--message-sent-bg);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .message-bubble.received {
+            background: var(--message-received-bg);
+            color: var(--message-text);
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+    .message-text p {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        word-wrap: break-word;
+        color: inherit;
+    }
+
+    .message-footer {
+        font-size: 0.75rem;
+        color: var(--message-footer-text);
+    }
+
+    /* Ultra Thin Elongated Pill */
+    .input-group {
+        border-radius: 1.25rem !important;
+        border: 1px solid var(--input-border);
+        background: var(--input-bg);
+        padding: 0.4rem 0.4rem;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        min-height: 40px;
+    }
+
+        .input-group:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 0.1rem rgba(99, 102, 241, 0.15);
+        }
+
+    .message-input {
+        border: none !important;
+        background: transparent !important;
+        resize: none;
+        color: var(--input-text);
+        padding: 0.4rem 0.6rem 0.4rem 0.8rem;
+        box-shadow: none !important;
+        font-size: 0.875rem;
+        line-height: 1.3;
+        flex-grow: 1;
+        min-height: 35px;
+        max-height: 120px;
+        margin: 0;
+        overflow-y: auto;
+    }
+
+    .send-button {
+        border-radius: 50% !important;
+        width: 35px !important;
+        height: 35px !important;
+        margin: 0 !important;
+        margin-left: 0.3rem !important;
+        font-size: 0.7rem;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        align-self: center;
+        border: none;
+    }
+
+        .send-button:not(:disabled):hover {
+            transform: scale(1.03);
+        }
+
+        .send-button:disabled {
+            background-color: #9ca3af !important;
+            border-color: #9ca3af !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .conversation-meta {
+        font-size: 0.9rem;
+        color: var(--card-text);
+    }
+
+    .card {
+        background: var(--card-bg);
+        color: var(--card-text);
+        border: 1px solid var(--card-border);
+    }
+
+    .card-header {
+        background: var(--card-header-bg) !important;
+        color: var(--card-text);
+        border-bottom: 1px solid var(--card-border);
+    }
+
+    .btn-outline-primary {
+        border-color: var(--quick-action-border);
+        color: var(--quick-action-text);
+        background: var(--quick-action-bg);
+    }
+
+        .btn-outline-primary:hover {
+            background: #6366f1;
+            border-color: #6366f1;
+            color: white;
+        }
+
+    .dropdown-menu {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+    }
+
+    .dropdown-item {
+        color: var(--card-text);
+    }
+
+        .dropdown-item:hover {
+            background: var(--card-header-bg);
+            color: var(--card-text);
+        }
+
+    .text-muted {
+        color: var(--message-footer-text) !important;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+
+    }
+
+    @@media (max-width: 768px) {
+        .message-bubble {
+            max-width: 85%;
+        }
+
+        .conversation-body {
+            height: 50vh !important;
+        }
+    }
+
+    .conversation-body {
+        height: 50vh !important;
+    }
+
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-0">Conversation with @Model.OtherUserName</h5>
+                        <small class="text-muted">@Model.OtherUserRole</small>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="card-body conversation-body" style="height: 60vh; overflow-y: auto;">
+                    @if (Model.Messages.Any())
+                    {
+                        foreach (var message in Model.Messages)
+                        {
+                            <div class="message-bubble @(message.IsSentByCurrentUser ? "sent" : "received") mb-3">
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        <p class="mb-1">@message.Content</p>
+                                    </div>
+                                    <div class="message-footer d-flex justify-content-between align-items-center mt-1">
+                                        <small class="text-muted">@message.GetTimestamp()</small>
+                                        @if (message.IsSentByCurrentUser)
+                                        {
+                                            <div class="message-status">
+                                                @if (message.IsRead)
+                                                {
+                                                    <i class="fas fa-check-double text-primary" title="Read"></i>
+                                                }
+                                                else
+                                                {
+
+                                                    <i class="fas fa-check text-muted" title="Sent"></i>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <h5>No messages yet</h5>
+                            <p>Send the first message to start your conversation</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer" style="padding-top: .25rem; padding-bottom: .25rem;">
+                    <form id="messageForm" asp-action="SendMessage" method="post" class="message-form" autocomplete="off">
+                        @Html.AntiForgeryToken()
+                        <!-- IMPORTANT: name must be ReceiverId (not NewMessage.ReceiverId) -->
+                        <input type="hidden" id="receiverId" name="ReceiverId" value="@Model.OtherUserId" />
+                        <div class="input-group">
+                            <textarea id="messageContent"
+                                      name="Content"
+                                      class="form-control message-input"
+                                      rows="2"
+                                      placeholder="Type your message..."
+                                      maxlength="1000"
+                                      required></textarea>
+                            <button type="submit" class="btn btn-primary send-button" disabled>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 d-flex justify-content-between align-items-center" style="margin-top:.25rem!important;">
+                            <small class="text-muted"><span class="char-count">0</span>/1000 characters</small>
+                            <small class="text-info"><i class="fas fa-shield-alt me-1"></i>Private conversation</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const conversationBody = document.querySelector('.conversation-body');
+        const form             = document.getElementById('messageForm');
+        const messageInput     = document.getElementById('messageContent');
+        const sendButton       = document.querySelector('.send-button');
+        const charCount        = document.querySelector('.char-count');
+        const receiverIdInput  = document.getElementById('receiverId');
+        const antiInput        = document.querySelector('input[name="__RequestVerificationToken"]');
+        const anti             = antiInput ? antiInput.value : '';
+
+        // Scroll to bottom on load
+        if (conversationBody) conversationBody.scrollTop = conversationBody.scrollHeight;
+
+        // Focus textarea
+        if (messageInput) {
+            messageInput.style.height = '35px';
+            messageInput.focus();
+            messageInput.addEventListener('input', function () {
+                const length = this.value.length;
+                if (charCount) charCount.textContent = length;
+                if (sendButton) sendButton.disabled = (length === 0 || length > 1000);
+
+                // auto-grow (min 35px, max 120px)
+                this.style.height = '35px';
+                const needed = this.scrollHeight;
+                this.style.height = (needed > 35 ? Math.min(needed, 120) : 35) + 'px';
+            });
+
+            // Enter to send (Shift+Enter = newline)
+            messageInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            });
+        }
+
+        // AJAX submit (prevents redirect + handles JSON)
+        if (form) {
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const receiverId = receiverIdInput?.value || '';
+                const content    = (messageInput?.value || '').trim();
+
+                if (!receiverId || receiverId === '00000000-0000-0000-0000-000000000000') {
+                    alert('Please select a recipient first.');
+                    return;
+                }
+                if (!content || content.length > 1000) return;
+
+                const btn = sendButton;
+                const setSending = (on) => {
+                    if (!btn) return;
+                    btn.disabled = on;
+                    btn.innerHTML = on ? '<i class="fas fa-spinner fa-spin"></i>' : '<i class="fas fa-paper-plane"></i>';
+                };
+
+                try {
+                    setSending(true);
+
+                    const body = new URLSearchParams();
+                    body.set('ReceiverId', receiverId);
+                    body.set('Content', content);
+                    if (anti) body.set('__RequestVerificationToken', anti);
+
+                    const res = await fetch(form.action || '/Message/SendMessage', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body,
+                        credentials: 'include'
+                    });
+
+                    if (!res.ok) throw new Error('Failed to send');
+
+                    // Controller returns JSON when AJAX
+                    const ct = res.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) {
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.error || 'Failed to send');
+                    }
+
+                    // clear and refresh
+                    messageInput.value = '';
+                    messageInput.dispatchEvent(new Event('input'));
+
+                    // reload same conversation (simple way)
+                    const url = new URL(window.location.href);
+                    const otherUserId = url.searchParams.get('otherUserId') || receiverId;
+                    history.replaceState(null, '', `/Message/Conversation?otherUserId=${otherUserId}`);
+                    window.location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to send message. Please try again.');
+                } finally {
+                    setSending(false);
+                }
+            });
+        }
+    });
+</script>
