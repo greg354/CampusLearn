@@ -60,42 +60,10 @@ namespace CampusLearnPlatform.Models.Learning
             Messages = new List<PrivateMessage>();
         }
 
-        public Topic(string title, string description, int studentId, Guid moduleId) : this()
-        {
-            Title = title;
-            Description = description;
-            StudentId = studentId;
-            ModuleId = moduleId;
-        }
-
-        public void UpdateStatus(TopicStatuses newStatus)
-        {
-            Status = newStatus;
-            UpdatedAt = DateTime.Now;
-        }
-        public void AddMaterial(LearningMaterial material) { }
         public void IncrementViewCount()
         {
             ViewCount++;
         }
-        public List<Subscriptions> GetSubscribers()
-        {
-            return new List<Subscriptions>();
-        }
-        public void NotifySubscribers(string message) { }
-        public bool IsActiveForTutor(int tutorId)
-        {
-            return Status == TopicStatuses.Open && !IsArchived;
-        }
-        public void CloseTopic()
-        {
-            Status = TopicStatuses.Closed;
-            UpdatedAt = DateTime.Now;
-        }
-        public void ArchiveTopic()
-        {
-            IsArchived = true;
-            UpdatedAt = DateTime.Now;
-        }
+
     }
 }

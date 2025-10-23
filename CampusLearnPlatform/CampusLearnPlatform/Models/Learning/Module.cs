@@ -37,37 +37,5 @@ namespace CampusLearnPlatform.Models.Learning
             Students = new List<Student>();
         }
 
-        public Module(string moduleCode, string moduleName, int credits, int academicYear) : this()
-        {
-            ModuleCode = moduleCode;
-            ModuleName = moduleName;
-            Credits = credits;
-            AcademicYear = academicYear;
-        }
-
-  
-        public void AddTutor(Tutor tutor) { }
-        public void RemoveTutor(int tutorId) { }
-        public List<Topic> GetActiveTopics()
-        {
-            return new List<Topic>();
-        }
-        public int GetEnrolledStudentCount()
-        {
-            return Students?.Count ?? 0;
-        }
-        public bool HasTutor(int tutorId)
-        {
-            return true;
-        }
-        public void UpdateDetails(string description, int credits)
-        {
-            Description = description;
-            Credits = credits;
-        }
-        public void DeactivateModule()
-        {
-            IsActive = false;
-        }
     }
 }
