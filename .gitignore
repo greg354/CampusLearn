@@ -28,3 +28,4 @@ artifacts/
 *.bak
 *.ldf
 *.mdf
+/CampusLearnPlatform/CampusLearnPlatform/appsettings.json
