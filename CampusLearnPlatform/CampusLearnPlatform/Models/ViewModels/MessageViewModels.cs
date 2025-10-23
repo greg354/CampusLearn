@@ -53,8 +53,18 @@ namespace CampusLearnPlatform.Models.ViewModels
 
         public string GetTimestamp()
         {
-            var timeAgo = DateTime.Now - Timestamp;
+            var messageTime = Timestamp;
 
+            // If the timestamp is stored as UTC, convert to local time
+            if (Timestamp.Kind == DateTimeKind.Utc)
+            {
+                messageTime = Timestamp.ToLocalTime();
+            }
+
+            var timeAgo = DateTime.Now - messageTime;
+
+            if (timeAgo.TotalSeconds < 60)
+                return "Just now";
             if (timeAgo.TotalMinutes < 1)
                 return "Just now";
             if (timeAgo.TotalHours < 1)
@@ -64,8 +74,9 @@ namespace CampusLearnPlatform.Models.ViewModels
             if (timeAgo.TotalDays < 7)
                 return $"{(int)timeAgo.TotalDays}d ago";
 
-            return Timestamp.ToString("MMM dd, yyyy");
+            return messageTime.ToString("MMM dd, yyyy 'at' h:mm tt");
         }
+
     }
 
     public class ComposeMessageViewModel
